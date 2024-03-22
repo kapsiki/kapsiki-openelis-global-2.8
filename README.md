@@ -1,7 +1,7 @@
-# OpenELIS Global 2
+# Kapsiki OpenELIS
 This is the OpenELIS rewrite onto Java Spring, and with all new technology and features. Please see our [website](http://www.openelis-global.org/) for more information. 
 
-You can find more information on how to set up OpenELIS at our [docs page](http://docs.openelis-global.org/)
+You can find more information on how to set up OpenELIS at our [docs page](https://kapsiki.atlassian.net/wiki/spaces/kapsikiplatform/pages/936509485/OpenELIS)
 
 [![Build Status](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/ci.yml/badge.svg)](https://github.com/I-TECH-UW/OpenELIS-Global-2/actions/workflows/ci.yml)
 
@@ -17,17 +17,16 @@ You can find more information on how to set up OpenELIS at our [docs page](http:
 #### Running docker containers With locally compiled Artifacts (ie the War file)
 1. Clone the Repository
 
-         git clone https://github.com/I-TECH-UW/OpenELIS-Global-2.git 
+         git clone https://github.com/kapsiki/kapsiki-openelis-global.git 
 
 2. innitialize and build sub modules
 
         git submodule update --init --recursive
-        cd OpenELIS-Global-2/dataexport
+        cd dataexport
         mvn clean install -DskipTests
 
-3.   Build the War file
+3.   Build the War file, at the root of the project
 
-            cd OpenELIS-Global-2
             mvn clean install -DskipTests
 
 4. Start the containers to mount the locally compiled artifacts
