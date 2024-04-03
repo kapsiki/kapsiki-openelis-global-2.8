@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { InlineNotification } from "@carbon/react"
 import { Subject } from "rxjs";
 import isEmpty from "lodash-es/isEmpty";
@@ -37,10 +37,9 @@ export interface NotificationDescriptor {
   
     return (
       <InlineNotification
-        actions={action}
         kind={kind || "info"}
         lowContrast={critical}
-        subtitle={description}
+        subtitle={`${description}`}
         title={title || ""}
       />
     );

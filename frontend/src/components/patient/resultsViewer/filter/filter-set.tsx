@@ -44,7 +44,7 @@ const FilterSet: React.FC<FilterSetProps> = ({ hideFilterSetHeader = false }) =>
           </div>
         ) : (
           <div className="filterTreeSearchHeader">
-            <Search size="sm" value={searchTerm} onChange={(evt) => setSearchTerm(evt.target.value)} light />
+            <Search size="sm" value={searchTerm} onChange={(evt) => setSearchTerm(evt.target.value)} labelText="Search"/>
             <Button kind="secondary" size="sm" onClick={() => {}}>
               {t('search', 'Search')}
             </Button>
@@ -80,7 +80,6 @@ const FilterNode = ({ root, level, open }: FilterNodeProps) => {
             disabled={!root.hasData}
           />
         }
-        style={{ paddingLeft: `${level > 0 ? 1 : 0}rem` }}
         open={open ?? false}
       >
         {!root?.subSets?.[0]?.obs &&

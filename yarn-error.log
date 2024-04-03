@@ -1,0 +1,36 @@
+Arguments: 
+  C:\Program Files\nodejs\node.exe C:\Users\FREDOLY\AppData\Local\node\corepack\yarn\1.22.19\bin\yarn.js add classNames
+
+PATH: 
+  C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Users\FREDOLY\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Gradle\gradle-5.0\bin;C:\Program Files\Git\cmd;C:\Program Files\Java\apache-maven-3.9.3\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Java\jdk-11\bin;C:\Program Files\Java\scripts;C:\Program Files\Java\apache-maven-3.9.5\bin;C:\Program Files\Gradle\gradle-7.3\bin;C:\Users\FREDOLY\.console-ninja\.bin;C:\Users\FREDOLY\AppData\Local\Microsoft\WindowsApps;C:\Users\FREDOLY\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\FREDOLY\AppData\Local\GitHubDesktop\bin;C:\Users\FREDOLY\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Java\jdk-11;C:\Program Files\Java\apache-maven-3.9.5\bin;;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2023.3.1\bin;
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  18.14.2
+
+Platform: 
+  win32 x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/classNames: Not found
+      at params.callback [as _callback] (C:\Users\FREDOLY\AppData\Local\node\corepack\yarn\1.22.19\lib\cli.js:66145:18)
+      at self.callback (C:\Users\FREDOLY\AppData\Local\node\corepack\yarn\1.22.19\lib\cli.js:140890:22)
+      at Request.emit (node:events:513:28)
+      at Request.<anonymous> (C:\Users\FREDOLY\AppData\Local\node\corepack\yarn\1.22.19\lib\cli.js:141862:10)
+      at Request.emit (node:events:513:28)
+      at IncomingMessage.<anonymous> (C:\Users\FREDOLY\AppData\Local\node\corepack\yarn\1.22.19\lib\cli.js:141784:12)
+      at Object.onceWrapper (node:events:627:28)
+      at IncomingMessage.emit (node:events:525:35)
+      at endReadableNT (node:internal/streams/readable:1359:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+
+npm manifest: 
+  No manifest
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

@@ -15,10 +15,11 @@ import {
   Grid,
   Column,
   Section,
-  Heading
+  Heading,
+  Modal
 } from "@carbon/react";
 import AutoComplete from "../../common/AutoComplete.js";
-import { Add, Subtract, Save } from "@carbon/react/icons";
+import { Add, Subtract, Save, TrashCan } from "@carbon/react/icons";
 import { FormattedMessage } from "react-intl";
 import {
   CalculatedValueFormValues,
@@ -620,9 +621,9 @@ const CalculatedValue: React.FC<CalculatedValueProps> = () => {
                         toggled={calculation.toggled}
                         aria-label="toggle button"
                         id={index + "_toggle"}
-                        labelText={
-                          <FormattedMessage id="rulebuilder.label.toggleRule" />
-                        }
+                        labelText={`
+                          ${<FormattedMessage id="rulebuilder.label.toggleRule" />}
+                        `}
                         onToggle={(e) => toggleCalculation(e, index)}
                       />
                     </div>
@@ -750,15 +751,16 @@ const CalculatedValue: React.FC<CalculatedValueProps> = () => {
                               <div className="second-row">
                                 {operation.type !== "" && (
                                   <IconButton
-                                    renderIcon={Subtract}
                                     id={index + "_removeoperation"}
-                                    kind="danger"
+                                    kind="primary"
                                     label=""
                                     size="sm"
                                     onClick={() =>
                                       removeOperation(index, operation_index)
                                     }
-                                  />
+                                    >
+                                    <Subtract />
+                                  </IconButton>
                                 )}
                               </div>
                               <div>
@@ -895,7 +897,9 @@ const CalculatedValue: React.FC<CalculatedValueProps> = () => {
             {calculationList.length - 1 === index && (
               <IconButton
                 onClick={handleRuleAdd}
-                label={<FormattedMessage id="rulebuilder.label.addRule" />}
+                label={`
+                ${<FormattedMessage id="rulebuilder.label.addRule" />}
+              `}
                 size="md"
                 kind="tertiary"
               >
@@ -909,23 +913,24 @@ const CalculatedValue: React.FC<CalculatedValueProps> = () => {
           <div className="second-division">
             {calculationList.length !== 1 && (
               <ModalWrapper
-                modalLabel={
-                  <FormattedMessage id="label.button.confirmDelete" />
-                }
+                modalLabel={`
+                  ${<FormattedMessage id="label.button.confirmDelete" />}
+                `}
                 handleSubmit={() => handleRuleRemove(index, calculation.id)}
-                primaryButtonText={
-                  <FormattedMessage id="label.button.confirm" />
-                }
-                secondaryButtonText={
-                  <FormattedMessage id="label.button.cancel" />
-                }
-                modalHeading={
-                  <FormattedMessage id="rulebuilder.label.confirmDelete" />
-                }
-                buttonTriggerText={
-                  <FormattedMessage id="rulebuilder.label.removeRule" />
-                }
-                size="md"
+                primaryButtonText={`
+                ${<FormattedMessage id="label.button.confirm" />}
+              `}
+                secondaryButtonText={`
+                ${<FormattedMessage id="label.button.cancel" />}
+              `}
+                modalHeading={`
+                ${<FormattedMessage id="rulebuilder.label.confirmDelete" />}
+              `}
+                buttonTriggerText={`
+                ${<FormattedMessage id="rulebuilder.label.removeRule" />}
+              `}
+              renderTriggerButtonIcon={TrashCan}
+              triggerButtonKind="danger"
               ></ModalWrapper>
             )}
           </div>

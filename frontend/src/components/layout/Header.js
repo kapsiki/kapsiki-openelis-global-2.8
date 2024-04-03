@@ -66,7 +66,7 @@ function OEHeader(props) {
   }, []);
 
   const panelSwitchLabel = () => {
-    return userSessionDetails.authenticated ? "User" : "Lang";
+    return userSessionDetails.authenticated ? "User" : "Language";
   };
 
   const clickPanelSwitch = () => {
@@ -76,12 +76,12 @@ function OEHeader(props) {
   const panelSwitchIcon = () => {
     return userSessionDetails.authenticated ? (
       switchCollapsed ? (
-        <UserAvatarFilledAlt size={20} />
+        <UserAvatarFilledAlt size={30} />
       ) : (
         <Close size={20} />
       )
     ) : switchCollapsed ? (
-      <Language size={20} />
+      <Language size={30} className="outer-icon-fill" />
     ) : (
       <Close size={20} />
     );
@@ -92,8 +92,8 @@ function OEHeader(props) {
       <>
         <picture>
           <img
-            className="logo"
-            src={`../images/openelis_logo.png`}
+            className="header-logo"
+            src={`../images/kapsiki-lab-logo.svg`}
             alt="logo"
           />
         </picture>
@@ -119,6 +119,7 @@ function OEHeader(props) {
                 )}
                 <HeaderName href="/" prefix="">
                   <span id="header-logo">{logo()}</span>
+                  {/*
                   <div className="banner">
                     <h5>{configurationProperties?.BANNER_TEXT}</h5>
                     <p>
@@ -126,6 +127,7 @@ function OEHeader(props) {
                       {configurationProperties?.releaseNumber}
                     </p>
                   </div>
+                */}
                 </HeaderName>
                 {userSessionDetails.authenticated && true && (
                   <>
@@ -199,15 +201,8 @@ function OEHeader(props) {
                         value={props.intl.locale}
                       >
                         <SelectItem text="English" value="en" />
-                        <SelectItem text="French" value="fr" />
+                        <SelectItem text="Français" value="fr" />
                       </Select>
-                    </li>
-                    <li className="userDetails">
-                      <label className="cds--label">
-                        {" "}
-                        <FormattedMessage id="header.label.version" />:{" "}
-                        {configurationProperties?.releaseNumber}
-                      </label>
                     </li>
                   </ul>
                 </HeaderPanel>

@@ -24,7 +24,6 @@ module.exports = {
     "react-hooks/exhaustive-deps": "off",
     "no-unused-vars": "warn",
     "@typescript-eslint/no-empty-function": "warn",
-    "prettier/prettier": ["warn"],
   },
   overrides: [
     {

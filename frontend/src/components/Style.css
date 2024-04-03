@@ -1,5 +1,41 @@
-.logo {
-  height: 40px;
+/*
+kAPSIKI Styles
+*/
+.cds--header-panel--expanded {
+  border-inline-end: none!important;
+  border-inline-start: none!important;
+  background-color: #e0e0e0!important;
+}
+
+.selectLocale > .cds--select > .cds--label {
+  color: gray!important;
+}
+
+.cds--select-input[name="selectLocale"],  .cds--select-input[name="selectLocale"] > .cds--select-option{
+  background-color: #f4f4f4!important;
+  color: gray!important;
+}
+
+.mainHeader {
+  border-block-end: 1px solid #517EC3 !important;
+  background-color: #f5f6f8!important;
+}
+
+.cds--header__action:hover {
+  background-color: #e0e0e0!important;
+}
+
+svg {
+  fill: gray !important;
+}
+
+/*
+kAPSIKI Styles
+*/
+
+.header-logo {
+  margin: 1rem 0 0.5rem 0;
+  height: 1.4rem;
   width: auto;
 }
 
@@ -48,11 +84,10 @@ li.clickableUserDetails:hover  {
 }
 
 .inputText {
-  --cds-text-primary: black;
-  width: 100%;
-  --cds-text-secondary: black;
+  height: 3rem;
+  border-radius: 5px;
+  background-color: #e0e0e0;
 }
-
 
 .inputSearch {
   --cds-text-primary: black;

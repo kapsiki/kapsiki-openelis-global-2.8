@@ -1,6 +1,6 @@
 {
     "language.select.label": "English",
-    "label.button.submit": "Submit",
+    "label.button.submit": "Login",
     "label.button.changepassword" : "Change Password",
     "label.button.save": "Save",
     "label.button.search" : "Search",
@@ -134,7 +134,7 @@
     "cytology.label.otherResult" : " Other Diagnosis Result" ,
     "cytology.label.review" : "Awaiting Cytopathologist Review" ,
     "cytology.label.confirmSelect" : "If you select this option, all current diagnosis information  will be removed" ,
-    "header.label.version" :"Version:",
+    "header.label.version" :"Version",
     "header.label.logout" :"Logout" ,
     "header.label.selectlocale" : "Select Locale" ,
     "sidenav.label.order" : "Order",

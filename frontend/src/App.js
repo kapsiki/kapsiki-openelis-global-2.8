@@ -4,7 +4,7 @@ import { confirmAlert } from "react-confirm-alert";
 import { IntlProvider } from "react-intl";
 import Layout from "./components/layout/Layout";
 import Home from "./components/Home";
-import Login from "./components/Login";
+import Login from "./components/login/Login";
 import { Admin } from "./components";
 import ResultSearch from "./components/resultPage/ResultSearch";
 import UserSessionDetailsContext from "./UserSessionDetailsContext";

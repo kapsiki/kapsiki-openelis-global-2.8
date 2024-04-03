@@ -57,7 +57,7 @@ const CommonDataTable: React.FC<CommonDataTableProps> = ({ title, data, descript
             <TableHead>
               <TableRow>
                 {headers.map((header) => (
-                  <TableHeader key={header.key} {...getHeaderProps({ header })} isSortable>
+                  <TableHeader key={header.key} isSortable>
                     {header.header}
                   </TableHeader>
                 ))}
