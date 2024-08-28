@@ -15,6 +15,7 @@ ADD ./pom.xml /build/pom.xml
 ADD ./tools /build/tools
 ADD ./src /build/src
 ADD ./install /build/install
+COPY ./install /build/install
 ADD ./dev /build/dev
 
 WORKDIR /build
