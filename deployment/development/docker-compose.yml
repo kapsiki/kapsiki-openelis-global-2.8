@@ -69,10 +69,10 @@ services:
             
     fhir.openelis.org:
         container_name: external-fhir-api
-        build: 
-            context: ../../fhir
-            dockerfile: ./Dockerfile
-        #image: hapiproject/hapi:v6.6.0-tomcat
+        # build: 
+        #     context: ../../fhir
+        #     dockerfile: ./Dockerfile
+        image: hapiproject/hapi:v6.6.0-tomcat
         depends_on:
             - database
             - certs
@@ -102,10 +102,10 @@ services:
 
          
     frontend.openelis.org:
-        build: 
-            context: ../../frontend
-            dockerfile: ./Dockerfile
-        #image: itechuw/openelis-global-2-frontend:2.8
+        # build: 
+        #     context: ../../frontend
+        #     dockerfile: ./Dockerfile
+        image: itechuw/openelis-global-2-frontend:2.8
         container_name: openelisglobal-front-end
         networks:
         - default
