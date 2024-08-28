@@ -146,10 +146,3 @@ This repository contains a Docker Compose setup for deploying the OpenELIS Globa
 
 Contributions are welcome! Please fork the repository and create a pull request for any changes.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
---- 
-
-This README provides a detailed overview of the Docker Compose setup, including instructions for starting the services.
