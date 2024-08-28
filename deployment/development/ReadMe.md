@@ -1,155 +1,143 @@
 
 ---
 
-# OpenELIS Global Deployment with Docker Compose(dev)
+# OpenELIS Global Docker Compose Setup
 
-This repository contains a Docker Compose setup for deploying the OpenELIS Global application along with its supporting services. The services include a PostgreSQL database, a web application server, an Nginx proxy, and an external FHIR API server. This setup is intended for environments running on Docker Compose version `3.3`.
+This repository contains the Docker Compose configuration for deploying the OpenELIS Global system. It includes services for certificate generation, the PostgreSQL database, the OpenELIS Global web application, an external FHIR API, the frontend, and an NGINX proxy.
 
-## Table of Contents
+## Prerequisites
 
-- [Services](#services)
-  - [Certs](#certs)
-  - [Database](#database)
-  - [Web Application (OpenELIS Global)](#oeopenelisorg)
-  - [FHIR API](#fhiropenelisorg)
-  - [Frontend](#frontendopenelisorg)
-  - [Proxy](#proxy)
-- [Secrets](#secrets)
-- [Networks](#networks)
-- [Volumes](#volumes)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [License](#license)
+- Docker (version 19.03 or higher)
+- Docker Compose (version 1.27 or higher)
 
-## Services
+## Services Overview
 
-### Certs
-- **Container Name:** `oe-certs`
-- **Image:** `itechuw/certgen:main`
-- **Environment Variables:**
-  - `KEYSTORE_PW`: `"kspass"`
-  - `TRUSTSTORE_PW`: `"tspass"`
-- **Volumes:**
-  - `key_trust-store-volume:/etc/openelis-global`
-  - `keys-vol:/etc/ssl/private/`
-  - `certs-vol:/etc/ssl/certs/`
-- **Networks:** `default`
+### 1. **certs**
+   - **Image:** `itechuw/certgen:main`
+   - **Purpose:** Generates and manages SSL certificates.
+   - **Environment Variables:**
+     - `KEYSTORE_PW`: Password for the keystore.
+     - `TRUSTSTORE_PW`: Password for the truststore.
+   - **Volumes:**
+     - `key_trust-store-volume`: Stores keystore and truststore files.
+     - `keys-vol`: Stores private keys.
+     - `certs-vol`: Stores certificate files.
+   - **Networks:** Connected to the default network.
 
-### Database
-- **Container Name:** `openelisglobal-database`
-- **Image:** `postgres:14.4`
-- **Ports:** `15432:5432`
-- **Environment File:** `../../volume/database/database.env`
-- **Volumes:**
-  - `db-data:/var/lib/postgresql/data`
-  - `../../volume/database/dbInit:/docker-entrypoint-initdb.d`
-- **Networks:** `default`
-- **Healthcheck:**
-  - `test: ["CMD", "pg_isready", "-q", "-d", "clinlims", "-U", "clinlims"]`
-  - `timeout: 45s`
-  - `interval: 10s`
-  - `retries: 10`
+### 2. **database**
+   - **Image:** `postgres:14.4`
+   - **Purpose:** Hosts the PostgreSQL database for OpenELIS Global.
+   - **Ports:** Exposes port `15432` for PostgreSQL.
+   - **Environment File:** Uses environment variables from `../../volume/database/database.env`.
+   - **Volumes:**
+     - `db-data`: Persists PostgreSQL data between container restarts.
+     - `dbInit`: Runs initialization scripts on container start.
+   - **Healthcheck:** Ensures the database is ready before starting dependent services.
+   - **Networks:** Connected to the default network.
 
-### Web Application (oe.openelis.org)
-- **Container Name:** `openelisglobal-webapp`
-- **Image:** `itechuw/openelis-global-2:2.8`
-- **Depends On:** `database`, `certs`
-- **Ports:**
-  - `8080:8080`
-  - `8443:8443`
-- **Environment Variables:**
-  - `DEFAULT_PW=adminADMIN!`
-  - `TZ=Africa/Nairobi`
-  - `CATALINA_OPTS= -Ddatasource.url=jdbc:postgresql://database:5432/clinlims -Ddatasource.username=clinlims`
-- **Volumes:**
-  - `key_trust-store-volume:/etc/openelis-global`
-  - `../../volume/plugins/:/var/lib/openelis-global/plugins`
-  - `../../volume/tomcat/oe_server.xml:/usr/local/tomcat/conf/server.xml`
-- **Secrets:** 
-  - `datasource.password`
-  - `common.properties`
-- **Networks:** `default`
+### 3. **oe.openelis.org**
+   - **Image:** `itechuw/openelis-global-2:2.8`
+   - **Purpose:** Hosts the OpenELIS Global web application.
+   - **Ports:** Exposes ports `8080` for HTTP and `8443` for HTTPS.
+   - **Environment Variables:**
+     - `DEFAULT_PW`: Default admin password.
+     - `TZ`: Time zone setting.
+     - `CATALINA_OPTS`: JVM options, including database connection details.
+   - **Volumes:**
+     - `key_trust-store-volume`: Stores keystore and truststore files.
+     - `plugins`: Directory for OpenELIS plugins.
+     - `oe_server.xml`: Tomcat server configuration.
+     - `OpenELIS-Global.war`: The compiled OpenELIS WAR file.
+   - **Secrets:** 
+     - `datasource.password`: Database password.
+     - `common.properties`: Common configuration properties.
+   - **Networks:** Connected to the default network with a specific IPv4 address.
 
-### FHIR API (fhir.openelis.org)
-- **Container Name:** `external-fhir-api`
-- **Build Context:** `../../fhir`
-- **Dockerfile:** `./Dockerfile`
-- **Depends On:** `database`, `certs`
-- **Ports:**
-  - `8081:8080`
-  - `8444:8443`
-- **Environment Variables:**
-  - `SPRING_CONFIG_LOCATION: file:///run/secrets/hapi_application.yaml`
-  - `TZ: Africa/Nairobi`
-  - `JAVA_OPTS: "-Djavax.net.ssl.trustStore=/etc/openelis-global/truststore 
-                      -Djavax.net.ssl.trustStorePassword=tspass
-                      -Djavax.net.ssl.trustStoreType=pkcs12 
-                      -Djavax.net.ssl.keyStore=/etc/openelis-global/keystore 
-                      -Djavax.net.ssl.keyStorePassword=kspass 
-                      -Djavax.net.ssl.keyStoreType=pkcs12"`
-- **Volumes:**
-  - `key_trust-store-volume:/etc/openelis-global`
-  - `../../volume/tomcat/hapi_server.xml:/opt/bitnami/tomcat/conf/server.xml`
-- **Secrets:** 
-  - `hapi_application.yaml`
-- **Networks:** `default`
+### 4. **fhir.openelis.org**
+   - **Image:** `hapiproject/hapi:v6.6.0-tomcat`
+   - **Purpose:** Hosts the external FHIR API for OpenELIS Global.
+   - **Ports:** Exposes ports `8081` for HTTP and `8444` for HTTPS.
+   - **Environment Variables:**
+     - `SPRING_CONFIG_LOCATION`: Location of the Spring configuration.
+     - `JAVA_OPTS`: JVM options, including SSL configurations.
+   - **Volumes:**
+     - `key_trust-store-volume`: Stores keystore and truststore files.
+     - `hapi_server.xml`: Tomcat server configuration.
+   - **Secrets:** 
+     - `hapi_application.yaml`: Spring configuration for HAPI FHIR.
+   - **Networks:** Connected to the default network.
 
-### Frontend (frontend.openelis.org)
-- **Build Context:** `../../frontend`
-- **Dockerfile:** `./Dockerfile`
-- **Container Name:** `openelisglobal-front-end`
-- **Environment Variables:**
-  - `CHOKIDAR_USEPOLLING=true`
-- **Networks:** `default`
-- **TTY:** `true`
+### 5. **frontend.openelis.org**
+   - **Image:** `itechuw/openelis-global-2-frontend-dev:2.8`
+   - **Purpose:** Hosts the frontend of the OpenELIS Global application.
+   - **Volumes:**
+     - `src`: Maps the local source code directory for live development.
+     - `public`: Maps the local public directory.
+   - **Environment Variables:**
+     - `CHOKIDAR_USEPOLLING`: Enables polling for file changes in development.
+   - **Networks:** Connected to the default network.
 
-### Proxy
-- **Container Name:** `openelisglobal-proxy`
-- **Image:** `nginx:1.15-alpine`
-- **Ports:**
-  - `80:80`
-  - `443:443`
-- **Volumes:**
-  - `certs-vol:/etc/nginx/certs/`
-  - `keys-vol:/etc/nginx/keys/`
-  - `../../volume/nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro`
-- **Depends On:** `certs`
-- **Networks:** `default`
-- **Restart Policy:** `unless-stopped`
+### 6. **proxy**
+   - **Image:** `nginx:1.15-alpine`
+   - **Purpose:** Acts as a reverse proxy, managing traffic to the OpenELIS Global web application and FHIR API.
+   - **Ports:** Exposes ports `80` for HTTP and `443` for HTTPS.
+   - **Volumes:**
+     - `certs-vol`: Stores SSL certificates for NGINX.
+     - `keys-vol`: Stores SSL keys for NGINX.
+     - `nginx.conf`: NGINX configuration file.
+   - **Networks:** Connected to the default network.
 
-## Secrets
-- **datasource.password:** `../../volume/properties/datasource.password`
-- **common.properties:** `../../volume/properties/common.properties`
-- **hapi_application.yaml:** `../../volume/properties/hapi_application.yaml`
+## Network Configuration
 
-## Networks
-- **default:**
-  - **Driver:** `bridge`
-  - **IPAM Config:** 
-    - `Subnet: 172.20.1.0/24`
+The default Docker network is configured with the following settings:
 
-## Volumes
-- **db-data**
-- **key_trust-store-volume**
-- **certs-vol**
-- **keys-vol**
+- **Driver:** `bridge`
+- **Subnet:** `172.21.1.0/26`
 
-## Getting Started
+## Volume Definitions
 
-1. Clone this repository to your local machine.
-2. Navigate to the directory containing the `docker-compose.yml` file fot the dev ,  that is  `deployment/dev`.
-3. Make sure all required secrets are placed in the `../../volume/properties/` directory.
-4. Run `docker-compose up -d` to start all services.
-5. Access the application via your browser at `http://localhost` or `https://localhost`.
+- **db-data:** Persists PostgreSQL data.
+- **key_trust-store-volume:** Stores keystore and truststore files for secure communication.
+- **certs-vol:** Stores SSL certificates.
+- **keys-vol:** Stores SSL keys.
 
-## Contributing
+## Secrets Management
 
-Contributions are welcome! Please fork the repository and create a pull request for any changes.
+Secrets are used to manage sensitive information securely. The following secrets are defined:
 
-## License
+- **datasource.password:** Password for the PostgreSQL database.
+- **common.properties:** Common properties for the application.
+- **hapi_application.yaml:** Configuration for the HAPI FHIR API.
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## Deployment
 
---- 
+### Steps to Deploy
 
-This README provides a detailed overview of the Docker Compose setup, including instructions for starting the services.
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd /KAPSIKI-OPENELIS-GLOBAL/deployment/development
+   ```
+
+2. **Start the services:**
+   ```bash
+   docker-compose -f dev.docker-compose.yml up -d
+   ```
+
+3. **Check the status of services:**
+   ```bash
+   docker-compose ps
+   ```
+
+4. **Access the applications:**
+   - OpenELIS Global Web App: `http://localhost`
+   - FHIR API: `http://localhost:8081`
+
+### Stopping the Services
+
+To stop all running containers:
+
+```bash
+docker-compose down
+```
+

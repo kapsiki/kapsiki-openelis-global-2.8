@@ -37,10 +37,7 @@ services:
             
     oe.openelis.org:
         container_name: openelisglobal-webapp 
-        image: itechuw/openelis-global-2:2.8  
-        # build: 
-        #     context: ../../
-        #     dockerfile: ./Dockerfile 
+        image: itechuw/openelis-global-2:2.8    
         depends_on:
             - database
             - certs
@@ -61,17 +58,13 @@ services:
             -  key_trust-store-volume:/etc/openelis-global
             - ../../volume/plugins/:/var/lib/openelis-global/plugins
             - ../../volume/tomcat/oe_server.xml:/usr/local/tomcat/conf/server.xml
-            #Runing OpenELIS with the locally compiled war file
-            #- ./target/OpenELIS-Global.war:/usr/local/tomcat/webapps/OpenELIS-Global.war
+            - ../../target/OpenELIS-Global.war:/usr/local/tomcat/webapps/OpenELIS-Global.war
         secrets:
             - source: datasource.password
             - source: common.properties
             
     fhir.openelis.org:
         container_name: external-fhir-api
-        # build: 
-        #     context: ../../fhir
-        #     dockerfile: ./Dockerfile
         image: hapiproject/hapi:v6.6.0-tomcat
         depends_on:
             - database
@@ -99,18 +92,17 @@ services:
         secrets:
              - source: hapi_application.yaml 
 
-
          
     frontend.openelis.org:
-        # build: 
-        #     context: ../../frontend
-        #     dockerfile: ./Dockerfile
-        image: itechuw/openelis-global-2-frontend:2.8
+        image: itechuw/openelis-global-2-frontend-dev:2.8
         container_name: openelisglobal-front-end
         networks:
-        - default
+            - default
+        volumes:
+            - '../../frontend/src:/app/src'
+            - '../../frontend/public:/app/public'
         environment:
-        - CHOKIDAR_USEPOLLING=true
+            - CHOKIDAR_USEPOLLING=true
         tty: true
 
     proxy:
@@ -122,7 +114,7 @@ services:
         volumes:
             - certs-vol:/etc/nginx/certs/
             - keys-vol:/etc/nginx/keys/
-            - ../../volume/nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+            - ../../volume/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
         networks:
             - default
         restart: unless-stopped
@@ -142,7 +134,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.1.0/24  
+        - subnet: 172.21.1.0/26  
         
 volumes:
   db-data:
