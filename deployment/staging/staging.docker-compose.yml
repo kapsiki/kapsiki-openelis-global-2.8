@@ -134,7 +134,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.21.1.0/26  
+        - subnet: 172.22.1.0/28  
         
 volumes:
   db-data:
