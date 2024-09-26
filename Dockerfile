@@ -35,12 +35,11 @@ RUN ./install/createDefaultPassword.sh -c -p ${DEFAULT_PW}
 #
 WORKDIR /build/dataexport
 
-RUN mvn clean install -DskipTests -e
+RUN mvn clean install -DskipTests -e -X
 
 WORKDIR /build
 
-RUN	mvn clean install -DskipTests -e
-
+RUN	mvn clean install -DskipTests -e -X
 ##
 # Run Stage
 #
