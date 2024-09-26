@@ -37,9 +37,9 @@ WORKDIR /build/dataexport
 
 RUN mvn clean install -DskipTests 
 
-#WORKDIR /build
+WORKDIR /build
 
-#RUN	mvn clean install -DskipTests 
+RUN	mvn clean install -DskipTests 
 ##
 # Run Stage
 #
