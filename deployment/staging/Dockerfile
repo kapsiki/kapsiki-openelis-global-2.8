@@ -1,10 +1,14 @@
-##
 # Build Stage
 #
 FROM maven:3-jdk-11 as build
 
 RUN apt-get -y update
 RUN apt-get -y install git apache2-utils
+
+# Configuration Git pour éviter les erreurs de réseau
+RUN git config --global http.postBuffer 524288000
+RUN git config --global http.lowSpeedLimit 0
+RUN git config --global http.lowSpeedTime 999999
 
 ##
 # Copy Source Code
@@ -15,15 +19,18 @@ ADD ./pom.xml /build/pom.xml
 ADD ./tools /build/tools
 ADD ./src /build/src
 ADD ./install /build/install
-COPY ./install /build/install
 ADD ./dev /build/dev
 
 WORKDIR /build
-
+COPY . .
 ##
 # Checkout Dependencies
 #
-RUN git submodule update --init --recursive
+#
+#RUN git submodule set-url --git-dir=.gitmodules git@github.com:openelisglobal/openelisglobal-plugins.git
+
+# Cloner les sous-modules
+#RUN git submodule update --init --recursive
 
 ARG DEFAULT_PW="adminADMIN!"
 
@@ -35,7 +42,11 @@ RUN ./install/createDefaultPassword.sh -c -p ${DEFAULT_PW}
 #
 WORKDIR /build/dataexport
 
-RUN mvn clean install -DskipTests -U
+RUN mvn clean install -DskipTests
+
+WORKDIR /build
+
+RUN  mvn clean install -DskipTests
 
 ##
 # Run Stage
@@ -97,5 +108,3 @@ RUN chown tomcat_admin:tomcat /docker-entrypoint.sh; \
 USER tomcat_admin
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
-
-
