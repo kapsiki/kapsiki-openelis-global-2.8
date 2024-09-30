@@ -23,7 +23,7 @@ WORKDIR /build
 # Checkout Dependencies
 #
 RUN git submodule update --init --recursive
-run git submodule update --remote --merge
+RUN git submodule update --remote --merge
 ARG DEFAULT_PW="adminADMIN!"
 
 # OE Default Password
