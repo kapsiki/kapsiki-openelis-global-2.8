@@ -35,7 +35,7 @@ services:
             interval: 10s
             retries: 10 
             
-    oe_openelis_org:
+    oe.openelis.org:
         container_name: openelisglobal-webapp 
         image: itechuw/openelis-global-2:2.8    
         depends_on:
