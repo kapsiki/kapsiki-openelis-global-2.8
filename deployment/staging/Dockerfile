@@ -1,15 +1,14 @@
+##
 # Build Stage
+#
 FROM maven:3-jdk-11 as build
 
 RUN apt-get -y update
 RUN apt-get -y install git apache2-utils
 
-# Configuration Git
-RUN git config --global http.postBuffer 524288000
-RUN git config --global http.lowSpeedLimit 0
-RUN git config --global http.lowSpeedTime 999999
-
+##
 # Copy Source Code
+#
 ADD .git /build/.git
 ADD .gitmodules /build/.gitmodules
 ADD ./pom.xml /build/pom.xml
@@ -19,32 +18,60 @@ ADD ./install /build/install
 ADD ./dev /build/dev
 
 WORKDIR /build
-COPY . .
 
+##
+# Checkout Dependencies
+#
+RUN git submodule update --init --recursive
+run git submodule update --remote --merge
 ARG DEFAULT_PW="adminADMIN!"
+
+# OE Default Password
 RUN ./install/createDefaultPassword.sh -c -p ${DEFAULT_PW}
 
+##
+# Build DataExport
+#
 WORKDIR /build/dataexport
+
 RUN mvn clean install -DskipTests
 
 WORKDIR /build
-RUN mvn clean install -DskipTests
 
+RUN  mvn clean install -DskipTests
+
+##
 # Run Stage
+#
 FROM tomcat:8.5-jdk11
 
 ADD install/createDefaultPassword.sh ./
-RUN rm -rf /usr/local/tomcat/webapps/* /usr/local/tomcat/conf/Catalina/localhost/manager.xml
+
+
+#Clean out unneccessary files from tomcat (especially pre-existing applications) 
+RUN rm -rf /usr/local/tomcat/webapps/* \ 
+    /usr/local/tomcat/conf/Catalina/localhost/manager.xml
+    
+#Deploy the war into tomcat image and point root to it
 ADD install/tomcat-resources/ROOT.war /usr/local/tomcat/webapps/ROOT.war
 COPY --from=build /build/target/OpenELIS-Global.war /usr/local/tomcat/webapps/OpenELIS-Global.war
-
+    
+#rewrite cataline.properties with our catalina.properties so it contains:
+#    org.apache.catalina.STRICT_SERVLET_COMPLIANCE=true
+#    org.apache.catalina.connector.RECYCLE_FACADES=true
+#    org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH=false
+#    org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH=false
+#    org.apache.coyote.USE_CUSTOM_STATUS_MSG_IN_HEADER=false
 ADD install/tomcat-resources/catalina.properties /usr/local/tomcat/conf/catalina.properties
 ADD install/tomcat-resources/logging.properties /usr/local/tomcat/conf/logging.properties
 #COPY ./src/main/resources/log4j2.properties /usr/local/tomcat/webapps/OpenELIS-Global/WEB-INF/classes/log4j2.xml
 
+#replace ServerInfo.properties with a less informative one
 RUN mkdir -p /usr/local/tomcat/lib/org/apache/catalina/util
 ADD install/tomcat-resources/ServerInfo.properties /usr/local/tomcat/lib/org/apache/catalina/util/ServerInfo.properties 
 
+#restrict files
+#GID AND UID must be kept the same as setupTomcat.sh (if using default certificate group)
 RUN groupadd tomcat; \
     groupadd tomcat-ssl-cert -g 8443; \ 
     useradd -M -s /bin/bash -u 8443 tomcat_admin; \
@@ -74,3 +101,4 @@ RUN chown tomcat_admin:tomcat /docker-entrypoint.sh; \
 USER tomcat_admin
 
 ENTRYPOINT [ "/docker-entrypoint.sh" ]
+
