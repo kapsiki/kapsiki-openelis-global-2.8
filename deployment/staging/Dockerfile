@@ -64,7 +64,7 @@ COPY --from=build /build/target/OpenELIS-Global.war /usr/local/tomcat/webapps/Op
 #    org.apache.coyote.USE_CUSTOM_STATUS_MSG_IN_HEADER=false
 ADD install/tomcat-resources/catalina.properties /usr/local/tomcat/conf/catalina.properties
 ADD install/tomcat-resources/logging.properties /usr/local/tomcat/conf/logging.properties
-#COPY ./src/main/resources/log4j2.properties /usr/local/tomcat/webapps/OpenELIS-Global/WEB-INF/classes/log4j2.xml
+COPY ./src/main/resources/log4j2.properties /usr/local/tomcat/webapps/OpenELIS-Global/WEB-INF/classes/log4j2.xml
 
 #replace ServerInfo.properties with a less informative one
 RUN mkdir -p /usr/local/tomcat/lib/org/apache/catalina/util
