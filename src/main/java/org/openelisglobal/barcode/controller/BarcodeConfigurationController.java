@@ -1,10 +1,8 @@
 package org.openelisglobal.barcode.controller;
 
 import java.lang.reflect.InvocationTargetException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.barcode.form.BarcodeConfigurationForm;
 import org.openelisglobal.barcode.service.BarcodeInformationService;
@@ -28,9 +26,9 @@ public class BarcodeConfigurationController extends BaseController {
 
     private static final String[] ALLOWED_FIELDS = new String[] { "heightOrderLabels", "heightSpecimenLabels",
             "heightBlockLabels", "heightSlideLabels", "widthOrderLabels", "widthSpecimenLabels", "widthBlockLabels",
-            "widthSlideLabels", "collectionDateCheck", "collectedByCheck", "testsCheck",
-            "patientSexCheck", "numMaxOrderLabels", "numMaxSpecimenLabels", "numDefaultOrderLabels",
-            "numDefaultSpecimenLabels", "prePrintDontUseAltAccession", "prePrintAltAccessionPrefix" };
+            "widthSlideLabels", "collectionDateCheck", "collectedByCheck", "testsCheck", "patientSexCheck",
+            "numMaxOrderLabels", "numMaxSpecimenLabels", "numDefaultOrderLabels", "numDefaultSpecimenLabels",
+            "prePrintDontUseAltAccession", "prePrintAltAccessionPrefix" };
 
     @Autowired
     private BarcodeInformationService barcodeInformationService;
@@ -155,7 +153,7 @@ public class BarcodeConfigurationController extends BaseController {
         } catch (LIMSRuntimeException e) {
             result.reject("barcode.config.error.insert");
         } finally {
-            ConfigurationProperties.forceReload();
+            ConfigurationProperties.loadDBValuesIntoConfiguration();
         }
 
         if (result.hasErrors()) {

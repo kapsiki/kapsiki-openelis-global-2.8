@@ -1,19 +1,17 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
- * Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.common.externalLinks;
 
@@ -29,7 +27,6 @@ import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.apache.http.HttpStatus;
@@ -42,7 +39,6 @@ import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.params.CoreConnectionPNames;
 import org.dom4j.DocumentException;
@@ -93,7 +89,7 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
     protected int returnStatus = HttpStatus.SC_CREATED;
 
     @Override
-    synchronized public void setConnectionCredentials(String connectionString, String name, String password) {
+    public synchronized void setConnectionCredentials(String connectionString, String name, String password) {
         if (finished) {
             throw new IllegalStateException("ServiceCredentials set after ExternalPatientSearch thread was started");
         }
@@ -104,7 +100,7 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
     }
 
     @Override
-    synchronized public void setSearchCriteria(String lastName, String firstName, String STNumber, String subjectNumber,
+    public synchronized void setSearchCriteria(String lastName, String firstName, String STNumber, String subjectNumber,
             String nationalID, String guid) throws IllegalStateException {
 
         if (finished) {
@@ -120,7 +116,7 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
     }
 
     @Override
-    synchronized public List<ExtendedPatientSearchResults> getSearchResults() {
+    public synchronized List<ExtendedPatientSearchResults> getSearchResults() {
 
         if (!finished) {
             throw new IllegalStateException("Results requested before ExternalPatientSearch thread was finished");
@@ -202,17 +198,20 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
         } catch (SocketTimeoutException e) {
             errors.add("Response from patient information server took too long.");
             LogEvent.logError(e);
-            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "Tinny time out"
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "Tinny
+            // time out"
             // + e);
         } catch (ConnectException e) {
             errors.add("Unable to connect to patient information form service. Service may not be running");
             LogEvent.logError(e);
-            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "you no talks? "
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "you no
+            // talks? "
             // + e);
         } catch (IOException e) {
             errors.add("IO error trying to read input stream.");
             LogEvent.logError(e);
-            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "all else failed
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "all else
+            // failed
             // " + e);
         } catch (KeyManagementException e) {
             errors.add("Key management error trying to connect to external search service.");
@@ -284,7 +283,6 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
                     + returnStatus);
         }
         }
-
     }
 
     private void setTimeout(HttpClient httpclient) {
@@ -321,5 +319,4 @@ public class ExternalPatientSearch implements IExternalPatientSearch {
     public int getTimeout() {
         return timeout;
     }
-
 }

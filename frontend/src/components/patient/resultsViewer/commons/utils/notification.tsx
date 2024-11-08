@@ -7,23 +7,23 @@ const inlineNotificationsSubject = new Subject<InlineNotificationMeta>();
 let notificationId = 0;
 
 export interface InlineNotificationMeta extends NotificationDescriptor {
-    id: number;
-  }
+  id: number;
+}
 
 export interface NotificationProps {
-    notification: InlineNotificationMeta;
-  }
+  notification: InlineNotificationMeta;
+}
 
 export interface NotificationDescriptor {
-    description: React.ReactNode;
-    action?: React.ReactNode;
-    kind?: InlineNotificationType;
-    critical?: boolean;
-    millis?: number;
-    title?: string;
-  }
+  description: React.ReactNode;
+  action?: React.ReactNode;
+  kind?: InlineNotificationType;
+  critical?: boolean;
+  millis?: number;
+  title?: string;
+}
 
-  export type InlineNotificationType =
+export type InlineNotificationType =
   | "error"
   | "info"
   | "info-square"
@@ -31,6 +31,8 @@ export interface NotificationDescriptor {
   | "warning"
   | "warning-alt";
 
+export const Notification: React.FC<NotificationProps> = ({ notification }) => {
+  const { description, action, kind, critical, title } = notification;
 
   export const Notification: React.FC<NotificationProps> = ({ notification }) => {
     const { description, action, kind, critical, title } = notification;
@@ -45,7 +47,7 @@ export interface NotificationDescriptor {
     );
   };
 
-  /**
+/**
  * Displays an inline notification in the UI.
  * @param notification The description of the notification to display.
  */
@@ -60,7 +62,7 @@ export function showNotification(notification: NotificationDescriptor) {
     }, 0);
   } else {
     console.error(
-      `showNotification must be called with an object having a 'description' property that is a non-empty string or object`
+      `showNotification must be called with an object having a 'description' property that is a non-empty string or object`,
     );
   }
 }
@@ -69,6 +71,6 @@ function isNotEmpty(description: React.ReactNode) {
   return typeof description === "string"
     ? description.trim().length > 0
     : typeof description === "object"
-    ? !isEmpty(description)
-    : false;
+      ? !isEmpty(description)
+      : false;
 }

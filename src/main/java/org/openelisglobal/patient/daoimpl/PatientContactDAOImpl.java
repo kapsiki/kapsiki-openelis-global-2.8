@@ -1,7 +1,6 @@
 package org.openelisglobal.patient.daoimpl;
 
 import java.util.List;
-
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
@@ -35,5 +34,4 @@ public class PatientContactDAOImpl extends BaseDAOImpl<PatientContact, String> i
         }
         return patients;
     }
-
 }

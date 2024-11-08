@@ -1,15 +1,14 @@
 package org.openelisglobal.program.valueholder.immunohistochemistry;
 
-import java.util.Date;
-
-import org.openelisglobal.program.valueholder.immunohistochemistry.ImmunohistochemistrySample.ImmunohistochemistryStatus;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+import org.openelisglobal.program.valueholder.immunohistochemistry.ImmunohistochemistrySample.ImmunohistochemistryStatus;
 
 public class ImmunohistochemistryDisplayItem {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date requestDate;
+
     private ImmunohistochemistryStatus status;
     private String lastName;
     private String firstName;
@@ -82,5 +81,4 @@ public class ImmunohistochemistryDisplayItem {
     public void setImmunohistochemistrySampleId(Integer immunohistochemistrySampleId) {
         this.immunohistochemistrySampleId = immunohistochemistrySampleId;
     }
-
 }

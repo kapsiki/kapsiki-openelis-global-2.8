@@ -7,14 +7,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import org.hibernate.annotations.Type;
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
 @Table(name = "pathology_slide")
 public class PathologySlide extends BaseObject<Integer> {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathology_slide_generator")
@@ -23,6 +21,7 @@ public class PathologySlide extends BaseObject<Integer> {
 
     @Column(name = "slide_number")
     private Integer slideNumber;
+
     @Type(type = "org.hibernate.type.BinaryType")
     private byte[] image;
 
@@ -72,5 +71,4 @@ public class PathologySlide extends BaseObject<Integer> {
     public void setLocation(String location) {
         this.location = location;
     }
-
 }

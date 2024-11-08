@@ -1,7 +1,6 @@
 package org.openelisglobal.testreflex.action.bean;
 
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,12 +15,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
 @Table(name = "reflex_rule")
-public class ReflexRule extends BaseObject<Integer>{
+public class ReflexRule extends BaseObject<Integer> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "reflex_rule_generator")
@@ -34,17 +32,17 @@ public class ReflexRule extends BaseObject<Integer>{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "overall")
-    private ReflexRuleOptions.OverallOptions overall ;
+    private ReflexRuleOptions.OverallOptions overall;
 
     @Column(name = "toggled")
     private Boolean toggled;
 
-    @OneToMany(fetch = FetchType.EAGER ,cascade = CascadeType.ALL)  
-    @JoinColumn(name = "reflex_rule_id", referencedColumnName = "id")   
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "reflex_rule_id", referencedColumnName = "id")
     Set<ReflexRuleCondition> conditions;
 
-    @OneToMany(fetch = FetchType.EAGER ,cascade = CascadeType.ALL)  
-    @JoinColumn(name = "reflex_rule_id", referencedColumnName = "id") 
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "reflex_rule_id", referencedColumnName = "id")
     Set<ReflexRuleAction> actions;
 
     @Column(name = "active")
@@ -54,47 +52,57 @@ public class ReflexRule extends BaseObject<Integer>{
     private Integer analyteId;
 
     @Transient
-    String localizedName ;
-    
+    String localizedName;
+
     @Transient
-    String stringId ;
+    String stringId;
 
     @Override
     public Integer getId() {
         return id;
     }
-    
+
     @Override
     public void setId(Integer id) {
         this.id = id;
     }
+
     public String getRuleName() {
         return ruleName;
     }
+
     public void setRuleName(String ruleName) {
         this.ruleName = ruleName;
     }
+
     public ReflexRuleOptions.OverallOptions getOverall() {
         return overall;
     }
+
     public void setOverall(ReflexRuleOptions.OverallOptions overall) {
         this.overall = overall;
     }
+
     public Boolean getToggled() {
         return toggled;
     }
+
     public void setToggled(Boolean toggled) {
         this.toggled = toggled;
     }
+
     public Set<ReflexRuleCondition> getConditions() {
         return conditions;
     }
+
     public void setConditions(Set<ReflexRuleCondition> conditions) {
         this.conditions = conditions;
     }
+
     public Set<ReflexRuleAction> getActions() {
         return actions;
     }
+
     public void setActions(Set<ReflexRuleAction> actions) {
         this.actions = actions;
     }
@@ -106,7 +114,7 @@ public class ReflexRule extends BaseObject<Integer>{
     public void setActive(Boolean active) {
         this.active = active;
     }
-   
+
     public void setLocalizedName(String localizedName) {
         this.localizedName = localizedName;
     }

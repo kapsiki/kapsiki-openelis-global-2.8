@@ -4,8 +4,6 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.stream.Collectors;
-
 import org.openelisglobal.menu.service.MenuService;
 import org.openelisglobal.menu.util.MenuItem;
 import org.openelisglobal.menu.util.MenuUtil;
@@ -32,7 +30,7 @@ public class MenuController {
         return findMenuItem(elementId, MenuUtil.getMenuTree());
     }
 
-    @PostMapping("/rest/menu/")
+    @PostMapping("/rest/menu")
     public List<MenuItem> postMenuTree(@RequestBody List<MenuItem> menuItems) {
         return menuService.save(menuItems);
     }
@@ -45,9 +43,9 @@ public class MenuController {
     private Optional<MenuItem> findMenuItem(String elementId, List<MenuItem> menuItems) {
         Queue<MenuItem> queue = new ArrayDeque<>();
         queue.addAll(menuItems);
-        while(!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             MenuItem menuItem = queue.remove();
-            if ( elementId.equals(menuItem.getMenu().getElementId())) {
+            if (elementId.equals(menuItem.getMenu().getElementId())) {
                 return Optional.of(menuItem);
             } else {
                 for (MenuItem childMenuItem : menuItem.getChildMenus()) {
@@ -59,5 +57,4 @@ public class MenuController {
         }
         return Optional.empty();
     }
-
 }

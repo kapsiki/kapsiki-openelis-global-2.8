@@ -1,5 +1,11 @@
 package org.openelisglobal.result.controller.rest;
 
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -17,15 +23,7 @@ import org.openelisglobal.sampleitem.valueholder.SampleItem;
 import org.openelisglobal.spring.util.SpringContext;
 import org.openelisglobal.test.beanItems.TestResultItem;
 
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class LogbookStatusResults {
-
 
     private final AnalysisService analysisService;
 
@@ -43,13 +41,14 @@ public class LogbookStatusResults {
         // currently this is the only one being excluded for Haiti_LNSP. If it
         // gets more complicate use the status sets
         excludedStatusIds = new HashSet<>();
-        excludedStatusIds.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(StatusService.AnalysisStatus.Canceled)));
-        excludedStatusIds.add(Integer
-                .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(StatusService.AnalysisStatus.SampleRejected)));
+        excludedStatusIds.add(Integer.parseInt(
+                SpringContext.getBean(IStatusService.class).getStatusID(StatusService.AnalysisStatus.Canceled)));
+        excludedStatusIds.add(Integer.parseInt(
+                SpringContext.getBean(IStatusService.class).getStatusID(StatusService.AnalysisStatus.SampleRejected)));
     }
 
-    public LogbookStatusResults(AnalysisService analysisService, SampleService sampleService, SampleItemService sampleItemService) {
+    public LogbookStatusResults(AnalysisService analysisService, SampleService sampleService,
+            SampleItemService sampleItemService) {
         this.analysisService = analysisService;
         this.sampleService = sampleService;
         this.sampleItemService = sampleItemService;
@@ -70,7 +69,6 @@ public class LogbookStatusResults {
 
         return tests;
     }
-
 
     private List<TestResultItem> getSelectedTests(StatusResultsForm form, ResultsLoadUtility resultsUtility) {
         String collectionDate = form.getCollectionDate();
@@ -137,7 +135,6 @@ public class LogbookStatusResults {
                 }
             }
             return blendedList;
-
         }
     }
 

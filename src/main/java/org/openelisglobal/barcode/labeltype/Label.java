@@ -1,7 +1,7 @@
 package org.openelisglobal.barcode.labeltype;
 
+import com.lowagie.text.Font;
 import java.util.ArrayList;
-
 import org.openelisglobal.barcode.LabelField;
 import org.openelisglobal.barcode.service.BarcodeLabelInfoService;
 import org.openelisglobal.barcode.valueholder.BarcodeLabelInfo;
@@ -9,15 +9,12 @@ import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.spring.util.SpringContext;
 
-import com.lowagie.text.Font;
-
 /**
  * Stores all the values, layout, and acts as a link to the persisted meta data
  * that is stored in the database. Used in printing bar code labels through the
  * BarcodeLabelMaker class
  *
  * @author Caleb
- *
  */
 public abstract class Label {
 
@@ -322,5 +319,4 @@ public abstract class Label {
     public void incrementNumPrinted() {
         labelInfo.incrementNumPrinted();
     }
-
 }

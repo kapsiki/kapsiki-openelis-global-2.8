@@ -1,20 +1,18 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*
-* Contributor(s): CIRG, University of Washington, Seattle WA.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ *
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
+ */
 package org.openelisglobal.common.provider.validation;
 
 import org.openelisglobal.common.exception.LIMSInvalidConfigurationException;
@@ -27,7 +25,8 @@ import org.springframework.stereotype.Component;
 public class AccessionNumberValidatorFactory implements ConfigurationListener {
 
     public enum AccessionFormat {
-        MAIN, GENERAL, SITEYEARNUM, PROGRAMNUM, YEARNUM_SIX, YEARNUM_DASH_SEVEN, YEARNUM_SEVEN, UNFORMATTED, ALT_YEAR, ALPHANUM
+        MAIN, GENERAL, SITEYEARNUM, PROGRAMNUM, YEARNUM_SIX, YEARNUM_DASH_SEVEN, YEARNUM_SEVEN, UNFORMATTED, ALT_YEAR,
+        ALPHANUM
     }
 
     private AccessionFormat mainAccessionFormat;
@@ -112,7 +111,6 @@ public class AccessionNumberValidatorFactory implements ConfigurationListener {
             throw new LIMSInvalidConfigurationException(
                     "AccessionNumberValidatorFactory: Unable to find validator for " + accessionFormat);
         }
-
     }
 
     public IAccessionNumberGenerator getGenerator(AccessionFormat accessionFormat)
@@ -124,13 +122,13 @@ public class AccessionNumberValidatorFactory implements ConfigurationListener {
         switch (accessionFormat) {
         case MAIN:
             return getConfiguredMainGenerator();
-            case ALPHANUM:
+        case ALPHANUM:
             return getAlphanumValidator();
         case SITEYEARNUM:
             return getSiteYearValidator();
         case PROGRAMNUM:
             return getProgramValidator();
-        case YEARNUM_SIX: 
+        case YEARNUM_SIX:
             return getYearNumValidator(6, null);
         case YEARNUM_DASH_SEVEN:
             return getYearNumValidator(7, '-');
@@ -145,7 +143,6 @@ public class AccessionNumberValidatorFactory implements ConfigurationListener {
             throw new LIMSInvalidConfigurationException(
                     "AccessionNumberValidatorFactory: Unable to find Generator for " + accessionFormat);
         }
-
     }
 
     @SuppressWarnings("unused")
@@ -182,5 +179,4 @@ public class AccessionNumberValidatorFactory implements ConfigurationListener {
         mainAccessionFormat = null;
         mainGenerator = null;
     }
-
 }

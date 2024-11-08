@@ -35,5 +35,4 @@ public class BlockLabel extends Label {
     public int getMaxNumLabels() {
         return -1;
     }
-
 }

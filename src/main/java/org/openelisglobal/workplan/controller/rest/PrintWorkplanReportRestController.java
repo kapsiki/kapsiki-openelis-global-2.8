@@ -6,11 +6,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
-
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperRunManager;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.rest.BaseRestController;
@@ -26,11 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperRunManager;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-
 @RestController("PrintWorkplanReportRestController")
 public class PrintWorkplanReportRestController extends BaseRestController {
 
@@ -38,7 +35,7 @@ public class PrintWorkplanReportRestController extends BaseRestController {
 
     @PostMapping(value = "/rest/printWorkplanReport")
     public void showRestPrintWorkplanReport(HttpServletRequest request, HttpServletResponse response,
-    		@RequestBody @Validated(PrintWorkplan.class) WorkplanForm form, BindingResult result) {
+            @RequestBody @Validated(PrintWorkplan.class) WorkplanForm form, BindingResult result) {
 
         String workplanType = form.getType();
         String workplanName;
@@ -69,7 +66,8 @@ public class PrintWorkplanReportRestController extends BaseRestController {
             byte[] bytes = null;
 
             JRDataSource dataSource = createReportDataSource(workplanRows);
-            bytes = JasperRunManager.runReportToPdf(getReportPath() + reportFileName + ".jasper", parameterMap, dataSource);
+            bytes = JasperRunManager.runReportToPdf(getReportPath() + reportFileName + ".jasper", parameterMap,
+                    dataSource);
 
             ServletOutputStream servletOutputStream = response.getOutputStream();
             response.setContentType("application/pdf");
@@ -87,7 +85,6 @@ public class PrintWorkplanReportRestController extends BaseRestController {
         }
     }
 
-    
     private JRDataSource createReportDataSource(List<?> includedTests) {
         JRBeanCollectionDataSource dataSource;
         dataSource = new JRBeanCollectionDataSource(includedTests);

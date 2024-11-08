@@ -34,7 +34,7 @@ public class EditProgramForm {
 
     public void setTestSectionId(String testSectionId) {
         this.testSectionId = testSectionId;
-    }    
+    }
 
     public String getTestSectionName() {
         return testSectionName;
@@ -43,5 +43,4 @@ public class EditProgramForm {
     public void setTestSectionName(String testSectionName) {
         this.testSectionName = testSectionName;
     }
-
 }

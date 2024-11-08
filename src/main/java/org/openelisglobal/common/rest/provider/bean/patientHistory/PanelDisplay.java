@@ -3,12 +3,11 @@ package org.openelisglobal.common.rest.provider.bean.patientHistory;
 import java.util.List;
 
 public class PanelDisplay {
-    
-    String display ;
 
-    List<TestDisplay> subSets ;
+    String display;
 
-    
+    List<TestDisplay> subSets;
+
     public String getDisplay() {
         return display;
     }
@@ -23,5 +22,5 @@ public class PanelDisplay {
 
     public void setSubSets(List<TestDisplay> subSets) {
         this.subSets = subSets;
-    } 
+    }
 }

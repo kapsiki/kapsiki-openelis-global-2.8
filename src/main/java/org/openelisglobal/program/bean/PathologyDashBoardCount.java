@@ -1,14 +1,14 @@
 package org.openelisglobal.program.bean;
 
 public class PathologyDashBoardCount {
-    
-    Long inProgress ;
-    
-    Long awaitingReview ;
-    
-    Long additionalRequests ;
-    
-    Long complete ;
+
+    Long inProgress;
+
+    Long awaitingReview;
+
+    Long additionalRequests;
+
+    Long complete;
 
     public Long getInProgress() {
         return inProgress;

@@ -1,5 +1,10 @@
 package org.openelisglobal.resultvalidation.controller.rest;
 
+import static org.apache.commons.validator.GenericValidator.isBlankOrNull;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -21,6 +26,8 @@ import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.IdValuePair;
 import org.openelisglobal.common.util.validator.GenericValidator;
 import org.openelisglobal.common.validator.BaseErrors;
+import org.openelisglobal.dataexchange.fhir.exception.FhirLocalPersistingException;
+import org.openelisglobal.dataexchange.fhir.service.FhirTransformService;
 import org.openelisglobal.dataexchange.orderresult.OrderResponseWorker.Event;
 import org.openelisglobal.internationalization.MessageUtil;
 import org.openelisglobal.note.service.NoteService;
@@ -63,13 +70,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 
-
-import javax.servlet.http.HttpServletRequest;
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
-import static org.apache.commons.validator.GenericValidator.isBlankOrNull;
-
 @Controller
 @RequestMapping(value = "/rest/")
 public class AccessionValidationRestController extends BaseResultValidationController {
@@ -83,15 +83,13 @@ public class AccessionValidationRestController extends BaseResultValidationContr
     @Autowired
     private SampleService sampleService;
 
-
-
-    private static final String[] ALLOWED_FIELDS = new String[]{"testSectionId", "paging.currentPage", "testSection",
+    private static final String[] ALLOWED_FIELDS = new String[] { "testSectionId", "paging.currentPage", "testSection",
             "testName", "resultList*.accessionNumber", "resultList*.analysisId", "resultList*.testId",
             "resultList*.sampleId", "resultList*.resultType", "resultList*.sampleGroupingNumber", "resultList*.noteId",
             "resultList*.resultId", "resultList*.hasQualifiedResult", "resultList*.sampleIsAccepted",
             "resultList*.sampleIsRejected", "resultList*.result", "resultList*.qualifiedResultValue",
             "resultList*.multiSelectResultValues", "resultList*.isAccepted", "resultList*.isRejected",
-            "resultList*.note"};
+            "resultList*.note" };
 
     // autowiring not needed, using constructor injection
     private AnalysisService analysisService;
@@ -102,16 +100,18 @@ public class AccessionValidationRestController extends BaseResultValidationContr
     private SystemUserService systemUserService;
     private ResultValidationService resultValidationService;
     private NoteService noteService;
+    private FhirTransformService fhirTransformService;
 
     private final String RESULT_SUBJECT = "Result Note";
     private final String RESULT_TABLE_ID;
     private final String RESULT_REPORT_ID;
 
     public AccessionValidationRestController(AnalysisService analysisService, TestResultService testResultService,
-                                             SampleHumanService sampleHumanService, DocumentTrackService documentTrackService,
-                                             TestSectionService testSectionService, SystemUserService systemUserService,
-                                             ReferenceTablesService referenceTablesService, DocumentTypeService documentTypeService,
-                                             ResultValidationService resultValidationService, NoteService noteService) {
+            SampleHumanService sampleHumanService, DocumentTrackService documentTrackService,
+            TestSectionService testSectionService, SystemUserService systemUserService,
+            ReferenceTablesService referenceTablesService, DocumentTypeService documentTypeService,
+            ResultValidationService resultValidationService, NoteService noteService,
+            FhirTransformService fhirTransformService) {
 
         this.analysisService = analysisService;
         this.testResultService = testResultService;
@@ -121,6 +121,7 @@ public class AccessionValidationRestController extends BaseResultValidationContr
         this.systemUserService = systemUserService;
         this.resultValidationService = resultValidationService;
         this.noteService = noteService;
+        this.fhirTransformService = fhirTransformService;
 
         RESULT_TABLE_ID = referenceTablesService.getReferenceTableByName("RESULT").getId();
         RESULT_REPORT_ID = documentTypeService.getDocumentTypeByName("resultExport").getId();
@@ -137,7 +138,7 @@ public class AccessionValidationRestController extends BaseResultValidationContr
             @RequestParam(required = false) String accessionNumber, @RequestParam(required = false) String date,
             @RequestParam(required = false) String unitType, @RequestParam(defaultValue = "true") Boolean doRange)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        
+
         ResultValidationForm newForm = new ResultValidationForm();
         if (StringUtils.isNotBlank(accessionNumber)) {
             newForm.setAccessionNumber(accessionNumber);
@@ -146,12 +147,11 @@ public class AccessionValidationRestController extends BaseResultValidationContr
         } else if (StringUtils.isNotBlank(unitType)) {
             newForm.setTestSectionId(unitType);
         }
-        return getResultValidation(request, newForm ,doRange);
+        return getResultValidation(request, newForm, doRange);
     }
 
-    private ResultValidationForm getResultValidation(HttpServletRequest request, ResultValidationForm form ,Boolean doRange)
-            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-
+    private ResultValidationForm getResultValidation(HttpServletRequest request, ResultValidationForm form,
+            Boolean doRange) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
         String patientName = "";
         String patientInfo = "";
@@ -189,18 +189,22 @@ public class AccessionValidationRestController extends BaseResultValidationContr
             if (!(GenericValidator.isBlankOrNull(form.getTestSectionId())
                     && GenericValidator.isBlankOrNull(form.getAccessionNumber())
                     && GenericValidator.isBlankOrNull(form.getTestDate()))) {
-                
+
                 if (doRange) {
                     resultList = resultsValidationUtility.getResultValidationList(getValidationStatus(),
-                        form.getTestSectionId(), form.getAccessionNumber(), form.getTestDate());
+                            form.getTestSectionId(), form.getAccessionNumber(), form.getTestDate());
                 } else {
                     if (StringUtils.isNotBlank(form.getAccessionNumber())) {
                         Sample sample = getSample(form.getAccessionNumber());
-                        resultList = resultsValidationUtility.getValidationAnalysisBySample(sample);
+                        if (sample == null) {
+                            setEmptyResults(form);
+                            return form;
+                        } else {
+                            resultList = resultsValidationUtility.getValidationAnalysisBySample(sample);
+                        }
                     }
-                    
                 }
-               
+
                 filteredresultList = userService.filterAnalysisResultsByLabUnitRoles(getSysUserId(request), resultList,
                         Constants.ROLE_VALIDATION);
                 request.setAttribute("pageSize", filteredresultList.size());
@@ -217,7 +221,6 @@ public class AccessionValidationRestController extends BaseResultValidationContr
 
         for (AnalysisItem analysisItem : filteredresultList) {
             analysisItem.setPatientName(patientName);
-    
         }
 
         return form;
@@ -236,18 +239,14 @@ public class AccessionValidationRestController extends BaseResultValidationContr
         return validationStatus;
     }
 
-
     @PostMapping(value = "accessionValidationByRangeUpdate", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResultValidationForm showAccessionValidationRangeSave(HttpServletRequest request,
-                                                                 @Validated(ResultValidationForm.ResultValidation.class)
-                                                                 @RequestBody ResultValidationForm form,
-                                                                 BindingResult result)
-            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-
+            @Validated(ResultValidationForm.ResultValidation.class) @RequestBody ResultValidationForm form,
+            BindingResult result) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
         if ("true".equals(request.getParameter("pageResults"))) {
-            return getResultValidation(request, form ,false);
+            return getResultValidation(request, form, false);
         }
         form.setSearchFinished(false);
 
@@ -263,7 +262,6 @@ public class AccessionValidationRestController extends BaseResultValidationContr
                 .getAttribute(IActionConstants.RESULTS_SESSION_CACHE);
         List<Result> checkResults = (List<Result>) checkPagedResults.get(0);
         if (checkResults.size() == 0) {
-            System.out.println("Operation failed");
             LogEvent.logDebug(this.getClass().getSimpleName(), "ResultValidation()", "Attempted save of stale page.");
             return form;
         }
@@ -282,7 +280,7 @@ public class AccessionValidationRestController extends BaseResultValidationContr
 
         if (errors.hasErrors()) {
             saveErrors(errors);
-//            return findForward(FWD_VALIDATION_ERROR, form);
+            // return findForward(FWD_VALIDATION_ERROR, form);
             return form;
         }
 
@@ -298,41 +296,46 @@ public class AccessionValidationRestController extends BaseResultValidationContr
         // wrapper object for holding modifedResultSet and newResultSet
         IResultSaveService resultSaveService = new ResultValidationSaveService();
 
-//        if (testSectionName.equals("serology")) {
-//            createUpdateElisaList(resultItemList, analysisUpdateList);
-//        } else {
+        // if (testSectionName.equals("serology")) {
+        // createUpdateElisaList(resultItemList, analysisUpdateList);
+        // } else {
         createUpdateList(resultItemList, analysisUpdateList, resultUpdateList, noteUpdateList, deletableList,
                 resultSaveService, areListeners);
-//        }
+        // }
 
         try {
             resultValidationService.persistdata(deletableList, analysisUpdateList, resultUpdateList, resultItemList,
                     sampleUpdateList, noteUpdateList, resultSaveService, updaters, getSysUserId(request));
+
+            try {
+                fhirTransformService.transformPersistResultValidationFhirObjects(deletableList, analysisUpdateList,
+                        resultUpdateList, resultItemList, sampleUpdateList, noteUpdateList);
+            } catch (FhirLocalPersistingException e) {
+                LogEvent.logError(e);
+            }
         } catch (LIMSRuntimeException e) {
             LogEvent.logError(e);
         }
 
         for (IResultUpdate updater : updaters) {
 
-//            updater.postTransactionalCommitUpdate(resultSaveService);
+            // updater.postTransactionalCommitUpdate(resultSaveService);
         }
 
         // route save back to RetroC specific ResultValidationRetroCAction
         // if
         // (ConfigurationProperties.getInstance().isPropertyValueEqual(Property.configurationName,
         // "CI RetroCI"))
-        System.out.println("Operation success");
-//        redirectAttributes.addFlashAttribute(FWD_SUCCESS, true);
+        // redirectAttributes.addFlashAttribute(FWD_SUCCESS, true);
         if (isBlankOrNull(testSectionName)) {
-//            return findForward(forward, form);
+            // return findForward(forward, form);
             return form;
         } else {
             Map<String, String> params = new HashMap<>();
             params.put("type", testSectionName);
             params.put("test", testName);
-//            return getForwardWithParameters(findForward(forward, form), params);
+            // return getForwardWithParameters(findForward(forward, form), params);
         }
-
 
         return (form);
     }
@@ -349,9 +352,8 @@ public class AccessionValidationRestController extends BaseResultValidationContr
                 augmentedAccession.append(" : ");
                 augmentedAccession.append(item.getTestName());
                 String errorMsg = "errors.followingAccession";
-                errors.reject(errorMsg, new String[]{augmentedAccession.toString()}, errorMsg);
+                errors.reject(errorMsg, new String[] { augmentedAccession.toString() }, errorMsg);
                 errors.addAllErrors(errorList);
-
             }
         }
 
@@ -361,7 +363,7 @@ public class AccessionValidationRestController extends BaseResultValidationContr
     public void validateQuantifiableItems(AnalysisItem analysisItem, Errors errorList) {
         if (analysisItem.isHasQualifiedResult() && isBlankOrNull(analysisItem.getQualifiedResultValue())
                 && analysisItemWillBeUpdated(analysisItem)) {
-            errorList.reject("errors.missing.result.details", new String[]{"Result"},
+            errorList.reject("errors.missing.result.details", new String[] { "Result" },
                     "errors.missing.result.details");
         }
         // verify that qualifiedResultValue has been entered if required
@@ -372,18 +374,15 @@ public class AccessionValidationRestController extends BaseResultValidationContr
 
             if (qualifiedDictIdsSet.contains(analysisItem.getResult())
                     && isBlankOrNull(analysisItem.getQualifiedResultValue())) {
-                errorList.reject("errors.missing.result.details", new String[]{"Result"},
+                errorList.reject("errors.missing.result.details", new String[] { "Result" },
                         "errors.missing.result.details");
-
             }
-
         }
-
     }
 
     private void createUpdateList(List<AnalysisItem> analysisItems, List<Analysis> analysisUpdateList,
-                                  List<Result> resultUpdateList, List<Note> noteUpdateList, List<Result> deletableList,
-                                  IResultSaveService resultValidationSave, boolean areListeners) {
+            List<Result> resultUpdateList, List<Note> noteUpdateList, List<Result> deletableList,
+            IResultSaveService resultValidationSave, boolean areListeners) {
 
         List<String> analysisIdList = new ArrayList<>();
 
@@ -491,7 +490,6 @@ public class AccessionValidationRestController extends BaseResultValidationContr
                             SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected));
                     analysisUpdateList.add(analysis);
                 }
-
             }
         }
     }
@@ -560,15 +558,19 @@ public class AccessionValidationRestController extends BaseResultValidationContr
     }
 
     private List<Result> createResultFromAnalysisItem(AnalysisItem analysisItem, Analysis analysis, Analysis analysis2,
-                                                      List<Note> noteUpdateList, List<Result> deletableList) {
+            List<Note> noteUpdateList, List<Result> deletableList) {
 
         ResultSaveBean bean = ResultSaveBeanAdapter.fromAnalysisItem(analysisItem);
         ResultSaveService resultSaveService = new ResultSaveService(analysis, getSysUserId(request));
         List<Result> results = resultSaveService.createResultsFromTestResultItem(bean, deletableList);
         if (analysisService.patientReportHasBeenDone(analysis) && resultSaveService.isUpdatedResult()) {
-            analysis.setCorrectedSincePatientReport(true);
-            noteUpdateList.add(noteService.createSavableNote(analysis, NoteType.EXTERNAL,
-                    MessageUtil.getMessage("note.corrected.result"), RESULT_SUBJECT, getSysUserId(request)));
+            Note note = noteService.createSavableNote(analysis, NoteType.EXTERNAL,
+                    MessageUtil.getMessage("note.corrected.result"), RESULT_SUBJECT, getSysUserId(request));
+            if (!noteService.duplicateNoteExists(note)) {
+                analysis.setCorrectedSincePatientReport(true);
+                noteUpdateList.add(noteService.createSavableNote(analysis, NoteType.EXTERNAL,
+                        MessageUtil.getMessage("note.corrected.result"), RESULT_SUBJECT, getSysUserId(request)));
+            }
         }
         return results;
     }
@@ -592,9 +594,9 @@ public class AccessionValidationRestController extends BaseResultValidationContr
     private boolean areResults(AnalysisItem item) {
         return !(isBlankOrNull(item.getResult())
                 || (TypeOfTestResultServiceImpl.ResultType.DICTIONARY.matches(item.getResultType())
-                && "0".equals(item.getResult())))
+                        && "0".equals(item.getResult())))
                 || (TypeOfTestResultServiceImpl.ResultType.isMultiSelectVariant(item.getResultType())
-                && !isBlankOrNull(item.getMultiSelectResultValues()));
+                        && !isBlankOrNull(item.getMultiSelectResultValues()));
     }
 
     private SystemUser createSystemUser() {
@@ -607,6 +609,11 @@ public class AccessionValidationRestController extends BaseResultValidationContr
 
     private Patient getPatient(Sample sample) {
         return sampleHumanService.getPatientForSample(sample);
+    }
+
+    private void setEmptyResults(ResultValidationForm form)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        form.setResultList(new ArrayList<AnalysisItem>());
     }
 
     @Override
@@ -625,5 +632,4 @@ public class AccessionValidationRestController extends BaseResultValidationContr
             return "PageNotFound";
         }
     }
-
 }

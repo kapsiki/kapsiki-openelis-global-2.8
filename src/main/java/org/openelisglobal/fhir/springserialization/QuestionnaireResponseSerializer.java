@@ -1,17 +1,15 @@
 package org.openelisglobal.fhir.springserialization;
 
-import java.io.IOException;
-
-import org.hl7.fhir.r4.model.QuestionnaireResponse;
-import org.openelisglobal.dataexchange.fhir.FhirUtil;
-import org.openelisglobal.spring.util.SpringContext;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.io.IOException;
+import org.hl7.fhir.r4.model.QuestionnaireResponse;
+import org.openelisglobal.dataexchange.fhir.FhirUtil;
+import org.openelisglobal.spring.util.SpringContext;
 
 public class QuestionnaireResponseSerializer extends StdSerializer<QuestionnaireResponse> {
 

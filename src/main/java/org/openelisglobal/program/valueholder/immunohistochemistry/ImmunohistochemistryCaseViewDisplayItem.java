@@ -1,7 +1,6 @@
 package org.openelisglobal.program.valueholder.immunohistochemistry;
 
 import java.util.List;
-
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
 import org.openelisglobal.common.util.IdValuePair;
@@ -21,7 +20,7 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
     private String assignedPathologistId;
     private List<ImmunohistochemistrySampleReport> reports;
     private Boolean reffered = false;
-    //refered from pathology.These are Read Only
+    // refered from pathology.These are Read Only
     private List<PathologyBlock> blocks;
     private List<PathologySlide> slides;
     private List<IdValuePair> techniques;
@@ -86,7 +85,7 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
     public void setAssignedTechnicianId(String assignedTechnicianId) {
         this.assignedTechnicianId = assignedTechnicianId;
     }
- 
+
     public List<ImmunohistochemistrySampleReport> getReports() {
         return reports;
     }
@@ -106,15 +105,15 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
     public String getRequester() {
         return requester;
     }
-    
+
     public void setRequester(String requester) {
         this.requester = requester;
     }
- 
+
     public List<PathologyBlock> getBlocks() {
         return blocks;
     }
- 
+
     public void setBlocks(List<PathologyBlock> blocks) {
         this.blocks = blocks;
     }
@@ -122,7 +121,7 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
     public List<PathologySlide> getSlides() {
         return slides;
     }
-  
+
     public void setSlides(List<PathologySlide> slides) {
         this.slides = slides;
     }
@@ -130,7 +129,7 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
     public List<IdValuePair> getTechniques() {
         return techniques;
     }
- 
+
     public void setTechniques(List<IdValuePair> techniques) {
         this.techniques = techniques;
     }
@@ -151,37 +150,35 @@ public class ImmunohistochemistryCaseViewDisplayItem extends Immunohistochemistr
         this.conclusions = conclusions;
     }
 
-    
     public String getConclusionText() {
         return conclusionText;
     }
-  
+
     public void setConclusionText(String conclusionText) {
         this.conclusionText = conclusionText;
     }
- 
+
     public String getGrossExam() {
         return grossExam;
     }
- 
+
     public void setGrossExam(String grossExam) {
         this.grossExam = grossExam;
     }
-  
+
     public String getMicroscopyExam() {
         return microscopyExam;
     }
-   
+
     public void setMicroscopyExam(String microscopyExam) {
         this.microscopyExam = microscopyExam;
     }
- 
+
     public Boolean getReffered() {
         return reffered;
     }
 
     public void setReffered(Boolean reffered) {
         this.reffered = reffered;
-    } 
-
+    }
 }

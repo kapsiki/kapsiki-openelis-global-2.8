@@ -8,7 +8,7 @@ public interface CytologyDisplayService {
 
     CytologyCaseViewDisplayItem convertToCaseDisplayItem(Integer cytologySampleId);
 
-    CytologyDisplayItem convertToDisplayItem(Integer cytologySampleId); 
+    CytologyDisplayItem convertToDisplayItem(Integer cytologySampleId);
 
     CytologySample getCytologySampleWithLoadedAttributes(Integer cytologySampleId);
 }

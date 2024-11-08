@@ -7,17 +7,17 @@ import org.openelisglobal.reports.form.ReportForm;
 import org.openelisglobal.spring.util.SpringContext;
 
 public class DualInSituHybridizationReport extends PatientProgramReport {
-    
+
     private ImmunohistochemistrySampleService immunohistochemistrySampleService = SpringContext
             .getBean(ImmunohistochemistrySampleService.class);
-    
+
     private ImmunohistochemistrySample immunohistochemistrySample;
-    
+
     @Override
     protected String getReportName() {
         return "DualInSituHybridizationReport";
     }
-    
+
     @Override
     protected void setAdditionalReportItems() {
         String reportDetails = MessageUtil.getMessage("dualInSitu.report.details", new String[] {
@@ -29,10 +29,9 @@ public class DualInSituHybridizationReport extends PatientProgramReport {
             } else {
                 data.setIhcScore(MessageUtil.getMessage("dualInSitu.label.noAmp"));
             }
-            
         }
     }
-    
+
     @Override
     protected void innitializeSample(ReportForm form) {
         immunohistochemistrySample = immunohistochemistrySampleService.get(Integer.valueOf(form.getProgramSampleId()));

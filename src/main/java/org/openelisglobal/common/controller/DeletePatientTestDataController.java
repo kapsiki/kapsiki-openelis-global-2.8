@@ -1,9 +1,7 @@
 package org.openelisglobal.common.controller;
 
 import java.sql.Timestamp;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.hibernate.HibernateException;
 import org.openelisglobal.audittrail.valueholder.History;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
@@ -81,5 +79,4 @@ public class DeletePatientTestDataController extends BaseController {
         // TODO Auto-generated method stub
         return null;
     }
-
 }

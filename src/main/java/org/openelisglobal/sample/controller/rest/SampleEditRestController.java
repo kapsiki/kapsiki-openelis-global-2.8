@@ -8,9 +8,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.validator.GenericValidator;
 import org.hibernate.StaleObjectStateException;
 import org.openelisglobal.analysis.service.AnalysisService;
@@ -67,7 +65,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-
 @Controller
 @RequestMapping(value = "/rest/")
 public class SampleEditRestController extends BaseSampleEntryController {
@@ -98,8 +95,8 @@ public class SampleEditRestController extends BaseSampleEntryController {
     private SampleService sampleService;
     @Autowired
     private TestService testService;
-//	@Autowired
-//	private OrganizationOrganizationTypeService orgOrgTypeService;
+    // @Autowired
+    // private OrganizationOrganizationTypeService orgOrgTypeService;
     @Autowired
     private TypeOfSampleService typeOfSampleService;
     @Autowired
@@ -116,9 +113,11 @@ public class SampleEditRestController extends BaseSampleEntryController {
     private UserService userService;
 
     @GetMapping(value = "sample-edit", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-    public SampleEditForm showSampleEdit(HttpServletRequest request , @RequestParam(required = false) String accessionNumber, @RequestParam(required = false) String patientId) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-       
+    @ResponseBody
+    public SampleEditForm showSampleEdit(HttpServletRequest request,
+            @RequestParam(required = false) String accessionNumber, @RequestParam(required = false) String patientId)
+            throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+
         SampleEditForm form = new SampleEditForm();
         form.setFormAction("SampleEdit");
 
@@ -130,10 +129,9 @@ public class SampleEditRestController extends BaseSampleEntryController {
                 || "readwrite".equals(request.getParameter("type"));
         form.setIsEditable(isEditable);
 
-
-        if (GenericValidator.isBlankOrNull(accessionNumber) && !GenericValidator.isBlankOrNull(patientId) ) {
+        if (GenericValidator.isBlankOrNull(accessionNumber) && !GenericValidator.isBlankOrNull(patientId)) {
             accessionNumber = getMostRecentAccessionNumberForPaitient(patientId);
-        } 
+        }
         if (!GenericValidator.isBlankOrNull(accessionNumber)) {
             form.setAccessionNumber(accessionNumber);
             form.setSearchFinished(Boolean.TRUE);
@@ -177,12 +175,12 @@ public class SampleEditRestController extends BaseSampleEntryController {
         if (FormFields.getInstance().useField(FormFields.Field.SampleNature)) {
             form.setSampleNatureList(DisplayListService.getInstance().getList(ListType.SAMPLE_NATURE));
         }
-       // form.setRejectReasonList(DisplayListService.getInstance().getList(ListType.REJECTION_REASONS));
+        // form.setRejectReasonList(DisplayListService.getInstance().getList(ListType.REJECTION_REASONS));
         form.setCurrentDate(DateUtil.getCurrentDateAsText());
         PatientSearch patientSearch = new PatientSearch();
         patientSearch.setLoadFromServerWithPatient(true);
         patientSearch.setSelectedPatientActionButtonText(MessageUtil.getMessage("label.patient.search.select"));
-        form.setPatientSearch(patientSearch);
+        // form.setPatientSearch(patientSearch);
         form.setWarning(true);
 
         addFlashMsgsToRequest(request);
@@ -192,7 +190,7 @@ public class SampleEditRestController extends BaseSampleEntryController {
     @PostMapping(value = "sample-edit", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public void saveSampleEdit(HttpServletRequest request,
-            @Validated(SampleEdit.class) @RequestBody SampleEditForm form ,BindingResult result)
+            @Validated(SampleEdit.class) @RequestBody SampleEditForm form, BindingResult result)
             throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
         formValidator.validate(form, result);
         if (result.hasErrors()) {
@@ -206,12 +204,12 @@ public class SampleEditRestController extends BaseSampleEntryController {
             if (result.hasErrors()) {
                 saveErrors(result);
             } else {
-               // updatedSample = updateAccessionNumberInSample(form);
+                // updatedSample = updateAccessionNumberInSample(form);
             }
-             updatedSample = updateAccessionNumberInSample(form);
+            updatedSample = updateAccessionNumberInSample(form);
         }
 
-         try {
+        try {
             sampleEditService.editSample(form, request, updatedSample, sampleChanged, getSysUserId(request));
 
         } catch (LIMSRuntimeException e) {
@@ -222,9 +220,7 @@ public class SampleEditRestController extends BaseSampleEntryController {
                 result.reject("errors.UpdateException", "errors.UpdateException");
             }
             saveErrors(result);
-
         }
-
     }
 
     @Override
@@ -265,7 +261,6 @@ public class SampleEditRestController extends BaseSampleEntryController {
                     accessionNumber = sample.getAccessionNumber();
                 }
             }
-
         }
         return accessionNumber;
     }
@@ -365,7 +360,7 @@ public class SampleEditRestController extends BaseSampleEntryController {
         }
 
         form.setPossibleTests(possibleTestList);
-       // form.setTestSectionList(DisplayListService.getInstance().getList(ListType.TEST_SECTION_ACTIVE));
+        // form.setTestSectionList(DisplayListService.getInstance().getList(ListType.TEST_SECTION_ACTIVE));
     }
 
     private void setAddableSampleTypes(SampleEditForm form, HttpServletRequest request)
@@ -403,8 +398,8 @@ public class SampleEditRestController extends BaseSampleEntryController {
 
             possibleTestList.addAll(typeOfTestSampleItemList);
         }
-
     }
+
     private Errors validateNewAccessionNumber(String accessionNumber, Errors errors) {
         ValidationResults results = AccessionNumberUtil.correctFormat(accessionNumber, false);
 
@@ -434,7 +429,6 @@ public class SampleEditRestController extends BaseSampleEntryController {
 
         return !GenericValidator.isBlankOrNull(newAccessionNumber)
                 && !newAccessionNumber.equals(form.getAccessionNumber());
-
     }
 
     private static class SampleEditItemComparator implements Comparator<SampleEditItem> {
@@ -452,7 +446,5 @@ public class SampleEditRestController extends BaseSampleEntryController {
                 return o1.getTestName().compareTo(o2.getTestName());
             }
         }
-
     }
-    
 }

@@ -8,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
@@ -38,6 +37,7 @@ public class PathologyConclusion extends BaseObject<Integer> {
             return null;
         }
     }
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pathology_conclusion_generator")
     @SequenceGenerator(name = "pathology_conclusion_generator", sequenceName = "pathology_conclusion_seq", allocationSize = 1)
@@ -73,5 +73,4 @@ public class PathologyConclusion extends BaseObject<Integer> {
     public void setType(ConclusionType type) {
         this.type = type;
     }
-
 }

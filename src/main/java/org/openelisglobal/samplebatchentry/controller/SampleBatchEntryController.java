@@ -2,10 +2,8 @@ package org.openelisglobal.samplebatchentry.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.StringTokenizer;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.DocumentHelper;
@@ -215,7 +213,8 @@ public class SampleBatchEntryController extends BaseController {
             } catch (FhirTransformationException | FhirPersistanceException e) {
                 LogEvent.logError(e);
             }
-//            String fhir_json = fhirTransformService.CreateFhirFromOESample(updateData, patientUpdate, patientInfo, form, request);
+            // String fhir_json = fhirTransformService.CreateFhirFromOESample(updateData,
+            // patientUpdate, patientInfo, form, request);
         } catch (LIMSRuntimeException e) {
             // ActionError error;
             if (e.getCause() instanceof StaleObjectStateException) {
@@ -232,7 +231,6 @@ public class SampleBatchEntryController extends BaseController {
             saveErrors(result);
             request.setAttribute(ALLOW_EDITS_KEY, "false");
             return findForward(FWD_FAIL_INSERT, form);
-
         }
 
         redirectAttributes.addFlashAttribute(FWD_SUCCESS, true);

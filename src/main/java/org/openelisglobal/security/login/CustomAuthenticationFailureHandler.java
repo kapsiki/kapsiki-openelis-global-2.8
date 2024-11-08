@@ -2,11 +2,9 @@ package org.openelisglobal.security.login;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.openelisglobal.common.constants.Constants;
@@ -24,18 +22,19 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 
 public class CustomAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
-
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException, ServletException {
-        //get the X-Forwarded-For header so that we know if the request is from a proxy
+        // get the X-Forwarded-For header so that we know if the request is from a proxy
         final String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null){
-            //no proxy
-            LogEvent.logInfo(this.getClass().getSimpleName(), "onFailure", "Unsuccessful login attempt from "+ request.getRemoteAddr());
+        if (xfHeader == null) {
+            // no proxy
+            LogEvent.logInfo(this.getClass().getSimpleName(), "onFailure",
+                    "Unsuccessful login attempt from " + request.getRemoteAddr());
         } else {
-            //from proxy
-            LogEvent.logInfo(this.getClass().getSimpleName(), "onFailure", "Unsuccessful login attempt from "+ xfHeader.split(",")[0]);
+            // from proxy
+            LogEvent.logInfo(this.getClass().getSimpleName(), "onFailure",
+                    "Unsuccessful login attempt from " + xfHeader.split(",")[0]);
         }
         if ("true".equals(request.getParameter("apiCall"))) {
             this.handleApiLogin(request, response, exception);
@@ -64,8 +63,7 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
     }
 
     private void handleApiLogin(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException exception)
-            throws IOException {
+            AuthenticationException exception) throws IOException {
         PrintWriter out = response.getWriter();
         response.setContentType("application/json");
         response.setStatus(HttpStatus.SC_UNAUTHORIZED);
@@ -86,7 +84,5 @@ public class CustomAuthenticationFailureHandler implements AuthenticationFailure
         }
 
         out.print(sessionDetails);
-
     }
-
 }

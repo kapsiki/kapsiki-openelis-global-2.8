@@ -1,22 +1,25 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
- * Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.common.util;
 
+import com.opencsv.CSVParser;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -24,22 +27,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.common.exception.LIMSException;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
 import org.owasp.encoder.Encode;
 
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvException;
-
 /**
  * @author diane benz
- *
+ *         <p>
  *         To change this generated comment edit the template variable
  *         "typecomment": Window>Preferences>Java>Templates. To enable and
  *         disable the creation of type comments go to
@@ -53,7 +51,7 @@ public class StringUtil {
     private static final Character CHAR_COMA = ',';
     private static final Character CHAR_TIDDLE = '~';
     private static final Character CHAR_QUOTE = '"';
-//    private static String STRING_KEY_SUFFIX = null;
+    // private static String STRING_KEY_SUFFIX = null;
     private static Pattern INTEGER_REG_EX = Pattern.compile("^-?\\d+$");
     private static Pattern ALL_NUMERIC_REG_EX = Pattern.compile("^\\d+$");
 
@@ -132,7 +130,6 @@ public class StringUtil {
                 workValue = workValue.substring(pos_end + 1);
 
                 pos = workValue.indexOf(oldValue);
-
             }
 
             // Now append any remaining text in the work string.
@@ -140,7 +137,6 @@ public class StringUtil {
             retString = retValue.toString().trim();
         }
         return retString;
-
     }
 
     public static String replaceNullWithEmptyString(String in) {
@@ -203,12 +199,12 @@ public class StringUtil {
             } catch (RuntimeException e) {
                 LogEvent.logError(e);
             }
-
         }
         if (!StringUtil.isNullorNill(ext)) {
             returnPhone = returnPhone + "." + ext;
         }
-        // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "This is phone "
+        // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "This is
+        // phone "
         // + returnPhone);
         return returnPhone;
     }
@@ -225,7 +221,6 @@ public class StringUtil {
             } catch (RuntimeException e) {
                 LogEvent.logError(e);
             }
-
         }
 
         return returnPhone;
@@ -240,7 +235,6 @@ public class StringUtil {
             } catch (RuntimeException e) {
                 LogEvent.logError(e);
             }
-
         }
 
         return returnPhone;
@@ -398,7 +392,6 @@ public class StringUtil {
      * I couldn't figure out a regex that would cover it so we're doing it the hard
      * way. It will stumble if '~' is embedded in the string. This will fail on
      * mixed fields such as 1,2,"something, else", 4,5
-     *
      */
     public static String[] separateCSVWithEmbededQuotes(String line) {
 
@@ -422,7 +415,6 @@ public class StringUtil {
     /**
      * Similar to separateCSVWithEmbededQuotes(String line) but deals with mixed
      * fields i.e. 1,2,"something, else, 4",5 , "more of that thing", 8
-     * 
      */
     public static String[] separateCSVWithMixedEmbededQuotes(String line) {
         CSVParser parser = new CSVParserBuilder().withSeparator(',').build();
@@ -439,11 +431,9 @@ public class StringUtil {
     /**
      * Similar to separateCSVWithEmbededQuotes(String line) but deals with mixed
      * fields i.e. 1,2,"something, else, 4",5 , "more of that thing", 8
-     * 
+     *
      * @throws CsvException
      * @throws IOException
-     *
-     *
      */
     public static List<String[]> separateCSVWithMixedEmbededQuotesAllRows(String line) {
         CSVParser parser = new CSVParserBuilder().withSeparator(',').build();
@@ -570,6 +560,7 @@ public class StringUtil {
         return value.substring(0, value.length() - tail.length()) + tail;
     }
 
+    // not truly significant digits, just decimal places
     public static String doubleWithSignificantDigits(double value, String significantDigits) {
         if (GenericValidator.isBlankOrNull(significantDigits) || significantDigits.equals("-1")) {
             return String.valueOf(value);
@@ -579,6 +570,7 @@ public class StringUtil {
         return String.format(format, value);
     }
 
+    // not truly significant digits, just decimal places
     public static String doubleWithSignificantDigits(double value, int significantDigits) {
         String format = "%1$." + significantDigits + "f";
         return String.format(format, value);
@@ -683,5 +675,13 @@ public class StringUtil {
             actualValue = actualValue.replaceAll("<|>", "");
         }
         return actualValue;
+    }
+
+    public static String repeat(String s, int times) {
+        return IntStream.range(0, times).mapToObj(i -> s).collect(Collectors.joining(""));
+    }
+
+    public static String capitalize(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1); // J + avatpoint
     }
 }

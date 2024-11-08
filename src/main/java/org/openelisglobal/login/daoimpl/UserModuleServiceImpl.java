@@ -1,26 +1,22 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
-* Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.login.daoimpl;
 
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.openelisglobal.common.action.IActionConstants;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
@@ -35,9 +31,11 @@ import org.openelisglobal.systemusermodule.valueholder.PermissionModule;
 import org.openelisglobal.systemusermodule.valueholder.SystemUserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.saml2.provider.service.authentication.DefaultSaml2AuthenticatedPrincipal;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -160,9 +158,19 @@ public class UserModuleServiceImpl implements UserModuleService, IActionConstant
     private LoginUser getUserLogin(HttpServletRequest request) throws LIMSRuntimeException {
         LoginUser login = null;
         try {
-//            UserSessionData usd = (UserSessionData) request.getSession().getAttribute(USER_SESSION_DATA);
-//            login = loginService.getUserProfile(usd.getLoginName());
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            // UserSessionData usd = (UserSessionData)
+            // request.getSession().getAttribute(USER_SESSION_DATA);
+            // login = loginService.getUserProfile(usd.getLoginName());
+            // Authentication authentication2 =
+            // SecurityContextHolder.getContext().getAuthentication();
+            // TODO workaround for Security Context authentication is null
+            Object sc = request.getSession()
+                    .getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+            if (!(sc instanceof SecurityContext)) {
+                LogEvent.logWarn(this.getClass().getSimpleName(), "getUserLogin",
+                        "security context is not of type SecurityContext");
+            }
+            Authentication authentication = ((SecurityContext) sc).getAuthentication();
             if (authentication != null) {
                 Object principal = authentication.getPrincipal();
                 if (principal instanceof UserDetails) {
@@ -171,6 +179,9 @@ public class UserModuleServiceImpl implements UserModuleService, IActionConstant
                 } else if (principal instanceof DefaultSaml2AuthenticatedPrincipal) {
                     DefaultSaml2AuthenticatedPrincipal samlUser = (DefaultSaml2AuthenticatedPrincipal) principal;
                     login = loginService.getUserProfile(samlUser.getName());
+                } else if (principal instanceof DefaultOAuth2User) {
+                    DefaultOAuth2User oauthUser = (DefaultOAuth2User) principal;
+                    login = loginService.getUserProfile(oauthUser.getName());
                 }
             }
         } catch (LIMSRuntimeException e) {
@@ -271,6 +282,7 @@ public class UserModuleServiceImpl implements UserModuleService, IActionConstant
 
     /**
      * Setup the user session time bases on the information in
+     *
      * <table>
      * LOGIN_USER
      * </table>
@@ -357,7 +369,7 @@ public class UserModuleServiceImpl implements UserModuleService, IActionConstant
      * buttons for user type admin
      *
      * @param request
-     *
+     *                <p>
      *                N.B. It is not clear why business rules are in a DAO object.
      */
     @Override

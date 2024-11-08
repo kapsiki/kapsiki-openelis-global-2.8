@@ -1,19 +1,17 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
- * Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.analysis.daoimpl;
 
@@ -24,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
@@ -36,11 +33,10 @@ import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
-//import org.openelisglobal.common.paging.PagingProperties;
 import org.openelisglobal.common.services.IStatusService;
 import org.openelisglobal.common.services.StatusService.AnalysisStatus;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.result.valueholder.Result;
 import org.openelisglobal.sample.valueholder.OrderPriority;
 import org.openelisglobal.sample.valueholder.Sample;
@@ -96,7 +92,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getAllAnalysisByTestAndStatus(String testId, List<Integer> statusIdList)
             throws LIMSRuntimeException {
         try {
-            String sql = "from Analysis a where a.test = :testId and a.statusId IN (:statusIdList) order by a.sampleItem.sample.accessionNumber";
+            String sql = "from Analysis a where a.test = :testId and a.statusId IN (:statusIdList) order by"
+                    + " a.sampleItem.sample.accessionNumber";
 
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("testId", Integer.parseInt(testId));
@@ -109,13 +106,13 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAllAnalysisByTestsAndStatus(List<String> testIdList, List<Integer> statusIdList)
             throws LIMSRuntimeException {
         List<Integer> testList = new ArrayList<>();
         try {
-            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:statusIdList) order by a.sampleItem.sample.accessionNumber";
+            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:statusIdList) order"
+                    + " by a.sampleItem.sample.accessionNumber";
 
             for (String testId : testIdList) {
                 testList.add(Integer.parseInt(testId));
@@ -137,8 +134,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             List<Integer> statusIdList, Date lowDate, Date highDate) throws LIMSRuntimeException {
         List<Integer> testList = new ArrayList<>();
         try {
-            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:statusIdList) "
-                    + "and a.completedDate BETWEEN :lowDate AND :highDate order by a.sampleItem.sample.accessionNumber";
+            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:statusIdList) and"
+                    + " a.completedDate BETWEEN :lowDate AND :highDate order by"
+                    + " a.sampleItem.sample.accessionNumber";
 
             for (String testId : testIdList) {
                 testList.add(Integer.parseInt(testId));
@@ -162,7 +160,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getAllAnalysisByTestAndExcludedStatus(String testId, List<Integer> statusIdList)
             throws LIMSRuntimeException {
         try {
-            String sql = "from Analysis a where a.test = :testId and a.statusId not IN (:statusIdList) order by a.sampleItem.sample.accessionNumber";
+            String sql = "from Analysis a where a.test = :testId and a.statusId not IN (:statusIdList) order by"
+                    + " a.sampleItem.sample.accessionNumber";
 
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("testId", Integer.parseInt(testId));
@@ -173,15 +172,18 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             LogEvent.logError(e);
             throw new LIMSRuntimeException("Error in Analysis getAllAnalysisByTestAndExcludedStatuses()", e);
         }
-
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Analysis> getAllAnalysisByTestSectionAndStatus(String testSectionId, List<Integer> statusIdList,
             boolean sortedByDateAndAccession) throws LIMSRuntimeException {
+        if (testSectionId == null) {
+            return new ArrayList<>();
+        }
         try {
-            String sql = "from Analysis a where a.testSection.id = :testSectionId and a.statusId IN (:statusIdList) order by a.id";
+            String sql = "from Analysis a where a.testSection.id = :testSectionId and a.statusId IN"
+                    + " (:statusIdList) order by a.id";
 
             if (sortedByDateAndAccession) {
                 // sql += " order by a.sampleItem.sample.receivedTimestamp asc,
@@ -216,7 +218,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
 
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
             query.setParameterList("statusIdList", statusIdList);
-           // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getValidationPageSize());
+            // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getValidationPageSize());
 
             return query.list();
         } catch (RuntimeException e) {
@@ -231,17 +233,17 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getPageAnalysisAtAccessionNumberAndStatus(String accessionNumber, List<Integer> statusIdList,
             boolean sortedByDateAndAccession) throws LIMSRuntimeException {
 
-        String hql = "from Analysis a "//
-                + " where a.sampleItem.sample.accessionNumber >= :accessionNumber"//
-                + " and length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)  "//
-                + " and a.statusId IN (:statusIdList)  "//
+        String hql = "from Analysis a " //
+                + " where a.sampleItem.sample.accessionNumber >= :accessionNumber" //
+                + " and length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)  " //
+                + " and a.statusId IN (:statusIdList)  " //
                 + " order by a.sampleItem.sample.accessionNumber";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(hql, Analysis.class);
 
             query.setParameter("accessionNumber", accessionNumber);
             query.setParameterList("statusIdList", statusIdList);
-            //query.setMaxResults(SpringContext.getBean(PagingProperties.class).getValidationPageSize());
+            // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getValidationPageSize());
 
             return query.list();
         } catch (RuntimeException e) {
@@ -256,7 +258,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getAllAnalysisByTestSectionAndExcludedStatus(String testSectionId, List<Integer> statusIdList)
             throws LIMSRuntimeException {
         try {
-            String sql = "from Analysis a where a.testSection.id = :testSectionId and a.statusId NOT IN (:statusIdList) order by a.sampleItem.sample.receivedTimestamp asc, a.sampleItem.sample.accessionNumber ";
+            String sql = "from Analysis a where a.testSection.id = :testSectionId and a.statusId NOT IN"
+                    + " (:statusIdList) order by a.sampleItem.sample.receivedTimestamp asc,"
+                    + " a.sampleItem.sample.accessionNumber ";
 
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
@@ -270,7 +274,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesBySampleItem(SampleItem sampleItem) throws LIMSRuntimeException {
         List<Analysis> list = null;
@@ -290,7 +293,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesBySampleItemsExcludingByStatusIds(SampleItem sampleItem, Set<Integer> statusIds)
             throws LIMSRuntimeException {
@@ -301,7 +303,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         List<Analysis> analysisList = null;
 
         try {
-            String sql = "from Analysis a where a.sampleItem.id = :sampleItemId and a.statusId not in ( :statusList )";
+            String sql = "from Analysis a where a.sampleItem.id = :sampleItemId and a.statusId not in ("
+                    + " :statusList )";
 
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("sampleItemId", Integer.parseInt(sampleItem.getId()));
@@ -325,7 +328,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return getAnalysesBySampleStatusId(statusId);
         }
 
-        String sql = "from Analysis a where a.sampleItem.sample.statusId = :sampleStatus and a.statusId not in (:excludedStatusIds)";
+        String sql = "from Analysis a where a.sampleItem.sample.statusId = :sampleStatus and a.statusId not in"
+                + " (:excludedStatusIds)";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -343,7 +347,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesBySampleStatusId(String statusId) throws LIMSRuntimeException {
         List<Analysis> analysisList = null;
@@ -372,7 +375,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return getAnalysesBySampleId(id);
         }
 
-        String sql = "from Analysis a where a.sampleItem.sample.id = :sampleId and a.statusId not in ( :excludedIds)";
+        String sql = "from Analysis a where a.sampleItem.sample.id = :sampleId and a.statusId not in ("
+                + " :excludedIds)";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -408,14 +412,14 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         }
 
         return null;
-
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesByPriorityAndStatusId(OrderPriority priority, List<Integer> statusIds)
             throws LIMSRuntimeException {
-        String sql = "from Analysis a where a.sampleItem.sample.priority = :oderpriority and a.statusId in ( :statusIds)";
+        String sql = "from Analysis a where a.sampleItem.sample.priority = :oderpriority and a.statusId in ("
+                + " :statusIds)";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -434,19 +438,20 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
      * bugzilla 1993 (part of 1942) getAnalysesReadyToBeReported() - returns the
      * tests that should be updated with a printed date of today's date (see
      * ResultsReport)
-     *
      */
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesReadyToBeReported() throws LIMSRuntimeException {
         try {
             List<String> analysisStatusesToInclude = new ArrayList<>();
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusReleased());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.released"));
 
             List<String> sampleStatusesToInclude = new ArrayList<>();
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusEntry2Complete());
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusReleased());
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.entry.2.complete"));
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.released"));
 
             String sql = "select distinct anal.id\n" + "        from\n" + "            sample samp,\n"
                     + "            test_analyte ta,\n" + "            analysis anal,\n"
@@ -458,16 +463,25 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
                     + "            and anal.is_reportable = 'Y'\n" + "            and anal.printed_date is null\n"
                     + "            and anal.status in (:analysisStatusesToInclude)\n"
                     + "            and samp.status in(:sampleStatusesToInclude)\n"
-                    + "            --bugzilla 2028 - there is corresponding sql in main_report.jrxml and test_results.jrxml to make sure we exclude the samples for which tests qa events are not completed\n"
-                    + "            --isQaEventsCompleted is 'Y' or 'N'\n"
-                    + "            --------------if there are no qa events for this test then isQaEventsCompleted = 'Y'\n"
-                    + "            and 'Y' = case when (select count(*) from analysis_qaevent aq where aq.analysis_id = anal.id)= 0 then 'Y'\n"
-                    + "                        --if there are no holdable qa events for this test then  isQaEventsCompleted = 'Y'\n"
-                    + "                           when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and q.is_holdable = 'Y') = 0 then 'Y'\n"
-                    + "                        --if there the holdable qa events for this test are completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
-                    + "                           when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
+                    + "            --bugzilla 2028 - there is corresponding sql in main_report.jrxml and"
+                    + " test_results.jrxml to make sure we exclude the samples for which tests qa events"
+                    + " are not completed\n" + "            --isQaEventsCompleted is 'Y' or 'N'\n"
+                    + "            --------------if there are no qa events for this test then"
+                    + " isQaEventsCompleted = 'Y'\n"
+                    + "            and 'Y' = case when (select count(*) from analysis_qaevent aq where"
+                    + " aq.analysis_id = anal.id)= 0 then 'Y'\n"
+                    + "                        --if there are no holdable qa events for this test then "
+                    + " isQaEventsCompleted = 'Y'\n"
+                    + "                           when (select count(*) from analysis_qaevent aq,"
+                    + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                    + " q.is_holdable = 'Y') = 0 then 'Y'\n"
+                    + "                        --if there the holdable qa events for this test are"
+                    + " completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
+                    + "                           when (select count(*) from analysis_qaevent aq,"
+                    + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                    + " aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
                     + "                        --else isQaEventsCompleted = 'N'\n"
-                    + "                           else 'N'" + "end";
+                    + "                           else 'N'end";
             return entityManager.unwrap(Session.class).createQuery(sql, Analysis.class)
                     .setParameterList("analysisStatusesToInclude", analysisStatusesToInclude)
                     .setParameterList("sampleStatusesToInclude", sampleStatusesToInclude).list();
@@ -479,7 +493,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAllChildAnalysesByResult(Result result) throws LIMSRuntimeException {
         try {
@@ -487,7 +500,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("param", result.getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param2", statusesToExclude);
             return query.list();
         } catch (RuntimeException e) {
@@ -497,7 +510,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getMaxRevisionAnalysesBySample(SampleItem sampleItem) throws LIMSRuntimeException {
         try {
@@ -509,7 +521,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("param", sampleItem.getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param2", statusesToExclude);
             return query.list();
         } catch (RuntimeException e) {
@@ -541,7 +553,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getRevisionHistoryOfAnalysesBySample(SampleItem sampleItem) throws LIMSRuntimeException {
         try {
@@ -553,7 +564,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("param", sampleItem.getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param2", statusesToExclude);
             return query.list();
         } catch (RuntimeException e) {
@@ -563,7 +574,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getRevisionHistoryOfAnalysesBySampleAndTest(SampleItem sampleItem, Test test,
             boolean includeLatestRevision) throws LIMSRuntimeException {
@@ -584,7 +594,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             query.setParameter("param", sampleItem.getId());
             query.setParameter("param2", test.getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param3", statusesToExclude);
             return query.list();
         } catch (RuntimeException e) {
@@ -594,7 +604,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAllMaxRevisionAnalysesPerTest(Test test) throws LIMSRuntimeException {
         try {
@@ -607,7 +616,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             query.setParameter("param", test.getId());
 
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param2", statusesToExclude);
 
             return query.list();
@@ -623,11 +632,14 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getMaxRevisionAnalysesReadyToBeReported() throws LIMSRuntimeException {
         try {
             List<String> analysisStatusesToInclude = new ArrayList<>();
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusReleased());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.released"));
 
             List<String> sampleStatusesToInclude = new ArrayList<>();
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusEntry2Complete());
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusReleased());
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.entry.2.complete"));
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.released"));
 
             String sql = "select distinct anal.id\n" + "        from\n" + "            sample samp,\n"
                     + "            test_analyte ta,\n" + "            analysis anal,\n"
@@ -644,14 +656,22 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
                     + "            and anal.is_reportable = 'Y'\n" + "            and anal.printed_date is null\n"
                     + "            and anal.status in (:analysisStatusesToInclude)\n"
                     + "            and samp.status in(:sampleStatusesToInclude)\n"
-                    + "            --bugzilla 2028 make sure we exclude the samples for which tests qa events are not completed\n"
-                    + "            --isQaEventsCompleted is 'Y' or 'N'\n"
-                    + "            --------------if there are no qa events for this test then isQaEventsCompleted = 'Y'\n"
-                    + "            and 'Y' = case when (select count(*) from analysis_qaevent aq where aq.analysis_id = anal.id)= 0 then 'Y'\n"
-                    + "                        --if there are no holdable qa events for this test then  isQaEventsCompleted = 'Y'\n"
-                    + "                           when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and q.is_holdable = 'Y') = 0 then 'Y'\n"
-                    + "                        --if there the holdable qa events for this test are completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
-                    + "                           when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
+                    + "            --bugzilla 2028 make sure we exclude the samples for which tests qa"
+                    + " events are not completed\n" + "            --isQaEventsCompleted is 'Y' or 'N'\n"
+                    + "            --------------if there are no qa events for this test then"
+                    + " isQaEventsCompleted = 'Y'\n"
+                    + "            and 'Y' = case when (select count(*) from analysis_qaevent aq where"
+                    + " aq.analysis_id = anal.id)= 0 then 'Y'\n"
+                    + "                        --if there are no holdable qa events for this test then "
+                    + " isQaEventsCompleted = 'Y'\n"
+                    + "                           when (select count(*) from analysis_qaevent aq,"
+                    + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                    + " q.is_holdable = 'Y') = 0 then 'Y'\n"
+                    + "                        --if there the holdable qa events for this test are"
+                    + " completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
+                    + "                           when (select count(*) from analysis_qaevent aq,"
+                    + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                    + " aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
                     + "                        --else isQaEventsCompleted = 'N'\n"
                     + "                           else 'N'\n" + "                      end";
             return entityManager.unwrap(Session.class).createNativeQuery(sql, Analysis.class)
@@ -675,12 +695,15 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             // see question in 1900 should this be released or results completed
             // status?
             // answer: results completed
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusResultCompleted());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.result.completed"));
 
             List<String> sampleStatusesToInclude = new ArrayList<>();
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusEntry2Complete());
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.entry.2.complete"));
             // see question in 1900 - should this be included? Yes
-            sampleStatusesToInclude.add(SystemConfiguration.getInstance().getSampleStatusReleased());
+            sampleStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("sample.status.released"));
 
             if (accessionNumbers != null && accessionNumbers.size() > 0) {
                 String sql = "select distinct anal.id\n" + "        from\n" + "            sample samp,\n"
@@ -700,15 +723,23 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
                         + "            and anal.status in (:analysisStatusesToInclude)\n"
                         + "            and samp.status in(:sampleStatusesToInclude)\n"
                         + "            and samp.accession_number in(:samplesToInclude)\n"
-                        + "            --bugzilla 2509 removed exclusion of holdable not completed qa events\n"
-                        + "            --bugzilla 2028 make sure we exclude the samples for which tests qa events are not completed\n"
-                        + "            --isQaEventsCompleted is 'Y' or 'N'\n"
-                        + "            --------------if there are no qa events for this test then isQaEventsCompleted = 'Y'\n"
-                        + "            --and 'Y' = case when (select count(*) from analysis_qaevent aq where aq.analysis_id = anal.id)= 0 then 'Y'\n"
-                        + "                        --if there are no holdable qa events for this test then  isQaEventsCompleted = 'Y'\n"
-                        + "                           --when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and q.is_holdable = 'Y') = 0 then 'Y'\n"
-                        + "                        --if there the holdable qa events for this test are completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
-                        + "                           --when (select count(*) from analysis_qaevent aq, qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
+                        + "            --bugzilla 2509 removed exclusion of holdable not completed qa" + " events\n"
+                        + "            --bugzilla 2028 make sure we exclude the samples for which tests qa"
+                        + " events are not completed\n" + "            --isQaEventsCompleted is 'Y' or 'N'\n"
+                        + "            --------------if there are no qa events for this test then"
+                        + " isQaEventsCompleted = 'Y'\n"
+                        + "            --and 'Y' = case when (select count(*) from analysis_qaevent aq"
+                        + " where aq.analysis_id = anal.id)= 0 then 'Y'\n"
+                        + "                        --if there are no holdable qa events for this test then "
+                        + " isQaEventsCompleted = 'Y'\n"
+                        + "                           --when (select count(*) from analysis_qaevent aq,"
+                        + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                        + " q.is_holdable = 'Y') = 0 then 'Y'\n"
+                        + "                        --if there the holdable qa events for this test are"
+                        + " completed (completed date is not null) then isQaEventsCompleted = 'Y'\n"
+                        + "                           --when (select count(*) from analysis_qaevent aq,"
+                        + " qa_event q where aq.analysis_id = anal.id and q.id = aq.qa_event_id and"
+                        + " aq.completed_date is null and q.is_holdable = 'Y') = 0 then 'Y'\n"
                         + "                        --else isQaEventsCompleted = 'N'\n"
                         + "                           --else 'N'\n" + "                      --end";
                 list = entityManager.unwrap(Session.class).createNativeQuery(sql)
@@ -757,10 +788,12 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             throws LIMSRuntimeException {
         try {
             List<String> analysisStatusesToInclude = new ArrayList<>();
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusAssigned());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.assigned"));
             // bugzilla 2264 per Nancy add results completed status to pending
             // tests
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusResultCompleted());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.result.completed"));
 
             String sql = "select\n" + "    distinct anal.id\n" + "    from\n" + "    sample_item sampitem,\n"
                     + "    sample samp,\n" + "    analysis anal,\n" + "    test test\n" + "\n" + "   where\n"
@@ -808,10 +841,11 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         try {
 
             List<String> analysisStatusesToInclude = new ArrayList<>();
-            analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusAssigned());
+            analysisStatusesToInclude
+                    .add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.assigned"));
             // see question in 1900 do we need to include this?
             // Answer NO
-            // analysisStatusesToInclude.add(SystemConfiguration.getInstance().getAnalysisStatusResultCompleted());
+            // analysisStatusesToInclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.result.completed"));
 
             list = entityManager.unwrap(Session.class)
                     .getNamedQuery("analysis.getMaxRevisionPendingAnalysesReadyToBeReportedBySample")
@@ -834,7 +868,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             // Use an expression to read in the Analysis whose
             // revision is 1 less than the analysis passed in
 
-            String sql = "from Analysis a where a.revision = :param and a.sampleItem = :param2 and a.test = :param3 and a.status NOT IN (:param4)";
+            String sql = "from Analysis a where a.revision = :param and a.sampleItem = :param2 and a.test ="
+                    + " :param3 and a.status NOT IN (:param4)";
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
 
             String revisionString = analysis.getRevision();
@@ -853,7 +888,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             query.setParameter("param3", analysis.getTest());
 
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param4", statusesToExclude);
             List<Analysis> list = query.list();
             if ((list != null) && !list.isEmpty()) {
@@ -866,7 +901,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             throw new LIMSRuntimeException("Exception occurred in getPreviousAnalysisForAmendedAnalysis", e);
         }
         return previousAnalysis;
-
     }
 
     @Override
@@ -884,7 +918,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             query.setParameter("param", analysis.getSampleItem().getId());
             query.setParameter("param2", analysis.getTest().getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param3", statusesToExclude);
             anal = query.uniqueResult();
 
@@ -899,7 +933,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             LogEvent.logError(e);
             throw new LIMSRuntimeException("Error in Analysis getMaxRevisionAnalysisBySampleAndTest()", e);
         }
-
     }
 
     @Override
@@ -918,7 +951,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("param", sampleItem.getId());
             List<String> statusesToExclude = new ArrayList<>();
-            statusesToExclude.add(SystemConfiguration.getInstance().getAnalysisStatusCanceled());
+            statusesToExclude.add(ConfigurationProperties.getInstance().getPropertyValue("analysis.status.canceled"));
             query.setParameterList("param2", statusesToExclude);
             list = query.list();
         } catch (RuntimeException e) {
@@ -930,7 +963,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesForStatusId(String statusId) throws LIMSRuntimeException {
 
@@ -974,11 +1006,10 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         return null;
     }
 
-     @Override
+    @Override
     @Transactional(readOnly = true)
-    public List<Analysis> getAnalysisCompletedOnByStatusId(Date completedDate, String statusId)
+    public List<Analysis> getAnalysesCompletedOnByStatusId(Date completedDate, String statusId)
             throws LIMSRuntimeException {
-        
 
         String sql = "from Analysis a where a.releasedDate = :releasedDate and a.statusId = :statusId ";
 
@@ -997,7 +1028,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisStartedOn(Date collectionDate) throws LIMSRuntimeException {
 
@@ -1024,7 +1054,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return getAnalysisStartedOn(collectionDate);
         }
 
-        String sql = "from Analysis a where DATE(a.sampleItem.collectionDate) = DATE(:startedDate) and a.statusId not in ( :statusList )";
+        String sql = "from Analysis a where DATE(a.sampleItem.collectionDate) = DATE(:startedDate) and"
+                + " a.statusId not in ( :statusList )";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1041,7 +1072,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisCollectedOn(Date collectionDate) throws LIMSRuntimeException {
 
@@ -1065,7 +1095,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
      *      java.util.List)
      */
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisBySampleAndTestIds(String sampleId, List<Integer> testIds) {
         List<Analysis> list = null;
@@ -1088,12 +1117,12 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisByTestSectionAndCompletedDateRange(String sectionID, Date lowDate, Date highDate)
             throws LIMSRuntimeException {
 
-        String sql = "From Analysis a where a.testSection.id = :testSectionId and a.completedDate BETWEEN :lowDate AND :highDate";
+        String sql = "From Analysis a where a.testSection.id = :testSectionId and a.completedDate BETWEEN"
+                + " :lowDate AND :highDate";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1111,11 +1140,11 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisStartedOrCompletedInDateRange(Date lowDate, Date highDate)
             throws LIMSRuntimeException {
-        String sql = "From Analysis a where a.startedDate BETWEEN :lowDate AND :highDate or a.completedDate BETWEEN :lowDate AND :highDate";
+        String sql = "From Analysis a where a.startedDate BETWEEN :lowDate AND :highDate or a.completedDate"
+                + " BETWEEN :lowDate AND :highDate";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1129,14 +1158,14 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         }
 
         return null;
-
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisByTestIdAndTestSectionIdsAndStartedInDateRange(Date lowDate, Date highDate,
             String testId, List<Integer> testSectionIds) throws LIMSRuntimeException {
-        String sql = "FROM Analysis a WHERE a.startedDate BETWEEN :lowDate AND :highDate AND a.test.id = :testId AND  a.testSection.id IN ( :testSectionIds )";
+        String sql = "FROM Analysis a WHERE a.startedDate BETWEEN :lowDate AND :highDate AND a.test.id = :testId"
+                + " AND  a.testSection.id IN ( :testSectionIds )";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1153,7 +1182,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysesBySampleId(String id) throws LIMSRuntimeException {
         List<Analysis> list = null;
@@ -1176,7 +1204,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Transactional(readOnly = true)
     public List<Analysis> getAllAnalysisByTestsAndStatus(List<Integer> testIds, List<Integer> analysisStatusList,
             List<Integer> sampleStatusList) {
-        String sql = "From Analysis a WHERE a.test.id IN (:testIds) AND a.statusId IN (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList)";
+        String sql = "From Analysis a WHERE a.test.id IN (:testIds) AND a.statusId IN (:analysisStatusList) AND"
+                + " a.sampleItem.sample.statusId IN (:sampleStatusList)";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameterList("testIds", testIds);
@@ -1200,10 +1229,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             List<Integer> analysisStatusList, List<Integer> sampleStatusList, Date lowDate, Date highDate) {
         List<Integer> testList = new ArrayList<>();
         try {
-            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:analysisStatusList) "
-                    + "and a.sampleItem.sample.statusId IN (:sampleStatusList) "
-                    + "and a.completedDate BETWEEN :lowDate AND :highDate order by a.sampleItem.sample.accessionNumber";
-
+            String sql = "from Analysis a where a.test.id IN (:testList) and a.statusId IN (:analysisStatusList)"
+                    + " and a.sampleItem.sample.statusId IN (:sampleStatusList) and a.completedDate"
+                    + " BETWEEN :lowDate AND :highDate order by a.sampleItem.sample.accessionNumber";
             for (Integer testId : testIdList) {
                 testList.add(testId);
             }
@@ -1229,7 +1257,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getAllAnalysisByTestSectionAndStatus(String testSectionId, List<Integer> analysisStatusList,
             List<Integer> sampleStatusList) throws LIMSRuntimeException {
 
-        String sql = "From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList) ORDER BY a.sampleItem.sample.accessionNumber";
+        String sql = "From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN"
+                + " (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList) ORDER"
+                + " BY a.sampleItem.sample.accessionNumber";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
@@ -1250,13 +1280,15 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getPageAnalysisByTestSectionAndStatus(String testSectionId, List<Integer> analysisStatusList,
             List<Integer> sampleStatusList) {
 
-        String sql = "From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList) ORDER BY a.sampleItem.sample.accessionNumber";
+        String sql = "From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN"
+                + " (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList) ORDER"
+                + " BY a.sampleItem.sample.accessionNumber";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
             query.setParameterList("analysisStatusList", analysisStatusList);
             query.setParameterList("sampleStatusList", sampleStatusList);
-           // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
+            // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
 
             List<Analysis> analysisList = query.list();
 
@@ -1273,7 +1305,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Transactional(readOnly = true)
     public List<Analysis> getAnalysisStartedOnRangeByStatusId(Date lowDate, Date highDate, String statusID)
             throws LIMSRuntimeException {
-        String sql = "From Analysis a where a.statusId = :statusID and a.startedDate BETWEEN :lowDate AND :highDate";
+        String sql = "From Analysis a where a.statusId = :statusID and a.startedDate BETWEEN :lowDate AND"
+                + " :highDate";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1339,7 +1372,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return new ArrayList<>();
         }
 
-        String sql = "From Analysis a where a.sampleItem.sample.accessionNumber = :accessionNumber and a.test.id = :testId";
+        String sql = "From Analysis a where a.sampleItem.sample.accessionNumber = :accessionNumber and a.test.id"
+                + " = :testId";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1362,7 +1396,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return new ArrayList<>();
         }
 
-        String sql = "From Analysis a where (a.test.localizedTestName.english in (:testNames) or a.test.localizedTestName.french in (:testNames)) and a.completedDate BETWEEN :lowDate AND :highDate";
+        String sql = "From Analysis a where (a.test.localizedTestName.english in (:testNames) or"
+                + " a.test.localizedTestName.french in (:testNames)) and a.completedDate BETWEEN"
+                + " :lowDate AND :highDate";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1387,7 +1423,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
             return new ArrayList<>();
         }
 
-        String sql = "From Analysis a where a.test.description in (:descriptions) and a.completedDate BETWEEN :lowDate AND :highDate";
+        String sql = "From Analysis a where a.test.description in (:descriptions) and a.completedDate BETWEEN"
+                + " :lowDate AND :highDate";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1448,7 +1485,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         if (sampleIdList.isEmpty() || testIdList.isEmpty() || statusIdList.isEmpty()) {
             return new ArrayList<>();
         }
-        String sql = "from Analysis a where a.sampleItem.sample.id in (:sampleIdList) and a.test.id in (:testIdList) and a.statusId in (:statusIdList) order by a.releasedDate desc";
+        String sql = "from Analysis a where a.sampleItem.sample.id in (:sampleIdList) and a.test.id in"
+                + " (:testIdList) and a.statusId in (:statusIdList) order by a.releasedDate desc";
 
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
@@ -1462,7 +1500,6 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         }
 
         return null;
-
     }
 
     @Override
@@ -1485,7 +1522,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public int getCountAnalysisByTestSectionAndStatus(String testSectionId, List<Integer> analysisStatusList,
             List<Integer> sampleStatusList) {
 
-        String hql = "SELECT COUNT(*) From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList)";
+        String hql = "SELECT COUNT(*) From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN"
+                + " (:analysisStatusList) AND a.sampleItem.sample.statusId IN (:sampleStatusList)";
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(hql, Long.class);
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
@@ -1506,7 +1544,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Override
     public int getCountAnalysisByTestSectionAndStatus(String testSectionId, List<Integer> analysisStatusList) {
 
-        String hql = "SELECT COUNT(*) From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN (:analysisStatusList)";
+        String hql = "SELECT COUNT(*) From Analysis a WHERE a.testSection.id = :testSectionId AND a.statusId IN"
+                + " (:analysisStatusList)";
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(hql, Long.class);
             query.setParameter("testSectionId", Integer.parseInt(testSectionId));
@@ -1527,17 +1566,17 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     public List<Analysis> getPageAnalysisByStatusFromAccession(List<Integer> analysisStatusList,
             List<Integer> sampleStatusList, String accessionNumber) {
 
-        String sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber >= :accessionNumber"//
-                + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)"//
-                + " AND a.statusId IN (:analysisStatusList)"//
-                + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)"//
-                + " ORDER BY a.sampleItem.sample.accessionNumber";//
+        String sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber >= :accessionNumber" //
+                + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)" //
+                + " AND a.statusId IN (:analysisStatusList)" //
+                + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)" //
+                + " ORDER BY a.sampleItem.sample.accessionNumber"; //
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("accessionNumber", accessionNumber);
             query.setParameterList("analysisStatusList", analysisStatusList);
             query.setParameterList("sampleStatusList", sampleStatusList);
-            //query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
+            // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
 
             List<Analysis> analysisList = query.list();
 
@@ -1549,53 +1588,55 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
 
         return null;
     }
-    
+
     @Override
     public List<Analysis> getPageAnalysisByStatusFromAccession(List<Integer> analysisStatusList,
-            List<Integer> sampleStatusList, String accessionNumber,String upperRangeAccessionNumber, boolean doRange, boolean finished) {
-               
-        if(finished) {
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Canceled)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NotStarted)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NonConforming_depricated)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.SampleRejected)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalAcceptance)));
-        analysisStatusList.add(
-                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalRejected)));
+            List<Integer> sampleStatusList, String accessionNumber, String upperRangeAccessionNumber, boolean doRange,
+            boolean finished) {
+
+        if (finished) {
+            analysisStatusList.add(Integer
+                    .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized)));
+            analysisStatusList.add(Integer.parseInt(
+                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected)));
+            analysisStatusList.add(
+                    Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Canceled)));
+            analysisStatusList.add(Integer
+                    .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NotStarted)));
+            analysisStatusList.add(Integer.parseInt(
+                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NonConforming_depricated)));
+            analysisStatusList.add(Integer
+                    .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.SampleRejected)));
+            analysisStatusList.add(Integer.parseInt(
+                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalAcceptance)));
+            analysisStatusList.add(Integer.parseInt(
+                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalRejected)));
         }
-        
+
         String sql = "";
         if (doRange && StringUtils.isNotBlank(upperRangeAccessionNumber))
-            sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber between :accessionNumber and :upperRangeAccessionNumber"//
-                    + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)"//
-                    + " AND a.statusId IN (:analysisStatusList)"//
-                    + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)"//
-                    + " ORDER BY a.sampleItem.sample.accessionNumber";//
+            sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber between :accessionNumber and"
+                    + " :upperRangeAccessionNumber" //
+                    + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)" //
+                    + " AND a.statusId IN (:analysisStatusList)" //
+                    + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)" //
+                    + " ORDER BY a.sampleItem.sample.accessionNumber"; //
         else
-            sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber = :accessionNumber"//
-                    + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)"//
-                    + " AND a.statusId IN (:analysisStatusList)"//
-                    + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)"//
-                    + " ORDER BY a.sampleItem.sample.accessionNumber";//
-        
+            sql = "From Analysis a WHERE a.sampleItem.sample.accessionNumber = :accessionNumber" //
+                    + " AND length(a.sampleItem.sample.accessionNumber) = length(:accessionNumber)" //
+                    + " AND a.statusId IN (:analysisStatusList)" //
+                    + " AND a.sampleItem.sample.statusId IN (:sampleStatusList)" //
+                    + " ORDER BY a.sampleItem.sample.accessionNumber"; //
+
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
             query.setParameter("accessionNumber", accessionNumber);
-            if(StringUtils.isNotBlank(upperRangeAccessionNumber)){
+            if (StringUtils.isNotBlank(upperRangeAccessionNumber)) {
                 query.setParameter("upperRangeAccessionNumber", upperRangeAccessionNumber);
             }
             query.setParameterList("analysisStatusList", analysisStatusList);
             query.setParameterList("sampleStatusList", sampleStatusList);
-            //query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
+            // query.setMaxResults(SpringContext.getBean(PagingProperties.class).getResultsPageSize());
 
             List<Analysis> analysisList = query.list();
 
@@ -1633,7 +1674,10 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Override
     public List<Analysis> getAnalysisForSiteBetweenResultDates(String referringSiteId, LocalDate lowerDate,
             LocalDate upperDate) {
-        String hql = "FROM Analysis a WHERE a.enteredDate BETWEEN :lowerDate AND :upperDate AND a.sampleItem.sample.id IN (SELECT sr.sampleId FROM SampleRequester sr WHERE sr.requesterId = :requesterId AND sr.requesterTypeId = (SELECT rt.id FROM RequesterType rt WHERE rt.requesterType = 'organization' ))";
+        String hql = "FROM Analysis a WHERE a.enteredDate BETWEEN :lowerDate AND :upperDate AND"
+                + " a.sampleItem.sample.id IN (SELECT sr.sampleId FROM SampleRequester sr WHERE"
+                + " sr.requesterId = :requesterId AND sr.requesterTypeId = (SELECT rt.id FROM"
+                + " RequesterType rt WHERE rt.requesterType = 'organization' ))";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(hql, Analysis.class);
             query.setParameter("requesterId", Integer.parseInt(referringSiteId));
@@ -1649,7 +1693,9 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Override
     public List<Analysis> getStudyAnalysisForSiteBetweenResultDates(String referringSiteId, LocalDate lowerDate,
             LocalDate upperDate) {
-        String hql = "FROM Analysis a WHERE a.releasedDate BETWEEN :lowerDate AND :upperDate AND a.sampleItem.sample.id IN (SELECT so.sample.id FROM SampleOrganization so WHERE so.organization.id = :requesterId )";
+        String hql = "FROM Analysis a WHERE a.releasedDate BETWEEN :lowerDate AND :upperDate AND"
+                + " a.sampleItem.sample.id IN (SELECT so.sample.id FROM SampleOrganization so WHERE"
+                + " so.organization.id = :requesterId )";
         try {
             Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(hql, Analysis.class);
             query.setParameter("requesterId", Integer.parseInt(referringSiteId));
@@ -1664,7 +1710,7 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
 
     @Override
     public int getCountOfAnalysesForStatusIds(List<Integer> statusIdList) {
-         String hql = "SELECT COUNT(*) From Analysis a WHERE  a.statusId IN (:analysisStatusList)";
+        String hql = "SELECT COUNT(*) From Analysis a WHERE  a.statusId IN (:analysisStatusList)";
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(hql, Long.class);
             query.setParameterList("analysisStatusList", statusIdList);
@@ -1681,7 +1727,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
 
     @Override
     public int getCountOfAnalysisCompletedOnByStatusId(Date completedDate, List<Integer> statusIds) {
-        String sql = "SELECT COUNT(*) From Analysis a where a.releasedDate = :releasedDate and a.statusId in ( :statusList )";
+        String sql = "SELECT COUNT(*) From Analysis a where a.releasedDate = :releasedDate and a.statusId in ("
+                + " :statusList )";
 
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(sql, Long.class);
@@ -1700,7 +1747,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
     @Override
     public int getCountOfAnalysisStartedOnExcludedByStatusId(Date collectionDate, Set<Integer> statusIds) {
 
-        String sql = "SELECT COUNT(*) from Analysis a where a.startedDate = :startedDate and a.statusId not in ( :statusList )";
+        String sql = "SELECT COUNT(*) from Analysis a where a.startedDate = :startedDate and a.statusId not in ("
+                + " :statusList )";
 
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(sql, Long.class);
@@ -1718,7 +1766,8 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
 
     @Override
     public int getCountOfAnalysisStartedOnByStatusId(Date startedDate, List<Integer> statusIds) {
-         String sql = "SELECT COUNT(*) from Analysis a where a.startedDate = :startedDate and a.statusId in ( :statusList )";
+        String sql = "SELECT COUNT(*) from Analysis a where a.startedDate = :startedDate and a.statusId in ("
+                + " :statusList )";
 
         try {
             Query<Long> query = entityManager.unwrap(Session.class).createQuery(sql, Long.class);
@@ -1734,4 +1783,23 @@ public class AnalysisDAOImpl extends BaseDAOImpl<Analysis, String> implements An
         return 0;
     }
 
+    @Override
+    public List<Analysis> getAnalysesResultEnteredOnExcludedByStatusId(Date completedDate, Set<Integer> statusIds)
+            throws LIMSRuntimeException {
+        String sql = "from Analysis a where a.completedDate = :completedDate and a.statusId not in ( :statusList"
+                + " )";
+
+        try {
+            Query<Analysis> query = entityManager.unwrap(Session.class).createQuery(sql, Analysis.class);
+            query.setParameter("completedDate", completedDate);
+            query.setParameterList("statusList", statusIds);
+
+            List<Analysis> analysisList = query.list();
+            return analysisList;
+        } catch (HibernateException e) {
+            handleException(e, "getAnalysisResultEnteredOnOnByStatusId");
+        }
+
+        return null;
+    }
 }

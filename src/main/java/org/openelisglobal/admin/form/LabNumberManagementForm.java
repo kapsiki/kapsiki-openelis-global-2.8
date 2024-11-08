@@ -5,7 +5,7 @@ import org.openelisglobal.common.provider.validation.AccessionNumberValidatorFac
 import org.openelisglobal.validation.annotations.SafeHtml;
 
 public class LabNumberManagementForm {
-    
+
     private AccessionFormat labNumberType;
 
     private Boolean usePrefix;
@@ -37,5 +37,4 @@ public class LabNumberManagementForm {
     public void setAlphanumPrefix(String alphanumPrefix) {
         this.alphanumPrefix = alphanumPrefix;
     }
-
 }

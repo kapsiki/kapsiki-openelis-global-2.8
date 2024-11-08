@@ -4,11 +4,10 @@ import java.util.List;
 
 public class ResultTree {
 
-    String display ;
+    String display;
 
     List<PanelDisplay> subSets;
- 
-    
+
     public String getDisplay() {
         return display;
     }
@@ -23,5 +22,5 @@ public class ResultTree {
 
     public void setSubSets(List<PanelDisplay> subSets) {
         this.subSets = subSets;
-    }  
+    }
 }

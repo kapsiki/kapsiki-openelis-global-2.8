@@ -18,9 +18,10 @@
 
 /**
  * Cote d'Ivoire
+ *
  * @author pahill
  * @since 2010-06-15
- **/
+ */
 package org.openelisglobal.patient.saving;
 
 import static org.openelisglobal.sample.util.CI.ProjectForm.EID;
@@ -37,7 +38,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.validator.GenericValidator;
@@ -55,9 +55,10 @@ import org.openelisglobal.common.services.StatusService.OrderStatus;
 import org.openelisglobal.common.services.StatusService.RecordStatus;
 import org.openelisglobal.common.services.StatusService.SampleStatus;
 import org.openelisglobal.common.services.StatusSet;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
+import org.openelisglobal.dataexchange.fhir.service.FhirTransformService;
 import org.openelisglobal.note.service.NoteService;
 import org.openelisglobal.note.service.NoteServiceImpl;
 import org.openelisglobal.note.valueholder.Note;
@@ -68,6 +69,7 @@ import org.openelisglobal.observationhistorytype.service.ObservationHistoryTypeS
 import org.openelisglobal.observationhistorytype.valueholder.ObservationHistoryType;
 import org.openelisglobal.organization.service.OrganizationService;
 import org.openelisglobal.organization.valueholder.Organization;
+import org.openelisglobal.patient.action.bean.PatientManagementInfo;
 import org.openelisglobal.patient.saving.form.IAccessionerForm;
 import org.openelisglobal.patient.service.PatientService;
 import org.openelisglobal.patient.util.PatientUtil;
@@ -81,6 +83,7 @@ import org.openelisglobal.person.valueholder.Person;
 import org.openelisglobal.project.service.ProjectService;
 import org.openelisglobal.project.valueholder.Project;
 import org.openelisglobal.referencetables.service.ReferenceTablesService;
+import org.openelisglobal.sample.action.util.SamplePatientUpdateData;
 import org.openelisglobal.sample.form.ProjectData;
 import org.openelisglobal.sample.service.SampleService;
 import org.openelisglobal.sample.util.CI.BaseProjectFormMapper;
@@ -125,7 +128,7 @@ import org.springframework.validation.Errors;
  * <li>possibly override the persist* methods, if there is more to do than
  * simply saving what has been built (delete any old ones? Update instead?).
  * </nl>
- * Use:<br/>
+ * Use:<br>
  * if (myAccessioner1.canAccession()) { if (!myAccession1.accession(...)) {
  * errors = myAccession1.getMessages(); saveErrors(request, errors);
  * request.setAttribute(Globals.ERROR_KEY, errors); return
@@ -133,6 +136,7 @@ import org.springframework.validation.Errors;
  * mapping.findForward(FWD_SUCCESS); } } else (myAccession2.canAccession() { ...
  * }
  *
+ * <p>
  * PAH 07/2010 This object is still a work in progress. For example, we have a
  * member for projectFormMapper, but all its use in the subclasses at this time
  * . Maybe the projectFormMapper should just be injected after creation? It is
@@ -142,13 +146,13 @@ import org.springframework.validation.Errors;
  *
  * @author pahill
  */
-
 public abstract class Accessioner implements IAccessioner {
+    @Autowired
+    private FhirTransformService fhirTransformService;
 
-    /**
-     * a set of possible analysis status that means an analysis is done
-     */
+    /** a set of possible analysis status that means an analysis is done */
     private Set<String> analysisDone = new HashSet<>();
+
     {
         analysisDone
                 .add(SpringContext.getBean(IStatusService.class).getStatusID(StatusService.AnalysisStatus.Finalized));
@@ -189,7 +193,6 @@ public abstract class Accessioner implements IAccessioner {
         } else {
             return observations.getProjectFormName();
         }
-
     }
 
     /**
@@ -216,6 +219,7 @@ public abstract class Accessioner implements IAccessioner {
     protected String patientIdentifier;
     protected String patientSiteSubjectNo;
     protected StatusSet statusSet;
+
     @Autowired
     @Qualifier("defaultErrors")
     Errors messages;
@@ -333,7 +337,7 @@ public abstract class Accessioner implements IAccessioner {
             populateSampleData();
             populateSampleHuman();
             populateObservationHistory();
-			updateSampleWithElectronicEOrders();
+            updateSampleWithElectronicEOrders();
 
             // all of the following methods are assumed to only write when
             // necessary
@@ -352,6 +356,14 @@ public abstract class Accessioner implements IAccessioner {
             persistRecordStatus();
             deleteOldPatient();
             populateAndPersistUnderInvestigationNote();
+            // update fhir resources
+            SamplePatientUpdateData updateData = new SamplePatientUpdateData(sysUserId);
+            updateData.setSample(sample);
+            updateData.setAccessionNumber(accessionNumber);
+            updateData.setProvider(null);
+            updateData.setSampleItemsTests(null);
+            PatientManagementInfo patientInfo = new PatientManagementInfo();
+            patientInfo.setPatientPK(patientInDB.getId());
             return IActionConstants.FWD_SUCCESS_INSERT;
         } catch (IllegalAccessException e) {
             logAndAddMessage("save()", "errors.InsertException", e);
@@ -366,8 +378,8 @@ public abstract class Accessioner implements IAccessioner {
         // deleting the old ones. Any references to the old observation history
         // under investigation row are being lost. Until we fix that the notes
         // will be attached to the sample with note type of "UnderInvestigation"
-        if (// OBSERVATION_HISTORY_YES_ID.equals(observationData.getUnderInvestigation()) &&
-            // <-- not sure of the business rules around this
+        if ( // OBSERVATION_HISTORY_YES_ID.equals(observationData.getUnderInvestigation()) &&
+        // <-- not sure of the business rules around this
         !GenericValidator.isBlankOrNull(projectData.getUnderInvestigationNote())) {
 
             Note note = new Note();
@@ -512,9 +524,7 @@ public abstract class Accessioner implements IAccessioner {
                 && patientSiteSubjectNo.equals(existingSiteSubjectNo));
     }
 
-    /**
-     * Either find it by the primary or secondary identifier or return a new one
-     */
+    /** Either find it by the primary or secondary identifier or return a new one */
     private boolean createPatientByIdentifiers() {
         patientInDB = findPatientByIndentifiers();
         return patientInDB != null || createNewPatient();
@@ -541,7 +551,6 @@ public abstract class Accessioner implements IAccessioner {
     }
 
     /**
-     *
      * @return true = existing sample
      * @throws LIMSRuntimeException
      * @throws LIMSInvalidConfigurationException
@@ -619,7 +628,7 @@ public abstract class Accessioner implements IAccessioner {
      * @return TRUE => all is well; FALSE (Default) => this particular version of
      *         the accession process is not appropriate for the status combination.
      */
-    abstract public boolean canAccession();
+    public abstract boolean canAccession();
 
     /**
      * load up this object with any new observation history records, including lists
@@ -654,17 +663,11 @@ public abstract class Accessioner implements IAccessioner {
      * SampleOrganization but not to any of the entities which tie a patient to a
      * sample; don't include ObservationHistory and SampleHuman
      *
-     * @throws LIMSException
-     *
-     * @ if things go wrong.
+     * @throws LIMSException @ if things go wrong.
      */
-    abstract protected void populateSampleData() throws LIMSException;
+    protected abstract void populateSampleData() throws LIMSException;
 
-    /**
-     * Create any appropriate sample human entity
-     *
-     * @
-     */
+    /** Create any appropriate sample human entity @ */
     protected void populateSampleHuman() {
         if (isNewSample()) {
             sample.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(OrderStatus.Entered));
@@ -713,7 +716,7 @@ public abstract class Accessioner implements IAccessioner {
             sample.setEnteredDateForDisplay(todayAsText);
             sample.setEnteredDate(today);
         }
-        sample.setDomain(SystemConfiguration.getInstance().getHumanDomain());
+        sample.setDomain(ConfigurationProperties.getInstance().getPropertyValue("domain.human"));
     }
 
     protected void populateSampleProject() {
@@ -821,9 +824,9 @@ public abstract class Accessioner implements IAccessioner {
 
         patientInDB.setNationalId(convertEmptyToNull(form.getSubjectNumber()));
         patientInDB.setExternalId(convertEmptyToNull(form.getSiteSubjectNumber()));
-		if (ObjectUtils.isNotEmpty(form.getPatientFhirUuid())) {
-			patientInDB.setFhirUuid(UUID.fromString(form.getPatientFhirUuid()));
-		}
+        if (ObjectUtils.isNotEmpty(form.getPatientFhirUuid())) {
+            patientInDB.setFhirUuid(UUID.fromString(form.getPatientFhirUuid()));
+        }
         populatePatientBirthDate(form.getBirthDateForDisplay());
 
         projectData = form.getProjectData();
@@ -898,9 +901,7 @@ public abstract class Accessioner implements IAccessioner {
         }
     }
 
-    /**
-     * Delete any new ones and remove any old ones.
-     */
+    /** Delete any new ones and remove any old ones. */
     protected void persistSampleOrganization() {
         for (SampleOrganization so : sampleOrganizations) {
             // we are in the same transaction, we do not need to reload the sample
@@ -923,7 +924,7 @@ public abstract class Accessioner implements IAccessioner {
         Map<String, SampleItem> itemsByType = findExistingSampleTypeItems();
         int nextSortOrder = calcLastSortOrder(itemsByType) + 1;
 
-        String analysisRevision = SystemConfiguration.getInstance().getAnalysisDefaultRevision();
+        String analysisRevision = ConfigurationProperties.getInstance().getPropertyValue("analysis.default.revision");
         boolean newAnalysis = false;
         for (SampleItemAnalysisCollection sampleTestPair : sampleItemsAnalysis) {
 
@@ -1004,11 +1005,9 @@ public abstract class Accessioner implements IAccessioner {
     /**
      * If during entry we find (1) all the analysis are finished, and (2) the sample
      * is not already been declared bad, then we're ready to mark the sample as
-     * done.
-     *
-     * @
+     * done. @
      */
-	@Transactional
+    @Transactional
     public void completeSample() {
         if (isAllAnalysisDone() && !SpringContext.getBean(IStatusService.class)
                 .getStatusID(OrderStatus.NonConforming_depricated).equals(sample.getStatus())) {
@@ -1049,9 +1048,7 @@ public abstract class Accessioner implements IAccessioner {
         return analysis;
     }
 
-    /**
-     * save patient
-     */
+    /** save patient */
     protected void persistPatient() {
         if (patientInDB != null) {
             Person person = patientInDB.getPerson();
@@ -1106,15 +1103,13 @@ public abstract class Accessioner implements IAccessioner {
         }
     }
 
-    /**
-     * Persist any old or new sampleHuman we're currently holding.
-     */
+    /** Persist any old or new sampleHuman we're currently holding. */
     protected void persistSampleHuman() {
         if (sampleHuman != null) {
-			SampleHuman otherSampleHuman = sampleHumanService.getMatch("sampleId", sample.getId()).orElse(null);
-			if (ObjectUtils.isNotEmpty(otherSampleHuman)) {
-				sampleHuman = otherSampleHuman;
-			}
+            SampleHuman otherSampleHuman = sampleHumanService.getMatch("sampleId", sample.getId()).orElse(null);
+            if (ObjectUtils.isNotEmpty(otherSampleHuman)) {
+                sampleHuman = otherSampleHuman;
+            }
             sampleHuman.setPatientId(patientInDB.getId());
             sampleHuman.setSampleId(sample.getId());
             // we do not store any doctor name as a provider in SampleHuman
@@ -1127,9 +1122,7 @@ public abstract class Accessioner implements IAccessioner {
         }
     }
 
-    /**
-     * Persist any simple observations histories in this accession object.
-     */
+    /** Persist any simple observations histories in this accession object. */
     protected void persistObservationHistory() {
         if (isADifferentPatient()) {
             List<ObservationHistory> oldOHes = observationHistoryService.getAll(knownPatientTemplate(),
@@ -1204,11 +1197,10 @@ public abstract class Accessioner implements IAccessioner {
      * newOh.setPatientId(patientInDB.getId()); newOh.setSysUserId(sysUserId);
      * observationHistoryService.insert(newOh); } } }
      */
-    /**
-     *
-     */
+    /** */
     protected void persistObservationHistoryLists() {
-        LogEvent.logInfo(this.getClass().getSimpleName(), "persistObservationHistoryLists", "FUNCTION NAME PROHIBITED !");
+        LogEvent.logInfo(this.getClass().getSimpleName(), "persistObservationHistoryLists",
+                "FUNCTION NAME PROHIBITED !");
     }
 
     protected void persistObservationHistoryLists2() {
@@ -1220,7 +1212,8 @@ public abstract class Accessioner implements IAccessioner {
             // throw away the old list
             Map<String, ObservationHistory> oldOHes = findExistingObservationHistories(listType);
             // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", );
-            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", listType + "
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", listType +
+            // "
             // oldOHes.size = "
             // +oldOHes.size());
             for (ObservationHistory oh : oldOHes.values()) {
@@ -1230,7 +1223,8 @@ public abstract class Accessioner implements IAccessioner {
 
             // insert the new
             List<ObservationHistory> newOHes = observationHistoryLists.get(listType);
-            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", listType + "
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", listType +
+            // "
             // newOHes.size = "
             // +newOHes.size());
             for (ObservationHistory newOH : newOHes) {
@@ -1265,25 +1259,25 @@ public abstract class Accessioner implements IAccessioner {
     }
 
     protected void deleteOldPatient() {
-		if (patientToDelete != null) {
-			try {
+        if (patientToDelete != null) {
+            try {
 
-				List<PatientIdentity> oldIdentities = identityService
-						.getPatientIdentitiesForPatient(patientToDelete.getId());
-				for (PatientIdentity listIdentity : oldIdentities) {
-					identityService.delete(listIdentity.getId(), sysUserId);
-				}
-				Person personToDelete = patientToDelete.getPerson();
-				patientToDelete.setSysUserId(sysUserId);
-				patientService.deleteAll(Arrays.asList(patientToDelete));
-				personToDelete.setSysUserId(sysUserId);
-				personService.deleteAll(Arrays.asList(personToDelete));
+                List<PatientIdentity> oldIdentities = identityService
+                        .getPatientIdentitiesForPatient(patientToDelete.getId());
+                for (PatientIdentity listIdentity : oldIdentities) {
+                    identityService.delete(listIdentity.getId(), sysUserId);
+                }
+                Person personToDelete = patientToDelete.getPerson();
+                patientToDelete.setSysUserId(sysUserId);
+                patientService.deleteAll(Arrays.asList(patientToDelete));
+                personToDelete.setSysUserId(sysUserId);
+                personService.deleteAll(Arrays.asList(personToDelete));
 
-			} catch (Exception e) {
-				LogEvent.logError(e);
-			}
-		}
-	}
+            } catch (Exception e) {
+                LogEvent.logError(e);
+            }
+        }
+    }
 
     protected List<ObservationHistory> getObservationHistories() {
         return observationHistories;
@@ -1318,66 +1312,72 @@ public abstract class Accessioner implements IAccessioner {
 
     protected abstract String getActionLabel();
 
-//    protected void persistInitialSampleConditions()
-//            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-//        if (!FormFields.getInstance().useField(Field.InitialSampleCondition)) {
-//            return;
-//        }
-//
-//        try {
-//
-//            String xml = projectFormMapper.getForm().getSampleXML();
-//            // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "AMANI:"+xml);
-//            Document sampleDom = DocumentHelper.parseText(xml);
-//            for (Iterator i = sampleDom.getRootElement().elementIterator("sample"); i.hasNext();) {
-//                Element sampleItem = (Element) i.next();
-//                String initialSampleConditionIdString = sampleItem.attributeValue("initialConditionIds");
-//                String sampleItemId = sampleItem.attributeValue("sampleID");
-//
-//                ObservationHistory observation = new ObservationHistory();
-//
-//                if (!GenericValidator.isBlankOrNull(initialSampleConditionIdString)) {
-//                    String[] initialSampleConditionIds = initialSampleConditionIdString.split(",");
-//                    for (int j = 0; j < initialSampleConditionIds.length; j++) {
-//                        observation = new ObservationHistory();
-//                        observation.setValue(initialSampleConditionIds[j]);
-//                        observation.setValueType(ObservationHistory.ValueType.DICTIONARY);
-//                        observation.setObservationHistoryTypeId(getObservationHistoryTypeId(
-//                                SpringContext.getBean(ObservationHistoryTypeService.class), "initialSampleCondition"));
-//                        observation.setSampleId(sample.getId());
-//                        observation.setSampleItemId(sampleItemId);
-//                        observation.setPatientId(patientInDB.getId());
-//                        observation.setSysUserId(sysUserId);
-//                        observationHistoryService.insert(observation);
-//                    }
-//                }
-//            }
-//
-//        } catch (DocumentException e) {
-//            LogEvent.logDebug(e);
-//        }
-//        // dynaForm.set("orbservations", observations);
-//
-//    }
+    // protected void persistInitialSampleConditions()
+    // throws IllegalAccessException, InvocationTargetException,
+    // NoSuchMethodException {
+    // if (!FormFields.getInstance().useField(Field.InitialSampleCondition)) {
+    // return;
+    // }
+    //
+    // try {
+    //
+    // String xml = projectFormMapper.getForm().getSampleXML();
+    // // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown",
+    // "AMANI:"+xml);
+    // Document sampleDom = DocumentHelper.parseText(xml);
+    // for (Iterator i = sampleDom.getRootElement().elementIterator("sample");
+    // i.hasNext();) {
+    // Element sampleItem = (Element) i.next();
+    // String initialSampleConditionIdString =
+    // sampleItem.attributeValue("initialConditionIds");
+    // String sampleItemId = sampleItem.attributeValue("sampleID");
+    //
+    // ObservationHistory observation = new ObservationHistory();
+    //
+    // if (!GenericValidator.isBlankOrNull(initialSampleConditionIdString)) {
+    // String[] initialSampleConditionIds =
+    // initialSampleConditionIdString.split(",");
+    // for (int j = 0; j < initialSampleConditionIds.length; j++) {
+    // observation = new ObservationHistory();
+    // observation.setValue(initialSampleConditionIds[j]);
+    // observation.setValueType(ObservationHistory.ValueType.DICTIONARY);
+    // observation.setObservationHistoryTypeId(getObservationHistoryTypeId(
+    // SpringContext.getBean(ObservationHistoryTypeService.class),
+    // "initialSampleCondition"));
+    // observation.setSampleId(sample.getId());
+    // observation.setSampleItemId(sampleItemId);
+    // observation.setPatientId(patientInDB.getId());
+    // observation.setSysUserId(sysUserId);
+    // observationHistoryService.insert(observation);
+    // }
+    // }
+    // }
+    //
+    // } catch (DocumentException e) {
+    // LogEvent.logDebug(e);
+    // }
+    // // dynaForm.set("orbservations", observations);
+    //
+    // }
 
-	private static String getObservationHistoryTypeId(ObservationHistoryTypeService ohtService, String name) {
-		ObservationHistoryType oht;
-		oht = ohtService.getByName(name);
-		if (oht != null) {
-			return oht.getId();
-		}
+    private static String getObservationHistoryTypeId(ObservationHistoryTypeService ohtService, String name) {
+        ObservationHistoryType oht;
+        oht = ohtService.getByName(name);
+        if (oht != null) {
+            return oht.getId();
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	private void updateSampleWithElectronicEOrders() {
-		try {
-			if (ObjectUtils.isNotEmpty(projectFormMapper.getForm().getElectronicOrder())) {
-				sample.setReferringId(projectFormMapper.getForm().getElectronicOrder().getExternalId());
-				sample.setClinicalOrderId(projectFormMapper.getForm().getElectronicOrder().getId());
-			}
-		} catch (Exception e) {
-			LogEvent.logError(e);
-		}
-	}
+    private void updateSampleWithElectronicEOrders() {
+        try {
+            if (ObjectUtils.isNotEmpty(projectFormMapper.getForm().getElectronicOrder())) {
+                sample.setReferringId(projectFormMapper.getForm().getElectronicOrder().getExternalId());
+                sample.setClinicalOrderId(projectFormMapper.getForm().getElectronicOrder().getId());
+            }
+        } catch (Exception e) {
+            LogEvent.logError(e);
+        }
+    }
 }

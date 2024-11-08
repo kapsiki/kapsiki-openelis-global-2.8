@@ -13,7 +13,7 @@ public class ImmunohistochemistrySampleForm {
     private String systemUserId;
     private Boolean release = false;
 
-   private List<ImmunohistochemistryReportForm> reports;
+    private List<ImmunohistochemistryReportForm> reports;
 
     public ImmunohistochemistryStatus getStatus() {
         return status;
@@ -62,7 +62,7 @@ public class ImmunohistochemistrySampleForm {
     public void setReports(List<ImmunohistochemistryReportForm> reports) {
         this.reports = reports;
     }
-    
+
     public static class ImmunohistochemistryReportForm extends ImmunohistochemistrySampleReport {
         private static final long serialVersionUID = 3142138533368581327L;
         private String base64Image;
@@ -78,6 +78,5 @@ public class ImmunohistochemistrySampleForm {
             setFileType(imageInfo[0]);
             setImage(Base64.getDecoder().decode(imageInfo[1]));
         }
-
     }
 }

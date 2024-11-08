@@ -3,7 +3,7 @@ package org.openelisglobal.common.util;
 import java.util.Arrays;
 
 public class IntegerUtil {
-    
+
     public static final int MIN_VALUE = -2147483648;
     private static char[] base27Characters = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', 'D', 'F', 'G',
             'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'T', 'V', 'W', 'X', 'Y' };
@@ -38,7 +38,7 @@ public class IntegerUtil {
     }
 
     public static int parseIntBase27(String s) throws NumberFormatException {
-        Integer.parseInt("1",2);
+        Integer.parseInt("1", 2);
         if (s == null) {
             throw new NumberFormatException("null");
         } else {
@@ -60,7 +60,8 @@ public class IntegerUtil {
                     }
 
                     if (len == 1) {
-                        throw new NumberFormatException("For input string: \"" + s + "\" valid first char, but expected a number to follow");
+                        throw new NumberFormatException(
+                                "For input string: \"" + s + "\" valid first char, but expected a number to follow");
                     }
 
                     ++i;
@@ -95,5 +96,4 @@ public class IntegerUtil {
         }
         return -1;
     }
-
 }

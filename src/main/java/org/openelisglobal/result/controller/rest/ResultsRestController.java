@@ -3,12 +3,7 @@ package org.openelisglobal.result.controller.rest;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
-
-import org.openelisglobal.result.controller.LogbookResultsBaseController;
-import org.springframework.http.MediaType;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.common.constants.Constants;
 import org.openelisglobal.common.services.DisplayListService;
@@ -21,6 +16,7 @@ import org.openelisglobal.inventory.form.InventoryKitItem;
 import org.openelisglobal.patient.valueholder.Patient;
 import org.openelisglobal.result.action.util.ResultsLoadUtility;
 import org.openelisglobal.result.action.util.ResultsPaging;
+import org.openelisglobal.result.controller.LogbookResultsBaseController;
 import org.openelisglobal.result.form.AccessionResultsForm;
 import org.openelisglobal.role.service.RoleService;
 import org.openelisglobal.role.valueholder.Role;
@@ -32,6 +28,7 @@ import org.openelisglobal.systemuser.service.UserService;
 import org.openelisglobal.test.beanItems.TestResultItem;
 import org.openelisglobal.userrole.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
@@ -41,9 +38,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 @RequestMapping(value = "/rest/")
@@ -74,15 +68,7 @@ public class ResultsRestController extends LogbookResultsBaseController {
     @ResponseBody
     public AccessionResultsForm getResults(@RequestParam String labNumber)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-//        System.out.println("Get Results:");
-//          System.out.println("Get Results:" + request.toString());
-
-//        return DisplayListService.getInstance().getList(DisplayListService.ListType.ALL_TESTS);
-//        HttpServletRequest request = null;
-        System.out.println("ResultsRestController getTestResult:labNumber:" + labNumber);
         String accessionNumber = labNumber;
-        // String accessionNumber = "TESTA220000000000042";
-        // String accessionNumber = "TESTA220000000000037";
 
         AccessionResultsForm form = new AccessionResultsForm();
 
@@ -97,7 +83,7 @@ public class ResultsRestController extends LogbookResultsBaseController {
         String newPage = request.getParameter("page");
         if (GenericValidator.isBlankOrNull(newPage)) {
 
-//            String accessionNumber = request.getParameter("accessionNumber");
+            // String accessionNumber = request.getParameter("accessionNumber");
             form.setDisplayTestKit(false);
 
             if (!GenericValidator.isBlankOrNull(accessionNumber)) {
@@ -117,10 +103,10 @@ public class ResultsRestController extends LogbookResultsBaseController {
 
                     setEmptyResults(form, accessionNumber);
 
-//                    IdValuePair formEntry = new IdValuePair("0", form.toString());
-//                    List<IdValuePair> forms = Arrays.asList(formEntry);
-//                    forms.add(0, formEntry);
-//                    return(form);
+                    // IdValuePair formEntry = new IdValuePair("0", form.toString());
+                    // List<IdValuePair> forms = Arrays.asList(formEntry);
+                    // forms.add(0, formEntry);
+                    // return(form);
                 }
 
                 form.setSearchFinished(Boolean.TRUE);
@@ -153,32 +139,6 @@ public class ResultsRestController extends LogbookResultsBaseController {
         } else {
             paging.page(request, form, Integer.parseInt(newPage));
         }
-
-        System.out.println("ResultsRestController getTestResult:");
-
-        List<TestResultItem> testResultItems = form.getTestResult();
-////        Timestamp now = new Timestamp(System.currentTimeMillis());
-//
-//        testResultItems.forEach(item -> {
-////             item.getResult().getAnalysis().getTestSection().getOrganization().setLastupdated(now);
-////             System.out.println(":" + item.getResult().getAnalysis().getTestSection().getOrganization().getLastupdated());
-//            System.out.println(":" + item.getTestName());
-//        });
-//        
-        ObjectMapper mapper = new ObjectMapper();
-        String jsonForm = "";
-        try {
-            jsonForm = mapper.writeValueAsString(form);
-        } catch (JsonProcessingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-//       
-//        IdValuePair formsEntry = new IdValuePair("0", jsonForm);
-//        List<IdValuePair> forms = new ArrayList<>();
-//        forms.add(0, formsEntry);
-
-       //System.out.println("ResultsRestController jsonForm:" + jsonForm);
 
         return (form);
     }

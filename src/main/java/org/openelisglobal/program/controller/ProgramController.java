@@ -2,9 +2,7 @@ package org.openelisglobal.program.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.hl7.fhir.r4.model.Questionnaire;
@@ -24,10 +22,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(value = "/rest")
 public class ProgramController extends BaseRestController {
 
     @Autowired
@@ -48,7 +48,7 @@ public class ProgramController extends BaseRestController {
             form.setAdditionalOrderEntryQuestions(fhirUtil.getLocalFhirClient().read().resource(Questionnaire.class)
                     .withId(form.getProgram().getQuestionnaireUUID().toString()).execute());
         }
-        if(form.getProgram().getTestSection() != null){
+        if (form.getProgram().getTestSection() != null) {
             form.setTestSectionId(form.getProgram().getTestSection().getId());
         }
         return form;
@@ -69,11 +69,11 @@ public class ProgramController extends BaseRestController {
             questionnaire = new Questionnaire();
         }
         program.setTestSection(null);
-        if(StringUtils.isNotBlank(form.getTestSectionId())){
-          TestSection testSection = testSectionService.get(form.getTestSectionId());
-          if(testSection != null){
-             program.setTestSection(testSection);
-          }
+        if (StringUtils.isNotBlank(form.getTestSectionId())) {
+            TestSection testSection = testSectionService.get(form.getTestSectionId());
+            if (testSection != null) {
+                program.setTestSection(testSection);
+            }
         }
         program.setManuallyChanged(true);
         program = programService.save(program);
@@ -92,7 +92,5 @@ public class ProgramController extends BaseRestController {
                     .withId(programService.get(id).getQuestionnaireUUID().toString()).execute();
         }
         return null;
-
     }
-
 }

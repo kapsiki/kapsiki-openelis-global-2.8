@@ -6,9 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.openelisglobal.common.rest.BaseRestController;
 import org.openelisglobal.program.bean.ImmunohistochemistryDashBoardCount;
 import org.openelisglobal.program.service.ImmunohistochemistryDisplayService;
@@ -42,7 +40,7 @@ public class ImmunohistochemistryController extends BaseRestController {
     @ResponseBody
     public List<ImmunohistochemistryDisplayItem> getFilteredImmunohistochemistryEntries(
             @RequestParam(required = false) String searchTerm, @RequestParam ImmunohistochemistryStatus... statuses) {
-        return immunohistochemistrySampleService.searchWithStatusAndTerm(Arrays.asList(statuses) ,searchTerm).stream()
+        return immunohistochemistrySampleService.searchWithStatusAndTerm(Arrays.asList(statuses), searchTerm).stream()
                 .map(e -> immunohistochemistryDisplayService.convertToDisplayItem(e.getId()))
                 .collect(Collectors.toList());
     }
@@ -51,14 +49,17 @@ public class ImmunohistochemistryController extends BaseRestController {
     @ResponseBody
     public ResponseEntity<ImmunohistochemistryDashBoardCount> getFilteredImmunohistochemistryEntries() {
         ImmunohistochemistryDashBoardCount count = new ImmunohistochemistryDashBoardCount();
-        count.setInProgress(immunohistochemistrySampleService.getCountWithStatus(Arrays.asList(ImmunohistochemistryStatus.IN_PROGRESS)));
-        count.setAwaitingReview(immunohistochemistrySampleService.getCountWithStatus(Arrays.asList(ImmunohistochemistryStatus.READY_PATHOLOGIST)));
-        
+        count.setInProgress(immunohistochemistrySampleService
+                .getCountWithStatus(Arrays.asList(ImmunohistochemistryStatus.IN_PROGRESS)));
+        count.setAwaitingReview(immunohistochemistrySampleService
+                .getCountWithStatus(Arrays.asList(ImmunohistochemistryStatus.READY_PATHOLOGIST)));
+
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
         Instant weekAgoInstant = Instant.now().minus(7, ChronoUnit.DAYS);
         Timestamp weekAgoTimestamp = Timestamp.from(weekAgoInstant);
-        
-        count.setComplete(immunohistochemistrySampleService.getCountWithStatusBetweenDates(Arrays.asList(ImmunohistochemistryStatus.COMPLETED),weekAgoTimestamp ,currentTimestamp));
+
+        count.setComplete(immunohistochemistrySampleService.getCountWithStatusBetweenDates(
+                Arrays.asList(ImmunohistochemistryStatus.COMPLETED), weekAgoTimestamp, currentTimestamp));
 
         return ResponseEntity.ok(count);
     }
@@ -92,7 +93,8 @@ public class ImmunohistochemistryController extends BaseRestController {
 
     @PostMapping(value = "/rest/immunohistochemistry/caseView/{immunohistochemistrySampleId}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ImmunohistochemistrySampleForm getFilteredImmunohistochemistryEntries(@PathVariable("immunohistochemistrySampleId") Integer immunohistochemistrySampleId,
+    public ImmunohistochemistrySampleForm getFilteredImmunohistochemistryEntries(
+            @PathVariable("immunohistochemistrySampleId") Integer immunohistochemistrySampleId,
             @RequestBody ImmunohistochemistrySampleForm form, HttpServletRequest request) {
         form.setSystemUserId(this.getSysUserId(request));
         immunohistochemistrySampleService.updateWithFormValues(immunohistochemistrySampleId, form);

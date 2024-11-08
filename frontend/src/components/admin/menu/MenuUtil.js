@@ -2,6 +2,8 @@ import React from "react";
 import { Checkbox } from "@carbon/react";
 import { useIntl } from "react-intl";
 
+export const updateMenuWithElementId = (newMenus, field, value) => {};
+
 export const MenuCheckBox = (props) => {
   const intl = useIntl();
 
@@ -37,23 +39,26 @@ export const MenuCheckBox = (props) => {
           style={{ marginLeft: 2 * depth + "rem" }}
         >
           <Checkbox
-            id={curMenuItem?.menu.elementId}
+            id={curMenuItem?.menu.elementId + "_checkbox"}
             labelText={intl.formatMessage({
               id: labelKey
                 ? labelKey
                 : curMenuItem.menu.displayKey
-                ? curMenuItem.menu.displayKey
-                : "missing display key",
+                  ? curMenuItem.menu.displayKey
+                  : "missing display key",
             })}
+            disabled={curMenuItem.menu.elementId === "menu_sidenav"}
             checked={curMenuItem?.menu.isActive}
             onChange={(_, { checked }) => {
               if (path === "$" || !path) {
-                setMenuItem({
-                  ...setMenuIsActiveToValueIncludeChildren(
-                    checked,
-                    curMenuItem,
-                  ),
-                });
+                if (curMenuItem.menu.elementId !== "menu_sidenav") {
+                  setMenuItem({
+                    ...setMenuIsActiveToValueIncludeChildren(
+                      checked,
+                      curMenuItem,
+                    ),
+                  });
+                }
               } else {
                 let newMenuItem = { ...menuItem };
                 var jp = require("jsonpath");

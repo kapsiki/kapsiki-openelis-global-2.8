@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.program.service.ImmunohistochemistrySampleService;
 import org.openelisglobal.program.valueholder.immunohistochemistry.ImmunohistochemistrySample;
@@ -15,29 +14,29 @@ import org.openelisglobal.spring.util.SpringContext;
 import org.openelisglobal.test.valueholder.Test;
 
 public class BreastCancerHormoneReceptorReport extends PatientProgramReport {
-    
+
     private ImmunohistochemistrySampleService immunohistochemistrySampleService = SpringContext
             .getBean(ImmunohistochemistrySampleService.class);
-    
+
     private ImmunohistochemistrySample immunohistochemistrySample;
-    
+
     @Override
     protected String getReportName() {
         return "BreastCancerHormoneReceptorReport";
     }
-    
+
     @Override
     protected void setAdditionalReportItems() {
         Test erTest = testService.getActiveTestByLocalizedName("Anti-ER", Locale.ENGLISH);
         data.setErResult(getResult(erTest));
-        
+
         Test prTest = testService.getActiveTestByLocalizedName("Anti-PR", Locale.ENGLISH);
         data.setPrResult(getResult(prTest));
-        
+
         Test mibTest = testService.getActiveTestByLocalizedName("Anti-Ki67", Locale.ENGLISH);
         data.setMibResult(getResult(mibTest));
     }
-    
+
     @Override
     protected void createExtraReportParameters() {
         reportParameters.put("erPercent", form.getErPercent());
@@ -53,24 +52,24 @@ public class BreastCancerHormoneReceptorReport extends PatientProgramReport {
         reportParameters.put("diagnosis", form.getDiagnosis());
         reportParameters.put("molecularSubType", form.getMolecularSubType());
     }
-    
+
     @Override
     protected void innitializeSample(ReportForm form) {
         immunohistochemistrySample = immunohistochemistrySampleService.get(Integer.valueOf(form.getProgramSampleId()));
         sample = immunohistochemistrySample.getSample();
     }
-    
+
     private List<Analysis> getAnalysesByTestAndSampleAndStatus(Sample sample, Test test, Set<Integer> statusIdList) {
         List<Integer> sampleIdList = new ArrayList<>();
         sampleIdList.add(Integer.valueOf(sample.getId()));
-        
+
         List<Integer> testIdList = new ArrayList<>();
         testIdList.add(Integer.valueOf(test.getId()));
         List<Analysis> analyses = analysisService.getAnalysesBySampleIdTestIdAndStatusId(sampleIdList, testIdList,
-            new ArrayList<>(statusIdList));
+                new ArrayList<>(statusIdList));
         return analyses != null ? analyses : new ArrayList<Analysis>();
     }
-    
+
     private String getResult(Test test) {
         String result = "";
         if (test == null) {

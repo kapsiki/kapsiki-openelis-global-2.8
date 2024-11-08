@@ -1,7 +1,6 @@
 package org.openelisglobal.observationhistorytype.daoimpl;
 
 import java.util.List;
-
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
@@ -22,7 +21,6 @@ public class ObservationHistoryTypeDAOImpl extends BaseDAOImpl<ObservationHistor
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public ObservationHistoryType getByName(String name) throws LIMSRuntimeException {
         List<ObservationHistoryType> historyTypeList;
@@ -42,11 +40,8 @@ public class ObservationHistoryTypeDAOImpl extends BaseDAOImpl<ObservationHistor
         }
     }
 
-    /**
-     * Read all entities from the database.
-     */
+    /** Read all entities from the database. */
     @Override
-
     @Transactional(readOnly = true)
     public List<ObservationHistoryType> getAll() throws LIMSRuntimeException {
         List<ObservationHistoryType> entities;
@@ -62,5 +57,4 @@ public class ObservationHistoryTypeDAOImpl extends BaseDAOImpl<ObservationHistor
 
         return entities;
     }
-
 }

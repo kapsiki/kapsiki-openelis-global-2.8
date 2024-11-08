@@ -1,18 +1,15 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) CIRG, University of Washington, Seattle WA.  All Rights Reserved.
- *
+ * <p>Copyright (C) CIRG, University of Washington, Seattle WA. All Rights Reserved.
  */
 package org.openelisglobal.dataexchange.MalariaSurveilance;
 
@@ -24,9 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
@@ -179,9 +174,7 @@ public class MalariaSurveilanceJob implements Job {
 
             new ReportTransmission().sendRawReport(buffer.toString(), url, sendAsychronously, responseHandler,
                     HTTP_TYPE.POST);
-
         }
-
     }
 
     private void writeReportForDayPeriod(int daysAgo) {
@@ -267,8 +260,8 @@ public class MalariaSurveilanceJob implements Job {
         @Override
         public void handleResponse(int httpReturnStatus, List<String> errors, String msg) {
             if (httpReturnStatus == HttpServletResponse.SC_OK) {
-
             }
+
             switch (httpReturnStatus) {
             case HttpServletResponse.SC_OK:
                 setJobTimestamp(runTime);
@@ -289,7 +282,5 @@ public class MalariaSurveilanceJob implements Job {
                 LogEvent.logError(e);
             }
         }
-
     }
-
 }

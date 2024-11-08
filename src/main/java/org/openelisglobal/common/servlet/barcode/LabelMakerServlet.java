@@ -4,12 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.openelisglobal.barcode.BarcodeLabelMaker;
 import org.openelisglobal.common.action.IActionConstants;
@@ -39,7 +37,6 @@ import org.springframework.validation.ObjectError;
  * returns override page
  *
  * @author Caleb
- *
  */
 public class LabelMakerServlet extends HttpServlet implements IActionConstants {
 
@@ -77,7 +74,6 @@ public class LabelMakerServlet extends HttpServlet implements IActionConstants {
             // writes to response
             printExistingOrder(request, response);
         }
-
     }
 
     private void printPathologyBarcodeLabel(HttpServletRequest request, HttpServletResponse response)
@@ -118,7 +114,6 @@ public class LabelMakerServlet extends HttpServlet implements IActionConstants {
         if (GenericValidator.isBlankOrNull(startingAt) || startingAt.trim().equals("null")
                 || startingAt.trim().equals("undefined")) {
             startingAt = "";
-
         }
         labelMaker.generatePrePrintLabels(Integer.parseInt(request.getParameter("numSetsOfLabels")),
                 Integer.parseInt(request.getParameter("numOrderLabelsPerSet")),
@@ -239,13 +234,13 @@ public class LabelMakerServlet extends HttpServlet implements IActionConstants {
             IAccessionNumberValidator accessionNumberValidator = AccessionNumberUtil
                     .getGeneralAccessionNumberValidator();
             String accessionNumber;
-//        String sampleItemNumber;
+            // String sampleItemNumber;
             if (labNo.indexOf(".") > 0) {
                 accessionNumber = labNo.substring(0, labNo.indexOf("."));
-//            sampleItemNumber = labNo.substring(labNo.indexOf(".") + 1);
+                // sampleItemNumber = labNo.substring(labNo.indexOf(".") + 1);
             } else {
                 accessionNumber = labNo;
-//            sampleItemNumber = "0";
+                // sampleItemNumber = "0";
             }
             if (!(IAccessionNumberValidator.ValidationResults.SUCCESS == accessionNumberValidator
                     .validFormat(accessionNumber, false))) {
@@ -266,5 +261,4 @@ public class LabelMakerServlet extends HttpServlet implements IActionConstants {
 
         return errors;
     }
-
 }

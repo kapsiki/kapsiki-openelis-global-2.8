@@ -8,5 +8,4 @@ public interface ImmunohistochemistryDisplayService {
     ImmunohistochemistryCaseViewDisplayItem convertToCaseDisplayItem(Integer immunohistochemistrySampleId);
 
     ImmunohistochemistryDisplayItem convertToDisplayItem(Integer immunohistochemistrySampleId);
-
 }

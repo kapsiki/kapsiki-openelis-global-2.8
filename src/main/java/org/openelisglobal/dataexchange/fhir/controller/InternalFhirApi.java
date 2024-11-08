@@ -38,5 +38,4 @@ public class InternalFhirApi {
 
         return ResponseEntity.ok("");
     }
-
 }

@@ -1,24 +1,21 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ */
 package org.openelisglobal.test.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -26,8 +23,8 @@ import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.test.dao.TestSectionDAO;
 import org.openelisglobal.test.valueholder.TestSection;
 import org.springframework.stereotype.Component;
@@ -61,7 +58,6 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<TestSection> getAllTestSections() throws LIMSRuntimeException {
         List<TestSection> list = null;
@@ -113,7 +109,9 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
         List<TestSection> list;
         try {
             // calculate maxRow to be one more than the page size
-            int endingRecNo = startingRecNo + (SystemConfiguration.getInstance().getDefaultPageSize() + 1);
+            int endingRecNo = startingRecNo
+                    + (Integer.parseInt(ConfigurationProperties.getInstance().getPropertyValue("page.defaultPageSize"))
+                            + 1);
 
             // bugzilla 1399
             String sql = "from TestSection t order by t.organization.organizationName, t.testSectionName";
@@ -150,7 +148,8 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
     public List<TestSection> getTestSections(String filter) throws LIMSRuntimeException {
         List<TestSection> list;
         try {
-            String sql = "from TestSection t where upper(t.testSectionName) like upper(:param) order by upper(t.testSectionName)";
+            String sql = "from TestSection t where upper(t.testSectionName) like upper(:param) order by"
+                    + " upper(t.testSectionName)";
             Query<TestSection> query = entityManager.unwrap(Session.class).createQuery(sql, TestSection.class);
             query.setParameter("param", filter + "%");
             list = query.list();
@@ -173,7 +172,8 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
 
         try {
             if (sectionIdList.size() > 0) {
-                sql = "from TestSection t where upper(t.testSectionName) like upper(:param) and t.id in (:sectionIdList) order by upper(t.testSectionName)";
+                sql = "from TestSection t where upper(t.testSectionName) like upper(:param) and t.id in"
+                        + " (:sectionIdList) order by upper(t.testSectionName)";
             } else {
                 return list;
             }
@@ -192,7 +192,6 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public TestSection getTestSectionByName(TestSection testSection) throws LIMSRuntimeException {
         try {
@@ -308,5 +307,4 @@ public class TestSectionDAOImpl extends BaseDAOImpl<TestSection, String> impleme
         }
         return null;
     }
-
 }

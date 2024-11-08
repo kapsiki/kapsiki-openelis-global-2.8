@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.services.IStatusService;
@@ -72,21 +71,17 @@ public class LogbookPersistServiceImpl implements LogbookResultsPersistService {
         for (ResultSet resultSet : actionDataSet.getNewResults()) {
             resultSet.result.setResultEvent(Event.PRELIMINARY_RESULT);
             resultSet.result.setFhirUuid(UUID.randomUUID());
-            String resultId = resultService.insert(resultSet.result);
+            String resultId;
+            // resultId = resultService.insert(resultSet.result);
 
             checkAnalysis = resultSet.result.getAnalysis();
             checkSampleItem = checkAnalysis.getSampleItem();
             checkSample = checkSampleItem.getSample();
-//            System.out.println(">>>: " +
-//                    checkAnalysis.getId() + " " +
-//                    checkSampleItem.getId() + " " +
-//                    checkSample.getId() + " " +
-//                    checkSample.getAccessionNumber());
 
             checkResult = resultService.getResultsForTestAndSample(checkSample.getId(),
                     checkAnalysis.getTest().getId());
             if (checkResult.size() == 0) {
-                resultService.insert(resultSet.result);
+                resultId = resultService.insert(resultSet.result);
             } else {
                 continue;
             }
@@ -101,7 +96,6 @@ public class LogbookPersistServiceImpl implements LogbookResultsPersistService {
                 resultInventoryService.insert(resultSet.testKit);
             }
             resultSet.result.setId(resultId);
-
         }
 
         for (ReferralSet referralSet : actionDataSet.getSavableReferralSets()) {
@@ -147,7 +141,6 @@ public class LogbookPersistServiceImpl implements LogbookResultsPersistService {
             updater.transactionalUpdate(actionDataSet);
         }
         return reflexAnalysises;
-
     }
 
     private void saveReferralsWithRequiredObjects(ReferralSet referralSet, String sysUserId) {
@@ -168,16 +161,17 @@ public class LogbookPersistServiceImpl implements LogbookResultsPersistService {
 
     protected List<Analysis> setTestReflexes(ResultsUpdateDataSet actionDataSet, String sysUserId) {
         TestReflexUtil testReflexUtil = new TestReflexUtil();
-        TestCalculatedUtil testCallatedUtil = new TestCalculatedUtil();
+        TestCalculatedUtil testCaliculatedUtil = new TestCalculatedUtil();
         List allResults = actionDataSet.getNewResults();
         allResults.addAll(actionDataSet.getModifiedResults());
         List<Analysis> reflexAnalysises = testReflexUtil
                 .addNewTestsToDBForReflexTests(convertToTestReflexBeanList(allResults), sysUserId);
         testReflexUtil.updateModifiedReflexes(convertToTestReflexBeanList(actionDataSet.getModifiedResults()),
                 sysUserId);
-       List<Analysis> caclculatedAnalyses =  testCallatedUtil.addNewTestsToDBForCalculatedTests(allResults, sysUserId) ;       
-       reflexAnalysises.addAll(caclculatedAnalyses);
-       return reflexAnalysises;
+        List<Analysis> caclculatedAnalyses = testCaliculatedUtil.addNewTestsToDBForCalculatedTests(allResults,
+                sysUserId);
+        reflexAnalysises.addAll(caclculatedAnalyses);
+        return reflexAnalysises;
     }
 
     private List<TestReflexBean> convertToTestReflexBeanList(List<ResultSet> resultSetList) {
@@ -232,5 +226,4 @@ public class LogbookPersistServiceImpl implements LogbookResultsPersistService {
             }
         }
     }
-
 }

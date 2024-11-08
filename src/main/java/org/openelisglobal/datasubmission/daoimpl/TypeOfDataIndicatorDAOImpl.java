@@ -2,7 +2,6 @@ package org.openelisglobal.datasubmission.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -70,5 +69,4 @@ public class TypeOfDataIndicatorDAOImpl extends BaseDAOImpl<TypeOfDataIndicator,
             throw new LIMSRuntimeException("Error in TypeOfDataIndicator getData()", e);
         }
     }
-
 }

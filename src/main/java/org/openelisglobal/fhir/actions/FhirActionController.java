@@ -2,7 +2,6 @@ package org.openelisglobal.fhir.actions;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -43,5 +42,4 @@ public class FhirActionController {
                     .body(EntityUtils.toString(res.getEntity(), StandardCharsets.UTF_8));
         }
     }
-
 }

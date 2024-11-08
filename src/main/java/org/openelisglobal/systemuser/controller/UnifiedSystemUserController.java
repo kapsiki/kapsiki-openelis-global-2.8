@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.json.JSONArray;
@@ -360,9 +358,8 @@ public class UnifiedSystemUserController extends BaseController {
             setLabunitRolesForExistingUser(form);
 
             // is this meant to be returned?
-//            doFiltering = !roleIds.contains(MAINTENANCE_ADMIN_ID);
+            // doFiltering = !roleIds.contains(MAINTENANCE_ADMIN_ID);
         }
-
     }
 
     private String getProxyPassword(LoginUser login) {
@@ -667,7 +664,6 @@ public class UnifiedSystemUserController extends BaseController {
          * ,Set<LabUnitRoles>> for each Lab Unit Role Set based on the suffix appended
          * ie testSectionId = "1=2,2=5,2=6" ,selectedLabUnitRoles = [1=56, 2=36 ,3=44]
          */
-
         String labUnitEntryMapString = form.getTestSectionId();
         List<String> labUnitsRolesEntryMaps = form.getSelectedLabUnitRoles();
 

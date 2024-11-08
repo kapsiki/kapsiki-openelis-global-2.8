@@ -1,10 +1,9 @@
 package org.openelisglobal.statusofsample.service;
 
 import java.util.List;
-
 import org.openelisglobal.common.exception.LIMSDuplicateRecordException;
 import org.openelisglobal.common.log.LogEvent;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.statusofsample.dao.StatusOfSampleDAO;
 import org.openelisglobal.statusofsample.valueholder.StatusOfSample;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class StatusOfSampleServiceImpl extends BaseObjectServiceImpl<StatusOfSample, String>
+public class StatusOfSampleServiceImpl extends AuditableBaseObjectServiceImpl<StatusOfSample, String>
         implements StatusOfSampleService {
     @Autowired
     protected StatusOfSampleDAO baseObjectDAO;
@@ -30,7 +29,6 @@ public class StatusOfSampleServiceImpl extends BaseObjectServiceImpl<StatusOfSam
     @Transactional(readOnly = true)
     public void getData(StatusOfSample sourceOfSample) {
         getBaseObjectDAO().getData(sourceOfSample);
-
     }
 
     @Override

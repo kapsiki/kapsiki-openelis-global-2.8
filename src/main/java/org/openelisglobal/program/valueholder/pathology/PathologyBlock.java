@@ -7,7 +7,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
@@ -49,5 +48,4 @@ public class PathologyBlock extends BaseObject<Integer> {
     public void setLocation(String location) {
         this.location = location;
     }
-
 }

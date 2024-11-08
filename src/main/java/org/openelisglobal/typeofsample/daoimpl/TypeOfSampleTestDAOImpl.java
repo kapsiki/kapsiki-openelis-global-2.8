@@ -1,31 +1,29 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
-* Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.typeofsample.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.typeofsample.dao.TypeOfSampleTestDAO;
 import org.openelisglobal.typeofsample.valueholder.TypeOfSampleTest;
 import org.springframework.stereotype.Component;
@@ -58,7 +56,6 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<TypeOfSampleTest> getAllTypeOfSampleTests() throws LIMSRuntimeException {
 
@@ -86,7 +83,9 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
         List<TypeOfSampleTest> list;
         try {
             // calculate maxRow to be one more than the page size
-            int endingRecNo = startingRecNo + DEFAULT_PAGE_SIZE + 1;
+            int endingRecNo = startingRecNo
+                    + Integer.parseInt(ConfigurationProperties.getInstance().getPropertyValue("page.defaultPageSize"))
+                    + 1;
 
             String sql = "from TypeOfSampleTest t order by t.typeOfSampleId, t.testId";
             Query<TypeOfSampleTest> query = entityManager.unwrap(Session.class).createQuery(sql,
@@ -116,7 +115,6 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<TypeOfSampleTest> getTypeOfSampleTestsForSampleType(String sampleTypeId) throws LIMSRuntimeException {
         String sql = "from TypeOfSampleTest tt where tt.typeOfSampleId = :sampleId";
@@ -139,7 +137,6 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public TypeOfSampleTest getTypeOfSampleTestForTest(String testId) throws LIMSRuntimeException {
 
@@ -156,7 +153,6 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
         }
 
         return null;
-
     }
 
     @Override
@@ -180,5 +176,4 @@ public class TypeOfSampleTestDAOImpl extends BaseDAOImpl<TypeOfSampleTest, Strin
     public Integer getTotalTypeOfSampleTestCount() throws LIMSRuntimeException {
         return this.getCount();
     }
-
 }

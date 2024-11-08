@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.hibernate.HibernateException;
 import org.openelisglobal.common.controller.BaseController;
 import org.openelisglobal.common.log.LogEvent;
@@ -152,7 +150,7 @@ public class SampleTypeTestAssignController extends BaseController {
             updateTypeOfSample = true;
         }
 
-//------------------------------------------
+        // ------------------------------------------
         if (!org.apache.commons.validator.GenericValidator.isBlankOrNull(deactivateSampleTypeId)) {
             deActivateTypeOfSample = SpringContext.getBean(TypeOfSampleService.class)
                     .getTransientTypeOfSampleById(deactivateSampleTypeId);

@@ -3,7 +3,6 @@ package org.openelisglobal.notification.service.sender;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.validator.GenericValidator;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -34,7 +33,6 @@ public class BMPSMSNotificationSender {
         String password = configurationProperties.getPropertyValue(Property.PATIENT_RESULTS_BMP_SMS_PASSWORD);
 
         sendSMS(notification, address, username, password, "");
-
     }
 
     private void sendSMS(SMSNotification notification, String address, String username, String password,
@@ -55,7 +53,8 @@ public class BMPSMSNotificationSender {
             System.out.println("response status from BMP SMS: " + statusReturned);
             LogEvent.logDebug(this.getClass().getSimpleName(), "sendSMS",
                     "response status code from BMP SMS: " + response.getStatusLine().getStatusCode());
-            LogEvent.logDebug(this.getClass().getSimpleName(), "sendSMS", "response status from BMP SMS: " + statusReturned);
+            LogEvent.logDebug(this.getClass().getSimpleName(), "sendSMS",
+                    "response status from BMP SMS: " + statusReturned);
         } catch (IOException e) {
             LogEvent.logError(this.getClass().getSimpleName(), "sendSMS",
                     "failed to communicate with " + address + " for sending SMS");
@@ -66,7 +65,8 @@ public class BMPSMSNotificationSender {
             String returnedCode = statusReturned.substring(statusReturned.indexOf("-") + 1).strip();
             if (returnedCode.length() < 4) {
                 // an error has occurred
-                LogEvent.logError(this.getClass().getSimpleName(), "sendSMS", "response from BMP SMS: " + statusReturned);
+                LogEvent.logError(this.getClass().getSimpleName(), "sendSMS",
+                        "response from BMP SMS: " + statusReturned);
                 try {
                     int code = Integer.parseInt(returnedCode);
                     if (code == 91 && !"00".equals(phonePrefix)) {
@@ -78,9 +78,6 @@ public class BMPSMSNotificationSender {
                             "failed to parse error response from SMS server");
                 }
             }
-
         }
-
     }
-
 }

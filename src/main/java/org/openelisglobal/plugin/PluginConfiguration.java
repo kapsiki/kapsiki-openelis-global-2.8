@@ -10,10 +10,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.Servlet;
-
 import org.apache.commons.io.IOUtils;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -59,7 +57,6 @@ public class PluginConfiguration implements BeanFactoryAware {
                 }
             }
         }
-
     }
 
     private void loadPluginServlet(File pluginFile) {
@@ -91,7 +88,6 @@ public class PluginConfiguration implements BeanFactoryAware {
                 LogEvent.logDebug(e);
             }
         }
-
     }
 
     private boolean loadFromXML(JarFile jar, JarEntry entry) {
@@ -114,10 +110,12 @@ public class PluginConfiguration implements BeanFactoryAware {
                 return false;
             }
             if (!PluginLoader.SUPPORTED_VERSION.equals(versionElement.getData())) {
-                LogEvent.logError(this.getClass().getSimpleName(), "loadFromXml", "Unsupported version number.  Expected "
-                        + PluginLoader.SUPPORTED_VERSION + " got " + versionElement.getData());
-                LogEvent.logInfo(this.getClass().getSimpleName(), "loadFromXml", "Unsupported version number.  Expected "
-                        + PluginLoader.SUPPORTED_VERSION + " got " + versionElement.getData());
+                LogEvent.logError(this.getClass().getSimpleName(), "loadFromXml",
+                        "Unsupported version number.  Expected " + PluginLoader.SUPPORTED_VERSION + " got "
+                                + versionElement.getData());
+                LogEvent.logInfo(this.getClass().getSimpleName(), "loadFromXml",
+                        "Unsupported version number.  Expected " + PluginLoader.SUPPORTED_VERSION + " got "
+                                + versionElement.getData());
                 return false;
             }
 
@@ -160,7 +158,6 @@ public class PluginConfiguration implements BeanFactoryAware {
             Class<?> namedClass = classLoader.loadClass(servletClassPath);
             if (Servlet.class.isAssignableFrom(namedClass)) {
                 @SuppressWarnings("unchecked")
-
                 Class<? extends Servlet> servletClass = (Class<? extends Servlet>) namedClass;
 
                 if (!configurableBeanFactory.containsBean("SimpleUrlHandlerMapping")) {
@@ -171,7 +168,7 @@ public class PluginConfiguration implements BeanFactoryAware {
                     mapping.setOrder(Integer.MAX_VALUE - 2);
                     configurableBeanFactory.registerSingleton("SimpleUrlHandlerMapping", mapping);
                 }
-//                configurableBeanFactory.getBean("SimpleUrlHandlerMapping");
+                // configurableBeanFactory.getBean("SimpleUrlHandlerMapping");
 
                 ServletWrappingController controller = new ServletWrappingController();
                 controller.setServletClass(servletClass);
@@ -182,17 +179,15 @@ public class PluginConfiguration implements BeanFactoryAware {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
             }
 
         } catch (ClassNotFoundException e) {
             LogEvent.logError("could not load a plugin servlet class with name: " + servletName, e);
         }
-//        finally {
-//            if (classLoader != null) {
-//                classLoader.close();
-//            }
-//        }
+        // finally {
+        // if (classLoader != null) {
+        // classLoader.close();
+        // }
+        // }
     }
-
 }

@@ -7,12 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
-
 import org.hibernate.Hibernate;
 import org.openelisglobal.common.exception.LIMSDuplicateRecordException;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.localization.valueholder.Localization;
 import org.openelisglobal.panel.service.PanelService;
 import org.openelisglobal.panel.valueholder.Panel;
@@ -31,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @DependsOn({ "springContext" })
-public class TypeOfSampleServiceImpl extends BaseObjectServiceImpl<TypeOfSample, String>
+public class TypeOfSampleServiceImpl extends AuditableBaseObjectServiceImpl<TypeOfSample, String>
         implements TypeOfSampleService {
 
     private Map<String, List<Test>> sampleIdTestMap = new HashMap<>();
@@ -264,7 +262,6 @@ public class TypeOfSampleServiceImpl extends BaseObjectServiceImpl<TypeOfSample,
     @Transactional(readOnly = true)
     public void getData(TypeOfSample typeOfSample) {
         getBaseObjectDAO().getData(typeOfSample);
-
     }
 
     @Override

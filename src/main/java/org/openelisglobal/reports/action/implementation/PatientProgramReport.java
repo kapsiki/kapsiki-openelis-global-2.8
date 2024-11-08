@@ -10,9 +10,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
 import javax.annotation.PostConstruct;
-
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.address.service.AddressPartService;
 import org.openelisglobal.address.service.PersonAddressService;
@@ -63,9 +63,6 @@ import org.openelisglobal.test.service.TestService;
 import org.openelisglobal.test.service.TestServiceImpl;
 import org.openelisglobal.test.valueholder.Test;
 import org.openelisglobal.typeoftestresult.service.TypeOfTestResultServiceImpl;
-
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 public abstract class PatientProgramReport extends Report implements IReportCreator {
 
@@ -146,35 +143,27 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
 
     static {
         analysisStatusIds = new HashSet<>();
-        analysisStatusIds.add(
-                Integer.parseInt(
-                        SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected)));
-        analysisStatusIds
-                .add(Integer
-                        .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized)));
         analysisStatusIds.add(Integer
-                .parseInt(SpringContext.getBean(IStatusService.class)
-                        .getStatusID(AnalysisStatus.NonConforming_depricated)));
-        analysisStatusIds
-                .add(Integer
-                        .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NotStarted)));
+                .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected)));
         analysisStatusIds.add(
-                Integer.parseInt(
-                        SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalAcceptance)));
-        analysisStatusIds
-                .add(Integer
-                        .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Canceled)));
+                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized)));
+        analysisStatusIds.add(Integer.parseInt(
+                SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NonConforming_depricated)));
         analysisStatusIds.add(
-                Integer.parseInt(
-                        SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalRejected)));
-
+                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.NotStarted)));
+        analysisStatusIds.add(Integer
+                .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalAcceptance)));
+        analysisStatusIds.add(
+                Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Canceled)));
+        analysisStatusIds.add(Integer
+                .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalRejected)));
     }
 
-    abstract protected String getReportName();
+    protected abstract String getReportName();
 
-    abstract protected void setAdditionalReportItems();
+    protected abstract void setAdditionalReportItems();
 
-    abstract protected void innitializeSample(ReportForm form);
+    protected abstract void innitializeSample(ReportForm form);
 
     @Override
     protected String reportFileName() {
@@ -237,9 +226,8 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
         reportParameters.put("siteId", ConfigurationProperties.getInstance().getPropertyValue(Property.SiteCode));
         reportParameters.put("headerName", getHeaderName());
         reportParameters.put("billingNumberLabel",
-                SpringContext.getBean(LocalizationService.class).getLocalizedValueById(
-                        ConfigurationProperties.getInstance()
-                                .getPropertyValue(Property.BILLING_REFERENCE_NUMBER_LABEL)));
+                SpringContext.getBean(LocalizationService.class).getLocalizedValueById(ConfigurationProperties
+                        .getInstance().getPropertyValue(Property.BILLING_REFERENCE_NUMBER_LABEL)));
         reportParameters.put("footerName", getFooterName());
         Optional<Image> labDirectorSignature = imageService.getImageBySiteInfoName("labDirectorSignature");
         reportParameters.put("useLabDirectorSignature", labDirectorSignature.isPresent());
@@ -253,11 +241,9 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
         reportParameters.put("labDirectorTitle",
                 ConfigurationProperties.getInstance().getPropertyValue(Property.LAB_DIRECTOR_TITLE));
         createExtraReportParameters();
-
     }
 
     protected void createExtraReportParameters() {
-
     }
 
     private Object getFooterName() {
@@ -305,7 +291,6 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
                 patientCommune = deptAddress.getValue();
             }
         }
-
     }
 
     private void findContactInfo() {
@@ -328,7 +313,6 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
             currentContactInfo = personService.getLastFirstName(person);
             currentProvider = providerService.getProviderByPerson(person);
         }
-
     }
 
     protected ProgramSampleReportData buildClinicalPatientData() {
@@ -377,9 +361,8 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
         data.setLabOrderType(
                 observationHistoryService.getValueForSample(ObservationType.PROGRAM, sampleService.getId(sample)));
         data.setTestName(testName);
-        data.setPatientSiteNumber(
-                observationHistoryService.getValueForSample(ObservationType.REFERRERS_PATIENT_ID,
-                        sampleService.getId(sample)));
+        data.setPatientSiteNumber(observationHistoryService.getValueForSample(ObservationType.REFERRERS_PATIENT_ID,
+                sampleService.getId(sample)));
         data.setBillingNumber(observationHistoryService.getValueForSample(ObservationType.BILLING_REFERENCE_NUMBER,
                 sampleService.getId(sample)));
         data.setOrderDate(orderDateForDisplay);
@@ -401,9 +384,9 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
         if (Boolean.valueOf(ConfigurationProperties.getInstance().getPropertyValue(Property.CONTACT_TRACING))) {
             data.setContactTracingIndexName(sampleService.getSampleAdditionalFieldForSample(sampleService.getId(sample),
                     AdditionalFieldName.CONTACT_TRACING_INDEX_NAME).getFieldValue());
-            data.setContactTracingIndexRecordNumber(sampleService.getSampleAdditionalFieldForSample(
-                    sampleService.getId(sample), AdditionalFieldName.CONTACT_TRACING_INDEX_RECORD_NUMBER)
-                    .getFieldValue());
+            data.setContactTracingIndexRecordNumber(
+                    sampleService.getSampleAdditionalFieldForSample(sampleService.getId(sample),
+                            AdditionalFieldName.CONTACT_TRACING_INDEX_RECORD_NUMBER).getFieldValue());
         }
         setAdditionalReportItems();
         return data;
@@ -438,7 +421,6 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
         String collectionTimes = buffer.toString();
 
         data.setCollectionDateTime(collectionTimes);
-
     }
 
     private String createReadableAge(String dob) {
@@ -457,7 +439,6 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
             int days = DateUtil.getAgeInDays(dobDate, DateUtil.getNowAsSqlDate());
             return days + " " + MessageUtil.getMessage("abbreviation.day.single");
         }
-
     }
 
     protected String getPatientDOB(Patient patient) {
@@ -513,7 +494,6 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
                 } else {
                     ResultService resultResultService = SpringContext.getBean(ResultService.class);
                     reportResult = resultResultService.getResultValue(result, true);
-
                 }
             } else {
                 // If multiple results it can be a quantified result, multiple
@@ -607,7 +587,5 @@ public abstract class PatientProgramReport extends Report implements IReportCrea
             }
         }
         return reportResult;
-
     }
-
 }

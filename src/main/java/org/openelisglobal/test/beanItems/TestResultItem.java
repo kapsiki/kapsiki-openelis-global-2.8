@@ -1,30 +1,27 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*
-* Contributor(s): CIRG, University of Washington, Seattle WA.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ *
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
+ */
 package org.openelisglobal.test.beanItems;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.validation.constraints.Pattern;
-
-import org.openelisglobal.validation.annotations.SafeHtml;
 import org.openelisglobal.common.action.IActionConstants;
 import org.openelisglobal.common.provider.validation.AccessionNumberValidatorFactory.AccessionFormat;
 import org.openelisglobal.common.util.IdValuePair;
@@ -34,14 +31,12 @@ import org.openelisglobal.referral.action.beanitems.ReferralItem;
 import org.openelisglobal.result.action.util.ResultItem;
 import org.openelisglobal.result.form.LogbookResultsForm;
 import org.openelisglobal.result.valueholder.Result;
+import org.openelisglobal.validation.annotations.SafeHtml;
 import org.openelisglobal.validation.annotations.ValidAccessionNumber;
 import org.openelisglobal.validation.annotations.ValidDate;
 import org.openelisglobal.validation.annotations.ValidName;
 import org.openelisglobal.validation.constraintvalidator.NameValidator.NameType;
 import org.openelisglobal.workplan.form.WorkplanForm;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TestResultItem implements ResultItem, Serializable {
@@ -51,6 +46,7 @@ public class TestResultItem implements ResultItem, Serializable {
     @ValidAccessionNumber(format = AccessionFormat.UNFORMATTED, groups = { WorkplanForm.PrintWorkplan.class,
             LogbookResultsForm.LogbookResults.class })
     private String accessionNumber;
+
     private String sequenceNumber;
     private boolean showSampleDetails = true;
     /*
@@ -69,6 +65,7 @@ public class TestResultItem implements ResultItem, Serializable {
     private boolean isServingAsTestGroupIdentifier = false;
 
     private static String NO = "no";
+
     @SuppressWarnings("unused")
     private static String YES = "yes";
 
@@ -109,6 +106,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
     private String testKitId;
+
     private boolean testKitInactive = false;
     private double upperNormalRange = 0;
     private double lowerNormalRange = 0;
@@ -117,40 +115,45 @@ public class TestResultItem implements ResultItem, Serializable {
     private String normalRange = "";
     private double lowerCritical;
     private double higherCritical;
-    
-    
 
     private int significantDigits = -1;
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String shadowResultValue;
+
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String resultValue;
+
     private String remarks;
 
     @ValidName(nameType = NameType.FULL_NAME)
     private String technician;
+
     private boolean reportable;
     private String patientName;
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { WorkplanForm.PrintWorkplan.class })
     private String patientInfo;
+
     private String nationalId;
     private String unitsOfMeasure = "";
 
-//	private String testSortNumber;
+    // private String testSortNumber;
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String resultType;
+
     private ResultDisplayType resultDisplayType = ResultDisplayType.TEXT;
     private boolean isModified = false;
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
     private String analysisId;
+
     private String analysisStatusId;
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
     private String resultId;
+
     private Result result;
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
@@ -158,6 +161,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
     private String resultLimitId;
+
     private List<IdValuePair> dictionaryResults;
     private List<IdValuePair> methods;
     private List<IdValuePair> referralOrganizations;
@@ -166,6 +170,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String note;
+
     private String pastNotes;
     private boolean valid = true;
     private boolean normal = true;
@@ -189,6 +194,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String multiSelectResultValues;
+
     private String initialSampleCondition;
     private String sampleType;
     private boolean failedValidation = false;
@@ -202,6 +208,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String qualifiedResultValue = "";
+
     private String qualifiedResultId;
     private boolean hasQualifiedResult = false;
     private String nextVisitDate;
@@ -211,6 +218,7 @@ public class TestResultItem implements ResultItem, Serializable {
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { LogbookResultsForm.LogbookResults.class })
     private String reflexJSONResult;
+
     private boolean rejected = false;
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { LogbookResultsForm.LogbookResults.class })
@@ -375,7 +383,7 @@ public class TestResultItem implements ResultItem, Serializable {
     public ResultDisplayType getRawResultDisplayType() {
         return resultDisplayType;
     }
-    
+
     public void setResultDisplayType(ResultDisplayType resultType) {
         resultDisplayType = resultType;
     }
@@ -468,7 +476,7 @@ public class TestResultItem implements ResultItem, Serializable {
     public void setTestMethod(String testMethod) {
         this.testMethod = testMethod;
     }
-    
+
     public List<IdValuePair> getReferralOrganizations() {
         return referralOrganizations;
     }
@@ -476,7 +484,7 @@ public class TestResultItem implements ResultItem, Serializable {
     public void setReferralOrganizations(List<IdValuePair> referralOrganizations) {
         this.referralOrganizations = referralOrganizations;
     }
-    
+
     public List<IdValuePair> getReferralReasons() {
         return referralReasons;
     }
@@ -551,15 +559,15 @@ public class TestResultItem implements ResultItem, Serializable {
         resultValue = results;
         setShadowResultValue(results);
     }
-    
+
     public String getResultValueLog() {
-    	try {
-    		DecimalFormat df = new DecimalFormat("###.##");
-    		double val = Double.parseDouble(this.resultValue);
-    		return df.format(Math.log10(val));
-    	}catch(Exception e) {
-    		return "--";
-    	}
+        try {
+            DecimalFormat df = new DecimalFormat("###.##");
+            double val = Double.parseDouble(this.resultValue);
+            return df.format(Math.log10(val));
+        } catch (Exception e) {
+            return "--";
+        }
     }
 
     public String getShadowResultValue() {
@@ -633,7 +641,7 @@ public class TestResultItem implements ResultItem, Serializable {
     public List<IdValuePair> getDictionaryResults() {
         return dictionaryResults == null ? new ArrayList<>() : dictionaryResults;
     }
-    
+
     public void setMethods(List<IdValuePair> methods) {
         this.methods = methods;
     }
@@ -968,5 +976,4 @@ public class TestResultItem implements ResultItem, Serializable {
     public void setReferralItem(ReferralItem referralItem) {
         this.referralItem = referralItem;
     }
-
 }

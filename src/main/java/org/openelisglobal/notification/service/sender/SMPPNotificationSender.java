@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
-
 import org.jsmpp.InvalidResponseException;
 import org.jsmpp.PDUException;
 import org.jsmpp.bean.Alphabet;
@@ -64,7 +63,6 @@ public class SMPPNotificationSender {
         } catch (IOException | URISyntaxException e) {
             LogEvent.logError(e);
         }
-
     }
 
     private SMPPSession initSession() throws IOException, URISyntaxException {
@@ -81,5 +79,4 @@ public class SMPPNotificationSender {
                 "Connected with SMPP with system id {" + systemId + "}");
         return session;
     }
-
 }

@@ -13,5 +13,4 @@ public class UniqueUsernameNotFoundException extends UsernameNotFoundException {
     public UniqueUsernameNotFoundException(String msg, Throwable t) {
         super(msg, t);
     }
-
 }

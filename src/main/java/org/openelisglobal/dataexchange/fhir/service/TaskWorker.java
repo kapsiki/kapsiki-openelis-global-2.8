@@ -1,7 +1,7 @@
 package org.openelisglobal.dataexchange.fhir.service;
 
+import ca.uhn.fhir.context.FhirContext;
 import java.util.List;
-
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.ServiceRequest;
 import org.hl7.fhir.r4.model.Task;
@@ -20,8 +20,6 @@ import org.openelisglobal.dataexchange.order.valueholder.ElectronicOrderType;
 import org.openelisglobal.sample.valueholder.OrderPriority;
 import org.openelisglobal.spring.util.SpringContext;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import ca.uhn.fhir.context.FhirContext;
 
 public class TaskWorker {
 
@@ -104,7 +102,7 @@ public class TaskWorker {
 
         if (interpretResults.get(0) == InterpreterResults.OK) {
 
-//            checkResult = existanceChecker.check(referringOrderNumber);
+            // checkResult = existanceChecker.check(referringOrderNumber);
             switch (checkResult) {
             case ORDER_FOUND_QUEUED:
                 if (orderType == OrderType.CANCEL) {
@@ -123,7 +121,8 @@ public class TaskWorker {
                 return orderType == OrderType.CANCEL ? TaskResult.NON_CANCELABLE_ORDER : TaskResult.DUPLICATE_ORDER;
             case NOT_FOUND:
                 if (orderType == OrderType.CANCEL) {
-                    LogEvent.logDebug(this.getClass().getSimpleName(), "handleOrderRequest", "cant cancel order not found");
+                    LogEvent.logDebug(this.getClass().getSimpleName(), "handleOrderRequest",
+                            "cant cancel order not found");
                     return TaskResult.NON_CANCELABLE_ORDER;
                 } else {
                     LogEvent.logDebug(this.getClass().getSimpleName(), "handleOrderRequest",
@@ -182,7 +181,6 @@ public class TaskWorker {
             insertNewOrder(referringOrderNumber, message, patient, priority, ExternalOrderStatus.NonConforming);
             return TaskResult.MESSAGE_ERROR;
         }
-
     }
 
     private void cancelOrder(String referringOrderNumber) {
@@ -205,5 +203,4 @@ public class TaskWorker {
 
         persister.persist(patient, eOrder);
     }
-
 }

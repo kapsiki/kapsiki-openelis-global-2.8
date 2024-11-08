@@ -3,8 +3,7 @@ package org.openelisglobal.userrole.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.userrole.dao.UserLabUnitRolesDAO;
 import org.openelisglobal.userrole.dao.UserRoleDAO;
 import org.openelisglobal.userrole.valueholder.LabUnitRoleMap;
@@ -16,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class UserRoleServiceImpl extends BaseObjectServiceImpl<UserRole, UserRolePK> implements UserRoleService {
+public class UserRoleServiceImpl extends AuditableBaseObjectServiceImpl<UserRole, UserRolePK>
+        implements UserRoleService {
     @Autowired
     protected UserRoleDAO baseObjectDAO;
     @Autowired
@@ -71,5 +71,10 @@ public class UserRoleServiceImpl extends BaseObjectServiceImpl<UserRole, UserRol
     @Override
     public List<UserLabUnitRoles> getAllUserLabUnitRoles() {
         return userLabUnitRolesDAO.getAll();
+    }
+
+    @Override
+    public List<String> getUserIdsForRole(String roleName) {
+        return baseObjectDAO.getUserIdsForRole(roleName);
     }
 }

@@ -5,15 +5,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-
 import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.action.IActionConstants;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.common.services.IStatusService;
 import org.openelisglobal.common.services.ResultSaveService;
 import org.openelisglobal.common.services.StatusService.AnalysisStatus;
@@ -46,7 +44,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl<ImmunohistochemistrySample, Integer>
+public class ImmunohistochemistrySampleServiceImpl
+        extends AuditableBaseObjectServiceImpl<ImmunohistochemistrySample, Integer>
         implements ImmunohistochemistrySampleService {
     @Autowired
     protected ImmunohistochemistrySampleDAO baseObjectDAO;
@@ -61,6 +60,7 @@ public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl
 
     ImmunohistochemistrySampleServiceImpl() {
         super(ImmunohistochemistrySample.class);
+        this.auditTrailLog = true;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl
             immunohistochemistrySample.setTechnician(systemUserService.get(form.getAssignedTechnicianId()));
         }
         immunohistochemistrySample.setStatus(form.getStatus());
-        
+
         immunohistochemistrySample.getReports().removeAll(immunohistochemistrySample.getReports());
         if (form.getReports() != null)
             form.getReports().stream().forEach(e -> e.setId(null));
@@ -143,7 +143,7 @@ public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl
                     actionDataSet.getNewResults()
                             .add(new ResultSet(result, null, null, patient, sample, new HashMap<>(), false));
 
-                    analysis.setStartedDateForDisplay(testResultItem.getTestDate());
+                    // analysis.setStartedDateForDisplay(testResultItem.getTestDate());
 
                     // This needs to be refactored -- part of the logic is in
                     // getStatusForTestResult. RetroCI over rides to whatever was set before
@@ -168,26 +168,27 @@ public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl
                     }
 
                     // this code is pulled from LogbookResultsRestController
-//                addResult(result, testResultItem, analysis, results.size() > 1, actionDataSet, useTechnicianName);
-//
-//                if (analysisShouldBeUpdated(testResultItem, result, supportReferrals)) {
-//                    updateAnalysis(testResultItem, testResultItem.getTestDate(), analysis, statusRuleSet);
-//                }
+                    // addResult(result, testResultItem, analysis, results.size() > 1,
+                    // actionDataSet, useTechnicianName);
+                    //
+                    // if (analysisShouldBeUpdated(testResultItem, result, supportReferrals)) {
+                    // updateAnalysis(testResultItem, testResultItem.getTestDate(),
+                    // analysis, statusRuleSet);
+                    // }
                 }
                 analysis.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized));
                 analysis.setReleasedDate(new java.sql.Date(Calendar.getInstance().getTimeInMillis()));
             }
-
         }
 
         logbookResultsPersistService.persistDataSet(actionDataSet, ResultUpdateRegister.getRegisteredUpdaters(),
                 form.getSystemUserId());
         sample.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(OrderStatus.Finished));
-
     }
 
     @Override
-    public List<ImmunohistochemistrySample> searchWithStatusAndTerm(List<ImmunohistochemistryStatus> statuses, String searchTerm) {
+    public List<ImmunohistochemistrySample> searchWithStatusAndTerm(List<ImmunohistochemistryStatus> statuses,
+            String searchTerm) {
         List<ImmunohistochemistrySample> immunohistochemistrySamples = baseObjectDAO.getWithStatus(statuses);
         if (StringUtils.isNotBlank(searchTerm)) {
             Sample sample = sampleService.getSampleByAccessionNumber(searchTerm);
@@ -205,18 +206,18 @@ public class ImmunohistochemistrySampleServiceImpl extends BaseObjectServiceImpl
                 immunohistochemistrySamples = filteredImmunohistochemistrySamples;
             }
         }
-        
+
         return immunohistochemistrySamples;
     }
 
     @Override
-    public Long getCountWithStatusBetweenDates(List<ImmunohistochemistryStatus> statuses, Timestamp from, Timestamp to) {
-        return baseObjectDAO.getCountWithStatusBetweenDates(statuses ,from ,to);
+    public Long getCountWithStatusBetweenDates(List<ImmunohistochemistryStatus> statuses, Timestamp from,
+            Timestamp to) {
+        return baseObjectDAO.getCountWithStatusBetweenDates(statuses, from, to);
     }
 
     @Override
     public ImmunohistochemistrySample getByPathologySampleId(Integer pathologySampleId) {
         return baseObjectDAO.getByPathologySampleId(pathologySampleId);
     }
-
 }

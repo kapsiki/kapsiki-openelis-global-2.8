@@ -1,22 +1,25 @@
 package org.openelisglobal.sample.controller;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.hibernate.StaleObjectStateException;
 import org.hl7.fhir.r4.model.Enumerations.ResourceType;
 import org.hl7.fhir.r4.model.Reference;
 import org.hl7.fhir.r4.model.Task;
+import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.constants.Constants;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.formfields.FormFields;
 import org.openelisglobal.common.log.LogEvent;
+import org.openelisglobal.common.provider.validation.AlphanumAccessionValidator;
 import org.openelisglobal.common.services.DisplayListService;
 import org.openelisglobal.common.services.DisplayListService.ListType;
 import org.openelisglobal.common.services.SampleOrderService;
@@ -30,6 +33,9 @@ import org.openelisglobal.dataexchange.fhir.exception.FhirTransformationExceptio
 import org.openelisglobal.dataexchange.fhir.service.FhirTransformService;
 import org.openelisglobal.dataexchange.order.valueholder.ElectronicOrder;
 import org.openelisglobal.dataexchange.service.order.ElectronicOrderService;
+import org.openelisglobal.internationalization.MessageUtil;
+import org.openelisglobal.notifications.dao.NotificationDAO;
+import org.openelisglobal.notifications.entity.Notification;
 import org.openelisglobal.organization.service.OrganizationService;
 import org.openelisglobal.organization.valueholder.Organization;
 import org.openelisglobal.patient.action.IPatientUpdate;
@@ -43,11 +49,15 @@ import org.openelisglobal.sample.bean.SampleOrderItem;
 import org.openelisglobal.sample.form.SamplePatientEntryForm;
 import org.openelisglobal.sample.service.PatientManagementUpdate;
 import org.openelisglobal.sample.service.SamplePatientEntryService;
+import org.openelisglobal.sample.service.SampleService;
 import org.openelisglobal.sample.validator.SamplePatientEntryFormValidator;
+import org.openelisglobal.sample.valueholder.OrderPriority;
 import org.openelisglobal.sample.valueholder.SampleAdditionalField;
 import org.openelisglobal.sample.valueholder.SampleAdditionalField.AdditionalFieldName;
 import org.openelisglobal.spring.util.SpringContext;
+import org.openelisglobal.systemuser.service.SystemUserService;
 import org.openelisglobal.systemuser.service.UserService;
+import org.openelisglobal.userrole.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -67,12 +77,12 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 @Controller
 public class SamplePatientEntryController extends BaseSampleEntryController {
 
-//    @Value("${org.openelisglobal.requester.lastName:}")
-//    private String requesterLastName;
-//    @Value("${org.openelisglobal.requester.firstName:}")
-//    private String requesterFirstName;
-//  @Value("${org.openelisglobal.requester.phone:}")
-//  private String requesterPhone;
+    // @Value("${org.openelisglobal.requester.lastName:}")
+    // private String requesterLastName;
+    // @Value("${org.openelisglobal.requester.firstName:}")
+    // private String requesterFirstName;
+    // @Value("${org.openelisglobal.requester.phone:}")
+    // private String requesterPhone;
     @Value("${org.openelisglobal.requester.identifier:}")
     private String requestFhirUuid;
 
@@ -146,6 +156,14 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
     private ElectronicOrderService electronicOrderService;
     @Autowired
     private OrganizationService organizationService;
+    @Autowired
+    private NotificationDAO notificationDAO;
+    @Autowired
+    private UserRoleService userRoleService;
+    @Autowired
+    private SystemUserService systemUserService;
+    @Autowired
+    private SampleService sampleService;
 
     @Autowired
     private FhirUtil fhirUtil;
@@ -190,6 +208,7 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
         addFlashMsgsToRequest(request);
         return findForward(FWD_SUCCESS, form);
     }
+
     private void setupReferralOption(SamplePatientEntryForm form) {
         form.setReferralOrganizations(DisplayListService.getInstance().getList(ListType.REFERRAL_ORGANIZATIONS));
         form.setReferralReasons(DisplayListService.getInstance().getList(ListType.REFERRAL_REASONS));
@@ -261,6 +280,34 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
                 LogEvent.logError(e);
             }
 
+            if (sampleOrder.getPriority().equals(OrderPriority.STAT)) {
+                List<String> systemUserIds = userRoleService.getUserIdsForRole(Constants.ROLE_RESULTS);
+                List<Analysis> analyses = sampleService
+                        .getAnalysis(sampleService.getSampleByAccessionNumber(sampleOrder.getLabNo()));
+                String message = MessageUtil.getMessage("notification.order.stat",
+                        AlphanumAccessionValidator.convertAlphaNumLabNumForDisplay(sampleOrder.getLabNo()));
+                StringBuffer sb = new StringBuffer(message);
+                for (String userId : systemUserIds) {
+                    List<Analysis> userAnalyses = userService.filterAnalysesByLabUnitRoles(userId, analyses,
+                            Constants.ROLE_RESULTS);
+                    if (userAnalyses != null && !userAnalyses.isEmpty()) {
+                        List<String> tests = userAnalyses.stream().map(a -> a.getTest().getLocalizedName())
+                                .collect(Collectors.toList());
+                        String testString = String.join(", ", tests);
+                        sb.append(testString);
+                        try {
+                            Notification notification = new Notification();
+                            notification.setMessage(sb.toString());
+                            notification.setUser(systemUserService.getUserById(userId));
+                            notification.setCreatedDate(OffsetDateTime.now());
+                            notification.setReadAt(null);
+                            notificationDAO.save(notification);
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            }
+
             // String fhir_json = fhirTransformService.CreateFhirFromOESample(updateData,
             // patientUpdate, patientInfo, form, request);
         } catch (LIMSRuntimeException e) {
@@ -280,7 +327,6 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
             setupForm(form, request, "");
             request.setAttribute(ALLOW_EDITS_KEY, "false");
             return findForward(FWD_FAIL_INSERT, form);
-
         }
 
         redirectAttributes.addFlashAttribute(FWD_SUCCESS, true);
@@ -353,7 +399,8 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
 
         setupReferralOption(form);
         // for (Object program : form.getSampleOrderItems().getProgramList()) {
-        // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", ((IdValuePair)
+        // LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown",
+        // ((IdValuePair)
         // program).getValue());
         // }
 
@@ -367,7 +414,6 @@ public class SamplePatientEntryController extends BaseSampleEntryController {
         if (FormFields.getInstance().useField(FormFields.Field.SampleNature)) {
             form.setSampleNatureList(DisplayListService.getInstance().getList(ListType.SAMPLE_NATURE));
         }
-
     }
 
     private void setContactTracingInfo(SamplePatientUpdateData updateData, SampleOrderItem sampleOrder) {

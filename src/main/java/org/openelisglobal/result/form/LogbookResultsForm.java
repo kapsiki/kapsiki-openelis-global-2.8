@@ -1,11 +1,9 @@
 package org.openelisglobal.result.form;
 
 import java.util.List;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
 import org.openelisglobal.common.form.BaseForm;
 import org.openelisglobal.common.paging.PagingBean;
 import org.openelisglobal.common.util.IdValuePair;
@@ -92,7 +90,7 @@ public class LogbookResultsForm extends BaseForm implements ResultsPagingForm {
     @NotNull(groups = { LogbookResults.class })
     private Boolean displayTestSections = true;
 
-    private Boolean searchByRange;
+    private Boolean searchByRange = false;
     private boolean searchFinished;
 
     public LogbookResultsForm() {
@@ -312,5 +310,4 @@ public class LogbookResultsForm extends BaseForm implements ResultsPagingForm {
     public void setDisplayMethods(Boolean displayMethods) {
         this.displayMethods = displayMethods;
     }
-
 }

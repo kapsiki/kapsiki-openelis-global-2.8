@@ -19,7 +19,6 @@ package org.openelisglobal.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -28,9 +27,7 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.io.IOUtils;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
@@ -129,7 +126,6 @@ public class PluginLoader {
                 LogEvent.logDebug(e);
             }
         }
-
     }
 
     public static boolean checkJDKVersions(String fileName, JarFile jar) throws IOException {
@@ -258,7 +254,6 @@ public class PluginLoader {
             LogEvent.logDebug(e);
             throw new LIMSException("See previous stack trace");
         }
-
     }
 
     public static List<String> getCurrentPlugins() {

@@ -2,9 +2,7 @@ package org.openelisglobal.program.service;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
@@ -82,8 +80,8 @@ public class ImmunohistochemistryDisplayServiceImpl implements Immunohistochemis
             displayItem.setAssignedTechnicianId(immunohistochemistrySample.getTechnician().getId());
         }
         immunohistochemistrySample.getReports().size();
-        if(immunohistochemistrySample.getReports() != null){
-           displayItem.setReports(immunohistochemistrySample.getReports());
+        if (immunohistochemistrySample.getReports() != null) {
+            displayItem.setReports(immunohistochemistrySample.getReports());
         }
         Patient patient = sampleService.getPatient(immunohistochemistrySample.getSample());
         displayItem.setFirstName(patient.getPerson().getFirstName());
@@ -95,18 +93,18 @@ public class ImmunohistochemistryDisplayServiceImpl implements Immunohistochemis
         displayItem.setProgramQuestionnaireResponse(
                 fhirUtil.getLocalFhirClient().read().resource(QuestionnaireResponse.class)
                         .withId(immunohistochemistrySample.getQuestionnaireResponseUuid().toString()).execute());
-       
+
         SampleOrderService sampleOrderService = new SampleOrderService(immunohistochemistrySample.getSample());
         SampleOrderItem sampleItem = sampleOrderService.getSampleOrderItem();
-        displayItem.setReferringFacility(sampleItem.getReferringSiteName());  
+        displayItem.setReferringFacility(sampleItem.getReferringSiteName());
         if (StringUtils.isNotBlank(sampleItem.getReferringSiteDepartmentId())) {
             Organization org = organizationService.get(sampleItem.getReferringSiteDepartmentId());
             if (org != null) {
                 displayItem.setDepartment(org.getLocalizedName());
             }
-        } 
-        displayItem.setRequester(sampleItem.getProviderLastName() +" "+ sampleItem.getProviderFirstName());  
-        displayItem.setAge(DateUtil.getCurrentAgeForDate(patient.getBirthDate() ,DateUtil.getNowAsTimestamp()));
+        }
+        displayItem.setRequester(sampleItem.getProviderLastName() + " " + sampleItem.getProviderFirstName());
+        displayItem.setAge(DateUtil.getCurrentAgeForDate(patient.getBirthDate(), DateUtil.getNowAsTimestamp()));
         displayItem.setReffered(immunohistochemistrySample.getReffered());
         // set items refered from Pathology .Read only
         PathologySample pathologySample = immunohistochemistrySample.getPathologySample();
@@ -117,31 +115,30 @@ public class ImmunohistochemistryDisplayServiceImpl implements Immunohistochemis
             displayItem.setSlides(pathologySample.getSlides());
             displayItem.setGrossExam(pathologySample.getGrossExam());
             displayItem.setMicroscopyExam(pathologySample.getMicroscopyExam());
-            
-            displayItem.setConclusions(
-                pathologySample.getConclusions().stream().filter(e -> e.getType() == ConclusionType.DICTIONARY)
-                        .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
-                        .collect(Collectors.toList()));
+
+            displayItem.setConclusions(pathologySample.getConclusions().stream()
+                    .filter(e -> e.getType() == ConclusionType.DICTIONARY)
+                    .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
+                    .collect(Collectors.toList()));
             Optional<PathologyConclusion> conclusion = pathologySample.getConclusions().stream()
                     .filter(e -> e.getType() == ConclusionType.TEXT).findFirst();
             if (conclusion.isPresent())
                 displayItem.setConclusionText(conclusion.get().getValue());
-            
-            displayItem.setConclusions(
-                pathologySample.getConclusions().stream().filter(e -> e.getType() == ConclusionType.DICTIONARY)
-                        .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
-                        .collect(Collectors.toList()));
-            displayItem.setTechniques(
-                pathologySample.getTechniques().stream().filter(e -> e.getType() == TechniqueType.DICTIONARY)
-                        .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
-                        .collect(Collectors.toList()));
-            displayItem.setRequests(pathologySample.getRequests().stream().filter(e -> e.getType() == RequestType.DICTIONARY)
+
+            displayItem.setConclusions(pathologySample.getConclusions().stream()
+                    .filter(e -> e.getType() == ConclusionType.DICTIONARY)
                     .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
                     .collect(Collectors.toList()));
-            displayItem.setSex(patient.getGender());        
-            
+            displayItem.setTechniques(pathologySample.getTechniques().stream()
+                    .filter(e -> e.getType() == TechniqueType.DICTIONARY)
+                    .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
+                    .collect(Collectors.toList()));
+            displayItem.setRequests(pathologySample.getRequests().stream()
+                    .filter(e -> e.getType() == RequestType.DICTIONARY)
+                    .map(e -> new IdValuePair(e.getValue(), dictionaryService.get(e.getValue()).getLocalizedName()))
+                    .collect(Collectors.toList()));
+            displayItem.setSex(patient.getGender());
         }
         return displayItem;
     }
-
 }

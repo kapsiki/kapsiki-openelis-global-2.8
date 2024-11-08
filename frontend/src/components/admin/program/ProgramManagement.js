@@ -24,18 +24,23 @@ import {
   AlertDialog,
   NotificationKinds,
 } from "../../common/CustomNotification";
-import { FormattedMessage ,useIntl} from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import PageBreadCrumb from "../../common/PageBreadCrumb.js";
 
+let breadcrumbs = [{ label: "home.label", link: "/" }];
 function ProgramManagement() {
-  const componentMounted = useRef(true);
+  const { notificationVisible, setNotificationVisible, addNotification } =
+    useContext(NotificationContext);
+
+  const componentMounted = useRef(false);
+
+  const intl = useIntl();
+
   const [programs, setPrograms] = useState([]);
   const [testSections, setTestSections] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [programValues, setProgramValues] = useState(ProgramFormValues);
-  const { notificationVisible, setNotificationVisible, setNotificationBody } =
-    useContext(NotificationContext);
-  const intl = useIntl();
 
   const fetchPrograms = (programsList) => {
     if (componentMounted.current) {
@@ -55,14 +60,14 @@ function ProgramManagement() {
     } else {
       setLoading(true);
       getFromOpenElisServer(
-        "/program/" + event.target.value,
+        "/rest/program/" + event.target.value,
         setAdditionalQuestions,
       );
     }
   };
 
   function setAdditionalQuestions(res) {
-    console.log(res);
+    console.debug(res);
     if (res.additionalOrderEntryQuestions) {
       res.additionalOrderEntryQuestions = JSON.stringify(
         res.additionalOrderEntryQuestions,
@@ -70,20 +75,20 @@ function ProgramManagement() {
         4,
       );
     }
-    setProgramValues(res);
+    const newProgramValues = {
+      ...ProgramFormValues,
+      ...res,
+      program: { ...ProgramFormValues.program, ...res.program },
+    };
+    setProgramValues(newProgramValues);
     setLoading(false);
   }
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
-    //TODO use better strategy developed with greg
-    var names = name.split(".");
     const updatedValues = { ...programValues };
-    if (names.length === 1) {
-      updatedValues[name] = value;
-    } else if (names.length === 2) {
-      updatedValues[names[0]][names[1]] = value;
-    }
+    var jp = require("jsonpath");
+    jp.value(updatedValues, name, value);
     setProgramValues(updatedValues);
   };
 
@@ -91,10 +96,10 @@ function ProgramManagement() {
     setNotificationVisible(true);
     setIsSubmitting(false);
     if (res.status == "200") {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.success,
-        title: <FormattedMessage id="notification.title" />,
-        message: <FormattedMessage id="success.add.edited.msg" />,
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "success.add.edited.msg" }),
       });
       getFromOpenElisServer("/rest/displayList/PROGRAM", fetchPrograms);
       var body = await res.json();
@@ -105,12 +110,13 @@ function ProgramManagement() {
           4,
         );
       }
-      setProgramValues(body);
+      const newProgramValues = { ...ProgramFormValues, ...body };
+      setProgramValues(newProgramValues);
     } else {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.error,
-        title: <FormattedMessage id="notification.title" />,
-        message: <FormattedMessage id="error.add.edited.msg" />,
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "error.add.edited.msg" }),
       });
     }
   }
@@ -138,13 +144,14 @@ function ProgramManagement() {
       delete submitValues["additionalOrderEntryQuestions"];
     }
     postToOpenElisServerFullResponse(
-      "/program",
+      "/rest/program",
       JSON.stringify(submitValues),
       displayStatus,
     );
   }
 
   useEffect(() => {
+    componentMounted.current = true;
     getFromOpenElisServer("/rest/displayList/PROGRAM", fetchPrograms);
     getFromOpenElisServer(
       "/rest/displayList/TEST_SECTION_ACTIVE",
@@ -156,129 +163,156 @@ function ProgramManagement() {
     };
   }, []);
 
+  const additionalOrderEntryQuestionsAreJson = isJson(
+    programValues.additionalOrderEntryQuestions,
+  );
+
   return (
     <>
       {notificationVisible === true ? <AlertDialog /> : ""}
       <div className="adminPageContent">
-      <Grid >
+        <PageBreadCrumb breadcrumbs={breadcrumbs} />
+        <Grid>
           <Column lg={16}>
             <Section>
-              <Section>
-                <Heading>
-                  <FormattedMessage id="edit.add.program.title" />
-                </Heading>
-              </Section>
+              <Heading>
+                <FormattedMessage id="edit.add.program.title" />
+              </Heading>
             </Section>
           </Column>
         </Grid>
         <Form onSubmit={handleSubmit}>
-          <div className="formInlineDiv">
-            <Select
-              id="additionalQuestionsSelect"
-              labelText="program"
-              onChange={handleProgramSelection}
-            >
-              <SelectItem
-                value=""
-                text={intl.formatMessage({ id :"new.program.label"})}
+          <Grid>
+            <Column lg={8}>
+              <Select
+                id="additionalQuestionsSelect"
+                labelText="Program"
+                onChange={handleProgramSelection}
+              >
+                <SelectItem
+                  value=""
+                  text={intl.formatMessage({ id: "new.program.label" })}
+                />
+                {programs.map((program) => {
+                  return (
+                    <SelectItem
+                      key={program.id}
+                      value={program.id}
+                      text={program.value}
+                    />
+                  );
+                })}
+              </Select>
+              {loading && <Loading />}
+            </Column>
+            <Column lg={16}>
+              <br></br>
+            </Column>
+
+            <Column lg={8}>
+              <input
+                type="hidden"
+                name="program.id"
+                value={programValues.program.id}
+                onChange={handleFieldChange}
               />
-              {programs.map((program) => {
-                return (
-                  <SelectItem
-                    key={program.id}
-                    value={program.id}
-                    text={program.value}
-                  />
-                );
-              })}
-            </Select>
-            {loading && <Loading />}
-          </div>
-
-          <div className="formInlineDiv">
-            <input
-              type="hidden"
-              name="program.id"
-              value={programValues.program.id}
-              onChange={handleFieldChange}
-            />
-            <TextInput
-              type="text"
-              name="program.programName"
-              id="program.programName"
-              labelText={<FormattedMessage id="program.name.label" />}
-              value={programValues.program.programName}
-              onChange={handleFieldChange}
-            />
-          </div>
-          <div className="formInlineDiv">
-            <Select
-              id="test_section"
-              labelText={<FormattedMessage id="test.section.label" />}
-              name="testSectionId"
-              value={programValues.testSectionId}
-              onChange={handleFieldChange}
-            >
-              <SelectItem value="" text="" />
-              {testSections.map((testSection) => {
-                return (
-                  <SelectItem
-                    key={testSection.id}
-                    value={testSection.id}
-                    text={testSection.value}
-                  />
-                );
-              })}
-            </Select>
-          </div>
-          <div className="formInlineDiv">
-            <TextInput
-              type="text"
-              name="program.questionnaireUUID"
-              id="program.questionnaireUUID"
-              labelText="UUID"
-              disabled={programValues.program.id !== "" ? true : false}
-              value={programValues.program.questionnaireUUID}
-              onChange={handleFieldChange}
-            />
-            <TextInput
-              type="text"
-              name="program.code"
-              id="program.code"
-              labelText="Code"
-              maxLength="10"
-              value={programValues.program.code}
-              onChange={handleFieldChange}
-            />
-          </div>
-          <div className="formInlineDiv">
-            <TextArea
-              name="additionalOrderEntryQuestions"
-              id="additionalOrderEntryQuestions"
-              labelText="Questionnaire"
-              value={programValues.additionalOrderEntryQuestions}
-              onChange={handleFieldChange}
-            />
-            {isJson(programValues.additionalOrderEntryQuestions) && (
-              <div>
-                <FormLabel>Example</FormLabel>
-                <div className="exampleDiv">
-                  <Questionnaire
-                    questionnaire={JSON.parse(
-                      programValues.additionalOrderEntryQuestions,
-                    )}
-                  />
+              <TextInput
+                type="text"
+                name="program.programName"
+                id="program.programName"
+                labelText={intl.formatMessage({ id: "program.name.label" })}
+                value={programValues.program.programName}
+                onChange={handleFieldChange}
+              />
+            </Column>
+            <Column lg={8}>
+              <TextInput
+                type="text"
+                name="program.questionnaireUUID"
+                id="program.questionnaireUUID"
+                labelText="UUID"
+                disabled={programValues.program.id !== "" ? true : false}
+                value={programValues.program.questionnaireUUID}
+                onChange={handleFieldChange}
+              />
+            </Column>
+            <Column lg={16}>
+              <br></br>
+            </Column>
+            <Column lg={8}>
+              <TextInput
+                type="text"
+                name="program.code"
+                id="program.code"
+                labelText="Code"
+                maxLength="10"
+                value={programValues.program.code}
+                onChange={handleFieldChange}
+              />
+            </Column>
+            <Column lg={8}>
+              <Select
+                id="test_section"
+                labelText={intl.formatMessage({ id: "test.section.label" })}
+                name="testSectionId"
+                value={programValues.testSectionId}
+                onChange={handleFieldChange}
+              >
+                <SelectItem value="" text="" />
+                {testSections.map((testSection) => {
+                  return (
+                    <SelectItem
+                      key={testSection.id}
+                      value={testSection.id}
+                      text={testSection.value}
+                    />
+                  );
+                })}
+              </Select>
+            </Column>
+            <Column lg={16}>
+              <br></br>
+            </Column>
+            <Column lg={8}>
+              <TextArea
+                name="additionalOrderEntryQuestions"
+                id="additionalOrderEntryQuestions"
+                labelText="Questionnaire"
+                value={programValues.additionalOrderEntryQuestions || ""}
+                onChange={handleFieldChange}
+                invalid={
+                  !additionalOrderEntryQuestionsAreJson &&
+                  programValues.additionalOrderEntryQuestions !== ""
+                }
+                invalidText={intl.formatMessage({ id: "invalid.json" })}
+              />
+            </Column>
+            <Column lg={8}>
+              {additionalOrderEntryQuestionsAreJson && (
+                <div>
+                  <FormLabel>
+                    <FormattedMessage id="example" />
+                  </FormLabel>
+                  <div className="exampleDiv">
+                    <Questionnaire
+                      questionnaire={JSON.parse(
+                        programValues.additionalOrderEntryQuestions,
+                      )}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <Button type="submit">
-              <FormattedMessage id="label.button.submit" />
-              {isSubmitting && <Loading small={true} />}
-            </Button>
-          </div>
+              )}
+            </Column>
+            <Column lg={16}>
+              <br></br>
+            </Column>
+            <Column lg={3}>
+              <Button type="submit">
+                <FormattedMessage id="label.button.submit" />
+                {isSubmitting && <Loading small={true} />}
+              </Button>
+            </Column>
+          </Grid>
         </Form>
       </div>
     </>

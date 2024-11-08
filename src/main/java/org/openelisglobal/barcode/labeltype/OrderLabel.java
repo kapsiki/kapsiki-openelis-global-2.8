@@ -1,7 +1,6 @@
 package org.openelisglobal.barcode.labeltype;
 
 import java.util.ArrayList;
-
 import org.apache.commons.lang.StringUtils;
 import org.openelisglobal.barcode.LabelField;
 import org.openelisglobal.common.log.LogEvent;
@@ -23,7 +22,6 @@ import org.openelisglobal.spring.util.SpringContext;
  * Stores values and formatting for Order Labels
  *
  * @author Caleb
- *
  */
 public class OrderLabel extends Label {
 
@@ -64,12 +62,9 @@ public class OrderLabel extends Label {
     }
 
     /**
-     * @param patient
-     *            Who to include on order label
-     * @param sample
-     *            What to include on order label
-     * @param labNo
-     *            Code to include in bar code
+     * @param patient Who to include on order label
+     * @param sample  What to include on order label
+     * @param labNo   Code to include in bar code
      */
     public OrderLabel(Patient patient, Sample sample, String labNo) {
         // set dimensions
@@ -110,8 +105,7 @@ public class OrderLabel extends Label {
     /**
      * Get first available id to identify a patient (Subject Number > National Id)
      *
-     * @param patient
-     *            Who to find identification for
+     * @param patient Who to find identification for
      * @return label field containing patient id
      */
     private LabelField getAvailableIdField(Patient patient) {
@@ -193,5 +187,4 @@ public class OrderLabel extends Label {
         }
         return max;
     }
-
 }

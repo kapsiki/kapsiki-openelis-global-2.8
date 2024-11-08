@@ -11,9 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.action.IActionConstants;
@@ -34,6 +32,8 @@ import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.IdValuePair;
 import org.openelisglobal.common.util.validator.GenericValidator;
 import org.openelisglobal.common.validator.BaseErrors;
+import org.openelisglobal.dataexchange.fhir.exception.FhirLocalPersistingException;
+import org.openelisglobal.dataexchange.fhir.service.FhirTransformService;
 import org.openelisglobal.dataexchange.orderresult.OrderResponseWorker.Event;
 import org.openelisglobal.internationalization.MessageUtil;
 import org.openelisglobal.note.service.NoteService;
@@ -79,6 +79,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AccessionValidationRangeController extends BaseResultValidationController {
+
     @Autowired
     private UserService userService;
     @Autowired
@@ -101,6 +102,7 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
     private SystemUserService systemUserService;
     private ResultValidationService resultValidationService;
     private NoteService noteService;
+    private FhirTransformService fhirTransformService;
 
     private final String RESULT_SUBJECT = "Result Note";
     private final String RESULT_TABLE_ID;
@@ -110,7 +112,8 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
             SampleHumanService sampleHumanService, DocumentTrackService documentTrackService,
             TestSectionService testSectionService, SystemUserService systemUserService,
             ReferenceTablesService referenceTablesService, DocumentTypeService documentTypeService,
-            ResultValidationService resultValidationService, NoteService noteService) {
+            ResultValidationService resultValidationService, NoteService noteService,
+            FhirTransformService fhirTransformService) {
 
         this.analysisService = analysisService;
         this.testResultService = testResultService;
@@ -120,6 +123,7 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
         this.systemUserService = systemUserService;
         this.resultValidationService = resultValidationService;
         this.noteService = noteService;
+        this.fhirTransformService = fhirTransformService;
 
         RESULT_TABLE_ID = referenceTablesService.getReferenceTableByName("RESULT").getId();
         RESULT_REPORT_ID = documentTypeService.getDocumentTypeByName("resultExport").getId();
@@ -237,12 +241,12 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
         List<Result> checkResults = (List<Result>) checkPagedResults.get(0);
         if (checkResults.size() == 0) {
             LogEvent.logDebug(this.getClass().getSimpleName(), "ResultValidation()", "Attempted save of stale page.");
-//            Errors errors = new BaseErrors();
-//            errors.reject("alert.error", "An error occured while saving");
-//            saveErrors(errors);
+            // Errors errors = new BaseErrors();
+            // errors.reject("alert.error", "An error occured while saving");
+            // saveErrors(errors);
             redirectAttributes.addFlashAttribute(FWD_FAIL_INSERT, true);
             return findForward(FWD_SUCCESS_INSERT, form);
-//            return new ModelAndView("redirect:/ResultValidation?blank=true");
+            // return new ModelAndView("redirect:/ResultValidation?blank=true");
         }
 
         ResultValidationPaging paging = new ResultValidationPaging();
@@ -274,23 +278,31 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
         // wrapper object for holding modifedResultSet and newResultSet
         IResultSaveService resultSaveService = new ResultValidationSaveService();
 
-//        if (testSectionName.equals("serology")) {
-//            createUpdateElisaList(resultItemList, analysisUpdateList);
-//        } else {
+        // if (testSectionName.equals("serology")) {
+        // createUpdateElisaList(resultItemList, analysisUpdateList);
+        // } else {
         createUpdateList(resultItemList, analysisUpdateList, resultUpdateList, noteUpdateList, deletableList,
                 resultSaveService, areListeners);
-//        }
+        // }
 
         try {
             resultValidationService.persistdata(deletableList, analysisUpdateList, resultUpdateList, resultItemList,
                     sampleUpdateList, noteUpdateList, resultSaveService, updaters, getSysUserId(request));
+
+            try {
+                fhirTransformService.transformPersistResultValidationFhirObjects(deletableList, analysisUpdateList,
+                        resultUpdateList, resultItemList, sampleUpdateList, noteUpdateList);
+            } catch (FhirLocalPersistingException e) {
+                LogEvent.logError(e);
+            }
+
         } catch (LIMSRuntimeException e) {
             LogEvent.logError(e);
         }
 
         for (IResultUpdate updater : updaters) {
 
-//            updater.postTransactionalCommitUpdate(resultSaveService);
+            // updater.postTransactionalCommitUpdate(resultSaveService);
         }
 
         // route save back to RetroC specific ResultValidationRetroCAction
@@ -328,7 +340,6 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
                 String errorMsg = "errors.followingAccession";
                 errors.reject(errorMsg, new String[] { augmentedAccession.toString() }, errorMsg);
                 errors.addAllErrors(errorList);
-
             }
         }
 
@@ -351,11 +362,8 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
                     && isBlankOrNull(analysisItem.getQualifiedResultValue())) {
                 errorList.reject("errors.missing.result.details", new String[] { "Result" },
                         "errors.missing.result.details");
-
             }
-
         }
-
     }
 
     private void createUpdateList(List<AnalysisItem> analysisItems, List<Analysis> analysisUpdateList,
@@ -468,7 +476,6 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
                             SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected));
                     analysisUpdateList.add(analysis);
                 }
-
             }
         }
     }
@@ -489,6 +496,10 @@ public class AccessionValidationRangeController extends BaseResultValidationCont
         }
         if (!isBlankOrNull(analysisItem.getIntegralResult())) {
             analysis = getAnalysisFromId(analysisItem.getIntegralAnalysisId());
+            analysisList.add(analysis);
+        }
+        if (!isBlankOrNull(analysisItem.getGenscreenResult())) {
+            analysis = getAnalysisFromId(analysisItem.getGenscreenAnalysisId());
             analysisList.add(analysis);
         }
         if (!isBlankOrNull(analysisItem.getVironostikaResult())) {

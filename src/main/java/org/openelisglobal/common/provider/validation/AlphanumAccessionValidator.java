@@ -4,15 +4,14 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.provider.validation.AccessionNumberValidatorFactory.AccessionFormat;
 import org.openelisglobal.common.service.AccessionService;
 import org.openelisglobal.common.util.ConfigurationProperties;
+import org.openelisglobal.common.util.ConfigurationProperties.Property;
 import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.common.util.IntegerUtil;
-import org.openelisglobal.common.util.ConfigurationProperties.Property;
 import org.openelisglobal.common.util.validator.GenericValidator;
 import org.openelisglobal.internationalization.MessageUtil;
 import org.openelisglobal.sample.service.SampleService;
@@ -139,16 +138,14 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
 
     private String getFormatPattern() {
         StringBuilder format = new StringBuilder();
-        format.append(MessageUtil.getMessage("date.two.digit.year"))
-                .append(getPrefix())
+        format.append(MessageUtil.getMessage("date.two.digit.year")).append(getPrefix())
                 .append(StringUtils.rightPad("", getChangeableLength(), "#"));
         return format.toString();
     }
 
     private String getFormatExample() {
         StringBuilder format = new StringBuilder();
-        format.append(MessageUtil.getMessage("date.two.digit.year"))
-                .append(getPrefix())
+        format.append(MessageUtil.getMessage("date.two.digit.year")).append(getPrefix())
                 .append(StringUtils.rightPad("", getChangeableLength(), "1"));
         return format.toString();
     }
@@ -199,7 +196,6 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
 
         return MessageUtil.getMessage("sample.entry.invalid.accession.number.suggestion") + " "
                 + suggestedAccessionNumber;
-
     }
 
     private String incrementAccessionNumber() throws IllegalArgumentException {
@@ -210,9 +206,7 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
             if (nextNum <= 2147483647L) {
                 String incrementAsString = StringUtils.leftPad(IntegerUtil.toStringBase27((int) nextNum), 6, "0");
                 StringBuilder accessionBuilder = new StringBuilder();
-                accessionBuilder.append(year)
-                        .append(getPrefix())
-                        .append(incrementAsString);
+                accessionBuilder.append(year).append(getPrefix()).append(incrementAsString);
                 return accessionBuilder.toString();
             } else {
                 throw new IllegalArgumentException("AccessionNumber has no next value - too large for int");
@@ -225,8 +219,7 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
             localReservedNumbers.add(nextAccessionNumber);
 
             long increment = Long.parseLong(nextAccessionNumber.substring(getIncrementStartIndex()));
-            long dbIncrement = accessionService.getNextNumberNoIncrement(year + getPrefix(),
-                    AccessionFormat.ALPHANUM);
+            long dbIncrement = accessionService.getNextNumberNoIncrement(year + getPrefix(), AccessionFormat.ALPHANUM);
             if (dbIncrement <= increment) {
                 accessionService.setCurVal(year + getPrefix(), AccessionFormat.ALPHANUM, increment);
             }
@@ -241,9 +234,7 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
         if (nextNum <= 2147483647L) {
             String incrementAsString = StringUtils.leftPad(IntegerUtil.toStringBase27((int) nextNum), 6, "0");
             StringBuilder accessionBuilder = new StringBuilder();
-            accessionBuilder.append(year)
-                    .append(getPrefix())
-                    .append(incrementAsString);
+            accessionBuilder.append(year).append(getPrefix()).append(incrementAsString);
             return accessionBuilder.toString();
         } else {
             throw new IllegalArgumentException("AccessionNumber has no next value - too large for int");
@@ -263,7 +254,7 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
     }
 
     public static String normalizeAccessionString(String humanReadableAccessionNumber) {
-    if (GenericValidator.isBlankOrNull(humanReadableAccessionNumber)) {
+        if (GenericValidator.isBlankOrNull(humanReadableAccessionNumber)) {
             return humanReadableAccessionNumber;
         }
         return humanReadableAccessionNumber.replace("-", "");
@@ -276,16 +267,13 @@ public class AlphanumAccessionValidator implements IAccessionNumberGenerator {
             return accessionNumber;
         }
         StringBuilder builder = new StringBuilder();
-        builder.append(accessionNumber.substring(0, 2))
-            .append("-");
+        builder.append(accessionNumber.substring(0, 2)).append("-");
         if (accessionNumber.length() > 8) {
-            builder.append(accessionNumber.substring(2, accessionNumber.length() - 6).toUpperCase())
-                .append("-");
+            builder.append(accessionNumber.substring(2, accessionNumber.length() - 6).toUpperCase()).append("-");
         }
         builder.append(accessionNumber.substring(accessionNumber.length() - 6, accessionNumber.length() - 3))
-            .append("-");
+                .append("-");
         builder.append(accessionNumber.substring(accessionNumber.length() - 3));
         return builder.toString();
     }
-
 }

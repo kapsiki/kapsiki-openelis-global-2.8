@@ -3,6 +3,8 @@ import "../admin/reflexTests/ReflexStyles.css";
 import { TextInput } from "@carbon/react";
 
 function AutoComplete(props) {
+  const allowFreeText = props.allowFreeText;
+
   const [textValue, setTextValue] = useState("");
   const [activeSuggestion, setActiveSuggestion] = useState(0);
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
@@ -20,6 +22,8 @@ function AutoComplete(props) {
         );
         if (filteredSuggestion[0]) {
           setTextValue(filteredSuggestion[0].value);
+        } else {
+          setTextValue(props.value);
         }
       }
     }
@@ -40,8 +44,11 @@ function AutoComplete(props) {
     setShowSuggestions(true);
     setInnitialised(true);
 
-    if (filteredSuggestions.length) {
+    if (filteredSuggestions.length == 0 && !allowFreeText) {
       setInvalid(true);
+    }
+    if (typeof props.onChange === "function") {
+      props.onChange(e);
     }
   };
 
@@ -81,24 +88,26 @@ function AutoComplete(props) {
   if (showSuggestions && userInput) {
     if (filteredSuggestions.length) {
       suggestionsListComponent = (
-        <ul className="suggestions">
-          {filteredSuggestions.map((suggestion, index) => {
-            let className;
-            // Flag the active suggestion with a class
-            if (index === activeSuggestion) {
-              className = "suggestion-active";
-            }
-            return (
-              <li
-                className={className}
-                key={index}
-                onClick={(e) => onClick(e, suggestion.id, suggestion)}
-              >
-                {suggestion.value}
-              </li>
-            );
-          })}
-        </ul>
+        <div className="suggestions-container">
+          <ul className="suggestions">
+            {filteredSuggestions.map((suggestion, index) => {
+              let className;
+              // Flag the active suggestion with a class
+              if (index === activeSuggestion) {
+                className = "suggestion-active";
+              }
+              return (
+                <li
+                  className={className}
+                  key={index}
+                  onClick={(e) => onClick(e, suggestion.id, suggestion)}
+                >
+                  {suggestion.value}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       );
     } else {
       suggestionsListComponent = (

@@ -3,13 +3,12 @@ package org.openelisglobal.testreflex.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.analyte.service.AnalyteService;
 import org.openelisglobal.analyte.valueholder.Analyte;
 import org.openelisglobal.common.action.IActionConstants;
 import org.openelisglobal.common.exception.LIMSDuplicateRecordException;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.dictionary.service.DictionaryService;
 import org.openelisglobal.test.service.TestService;
 import org.openelisglobal.test.service.TestServiceImpl;
@@ -17,6 +16,7 @@ import org.openelisglobal.test.valueholder.Test;
 import org.openelisglobal.testanalyte.service.TestAnalyteService;
 import org.openelisglobal.testanalyte.valueholder.TestAnalyte;
 import org.openelisglobal.testreflex.action.bean.ReflexRule;
+import org.openelisglobal.testreflex.action.bean.ReflexRuleAction;
 import org.openelisglobal.testreflex.action.bean.ReflexRuleCondition;
 import org.openelisglobal.testreflex.action.bean.ReflexRuleOptions.NumericRelationOptions;
 import org.openelisglobal.testreflex.dao.ReflexRuleDAO;
@@ -28,14 +28,14 @@ import org.openelisglobal.typeofsample.service.TypeOfSampleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.openelisglobal.testreflex.action.bean.ReflexRuleAction;
 
 @Service
-public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, String> implements TestReflexService {
+public class TestReflexServiceImpl extends AuditableBaseObjectServiceImpl<TestReflex, String>
+        implements TestReflexService {
     @Autowired
     protected TestReflexDAO baseObjectDAO;
     @Autowired
-    protected ReflexRuleDAO reflexRuleDAO ;
+    protected ReflexRuleDAO reflexRuleDAO;
     @Autowired
     TestReflexService reflexService;
     @Autowired
@@ -50,9 +50,9 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
     AnalyteService analyteService;
     @Autowired
     TestAnalyteService testAnalyteService;
-    
-    final static String REFLEX_RESULT_GROUP = "30" ;
-    final static String REFLEX_RESULT_TYPE = "R" ;
+
+    static final String REFLEX_RESULT_GROUP = "30";
+    static final String REFLEX_RESULT_TYPE = "R";
 
     TestReflexServiceImpl() {
         super(TestReflex.class);
@@ -67,7 +67,6 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
     @Transactional(readOnly = true)
     public void getData(TestReflex testReflex) {
         getBaseObjectDAO().getData(testReflex);
-
     }
 
     @Override
@@ -165,8 +164,8 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
     }
 
     @Override
-    public List<TestReflex> getTestReflexsByTestAnalyteId(String testAnalyteId){
-      return baseObjectDAO.getTestReflexsByTestAnalyteId(testAnalyteId);
+    public List<TestReflex> getTestReflexsByTestAnalyteId(String testAnalyteId) {
+        return baseObjectDAO.getTestReflexsByTestAnalyteId(testAnalyteId);
     }
 
     @Override
@@ -218,7 +217,7 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
             analyte = analyteService.save(analyte);
             rule.setAnalyteId(Integer.valueOf(analyte.getId()));
         }
-        
+
         // clear all the existing reflex tests
         for (ReflexRuleCondition condition : rule.getConditions()) {
             if (condition.getId() != null && condition.getTestAnalyteId() != null) {
@@ -227,7 +226,7 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
                 reflexes.forEach(r -> baseObjectDAO.delete(r));
             }
         }
-        
+
         for (ReflexRuleCondition condition : rule.getConditions()) {
             if (testAndSampleMatches(condition.getTestId(), condition.getSampleId())) {
                 TestAnalyte testAnalyte = null;
@@ -309,6 +308,6 @@ public class TestReflexServiceImpl extends BaseObjectServiceImpl<TestReflex, Str
 
     @Override
     public ReflexRule getReflexRuleByAnalyteId(String analyteId) {
-       return reflexRuleDAO.getReflexRuleByAnalyteId(analyteId);
+        return reflexRuleDAO.getReflexRuleByAnalyteId(analyteId);
     }
 }

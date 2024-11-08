@@ -25,16 +25,16 @@ public class ReflexRuleAction {
     private String reflexTestId;
 
     @Column(name = "sample_id")
-    private String sampleId ;
+    private String sampleId;
 
     @Column(name = "internal_note")
-    private String internalNote ;
+    private String internalNote;
 
     @Column(name = "external_note")
     private String externalNote;
 
     @Column(name = "add_notification")
-    private String addNotification = "Y" ;
+    private String addNotification = "Y";
 
     @Column(name = "test_reflex_id")
     private Integer testReflexId;
@@ -42,6 +42,7 @@ public class ReflexRuleAction {
     public Integer getId() {
         return id;
     }
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -49,44 +50,55 @@ public class ReflexRuleAction {
     public String getSampleId() {
         return sampleId;
     }
+
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
     }
+
     public String getReflexTestName() {
         return reflexTestName;
     }
+
     public void setReflexTestName(String reflexTestName) {
         this.reflexTestName = reflexTestName;
     }
+
     public String getReflexTestId() {
         return reflexTestId;
     }
+
     public void setReflexTestId(String reflexTestId) {
         this.reflexTestId = reflexTestId;
     }
+
     public String getInternalNote() {
         return internalNote;
     }
+
     public void setInternalNote(String internalNote) {
         this.internalNote = internalNote;
     }
+
     public String getExternalNote() {
         return externalNote;
     }
+
     public void setExternalNote(String externalNote) {
         this.externalNote = externalNote;
     }
+
     public String getAddNotification() {
         return addNotification;
     }
+
     public void setAddNotification(String addNotification) {
         this.addNotification = addNotification;
     }
-    
+
     public Integer getTestReflexId() {
         return testReflexId;
     }
-    
+
     public void setTestReflexId(Integer testReflexId) {
         this.testReflexId = testReflexId;
     }

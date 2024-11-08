@@ -2,9 +2,8 @@ package org.openelisglobal.menu.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.validator.GenericValidator;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.menu.dao.MenuDAO;
 import org.openelisglobal.menu.util.MenuItem;
 import org.openelisglobal.menu.util.MenuUtil;
@@ -14,7 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class MenuServiceImpl extends BaseObjectServiceImpl<Menu, String> implements MenuService {
+public class MenuServiceImpl extends AuditableBaseObjectServiceImpl<Menu, String> implements MenuService {
+
     @Autowired
     protected MenuDAO baseObjectDAO;
 
@@ -43,9 +43,9 @@ public class MenuServiceImpl extends BaseObjectServiceImpl<Menu, String> impleme
     @Override
     @Transactional
     public MenuItem save(MenuItem menuItem) {
-       MenuItem item =  saveMenuItem(menuItem);
-       MenuUtil.forceRebuild();
-       return item;
+        MenuItem item = saveMenuItem(menuItem);
+        MenuUtil.forceRebuild();
+        return item;
     }
 
     @Override
@@ -53,11 +53,11 @@ public class MenuServiceImpl extends BaseObjectServiceImpl<Menu, String> impleme
     public List<MenuItem> save(List<MenuItem> menuItems) {
         List<MenuItem> menuItemsNew = new ArrayList<>();
         for (MenuItem menuItem : menuItems) {
-            MenuItem item =  saveMenuItem(menuItem);
+            MenuItem item = saveMenuItem(menuItem);
             menuItemsNew.add(item);
         }
-       MenuUtil.forceRebuild();
-       return menuItemsNew; 
+        MenuUtil.forceRebuild();
+        return menuItemsNew;
     }
 
     private MenuItem saveMenuItem(MenuItem menuItem) {
@@ -68,10 +68,16 @@ public class MenuServiceImpl extends BaseObjectServiceImpl<Menu, String> impleme
         } else {
             oldMenu = get(menu.getId());
         }
-        oldMenu.setActionURL(menu.getActionURL());
-        oldMenu.setIsActive(menu.getIsActive());
-        menuItem.setMenu(oldMenu);
-        
+
+        // Update menu item if it was added outside the database
+        if (oldMenu == null) {
+            MenuUtil.updateMenu(menu);
+        } else {
+            oldMenu.setActionURL(menu.getActionURL());
+            oldMenu.setIsActive(menu.getIsActive());
+            menuItem.setMenu(oldMenu);
+        }
+
         List<MenuItem> oldChildren = menuItem.getChildMenus();
         menuItem.setChildMenus(new ArrayList<>());
         for (MenuItem oldChild : oldChildren) {

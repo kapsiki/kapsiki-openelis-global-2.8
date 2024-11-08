@@ -10,7 +10,6 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-
 import org.hibernate.annotations.Type;
 import org.openelisglobal.common.valueholder.BaseObject;
 
@@ -32,7 +31,7 @@ public class ImmunohistochemistrySampleReport extends BaseObject<Integer> {
     @Column(name = "report_type")
     @Enumerated(EnumType.STRING)
     @NotNull
-    private ImmunoHistologyReportType reportType ;
+    private ImmunoHistologyReportType reportType;
 
     @Override
     public Integer getId() {
@@ -51,7 +50,7 @@ public class ImmunohistochemistrySampleReport extends BaseObject<Integer> {
     public void setImage(byte[] image) {
         this.image = image;
     }
- 
+
     public String getFileType() {
         return fileType;
     }
@@ -69,7 +68,9 @@ public class ImmunohistochemistrySampleReport extends BaseObject<Integer> {
     }
 
     public enum ImmunoHistologyReportType {
-        DUAL_IN_SITU_HYBRIDISATION("Dual In Situ Hybridisation (ISH) Report"), BREAST_CANCER_HORMONE_RECEPTOR("Breast Cancer Hormone Receptor Status Report"), IMMUNOHISTOCHEMISTRY("Immunohistochemistry Report");
+        DUAL_IN_SITU_HYBRIDISATION("Dual In Situ Hybridisation (ISH) Report"),
+        BREAST_CANCER_HORMONE_RECEPTOR("Breast Cancer Hormone Receptor Status Report"),
+        IMMUNOHISTOCHEMISTRY("Immunohistochemistry Report");
 
         private String display;
 
@@ -80,5 +81,5 @@ public class ImmunohistochemistrySampleReport extends BaseObject<Integer> {
         public String getDisplay() {
             return display;
         }
-    } 
+    }
 }

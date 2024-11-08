@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -259,7 +258,8 @@ public class DataSubmitter {
             }
 
             String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-//                LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPut", "Server returned: " + body);
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPut", "Server
+            // returned: " + body);
 
             return body;
         } finally {
@@ -309,7 +309,7 @@ public class DataSubmitter {
             }
 
             String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-//                LogEvent.logInfo(this.getClass().getSimpleName(), "sendGet", body);
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "sendGet", body);
             return body;
         } finally {
             if (client != null) {
@@ -350,7 +350,7 @@ public class DataSubmitter {
             }
 
             String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-//                LogEvent.logInfo(this.getClass().getSimpleName(), "sendGet", body);
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "sendGet", body);
             return body;
         } finally {
             if (client != null) {
@@ -389,7 +389,7 @@ public class DataSubmitter {
                 throw new RuntimeException("Failed : HTTP error code : " + response.getStatusLine().getStatusCode());
             }
             String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-//                LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPut", body);
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPut", body);
             return body;
         } finally {
             if (client != null) {
@@ -430,7 +430,7 @@ public class DataSubmitter {
             }
 
             String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-//                LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPost", body);
+            // LogEvent.logInfo(this.getClass().getSimpleName(), "sendJSONPost", body);
             return body;
         } finally {
             if (client != null) {
@@ -463,5 +463,4 @@ public class DataSubmitter {
         String url = siteInformationService.getSiteInformationByName("Data Sub URL").getValue();
         return url;
     }
-
 }

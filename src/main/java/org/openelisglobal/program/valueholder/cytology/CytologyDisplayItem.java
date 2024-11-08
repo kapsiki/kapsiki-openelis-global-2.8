@@ -1,14 +1,13 @@
 package org.openelisglobal.program.valueholder.cytology;
 
-import java.util.Date;
-
-import org.openelisglobal.program.valueholder.cytology.CytologySample.CytologyStatus;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+import org.openelisglobal.program.valueholder.cytology.CytologySample.CytologyStatus;
 
 public class CytologyDisplayItem {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date requestDate;
+
     private CytologyStatus status;
     private String lastName;
     private String firstName;
@@ -17,6 +16,7 @@ public class CytologyDisplayItem {
     private String labNumber;
 
     private Integer pathologySampleId;
+
     public Date getRequestDate() {
         return requestDate;
     }
@@ -72,7 +72,7 @@ public class CytologyDisplayItem {
     public void setPathologySampleId(Integer pathologySampleId) {
         this.pathologySampleId = pathologySampleId;
     }
- 
+
     public String getAssignedCytoPathologist() {
         return assignedCytoPathologist;
     }
@@ -80,5 +80,4 @@ public class CytologyDisplayItem {
     public void setAssignedCytoPathologist(String assignedCytoPathologist) {
         this.assignedCytoPathologist = assignedCytoPathologist;
     }
-    
 }

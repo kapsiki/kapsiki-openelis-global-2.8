@@ -1,12 +1,9 @@
 package org.openelisglobal.workplan.form;
 
 import java.util.List;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
-import org.openelisglobal.validation.annotations.SafeHtml;
 import org.openelisglobal.common.form.BaseForm;
 import org.openelisglobal.common.form.IPagingForm;
 import org.openelisglobal.common.paging.PagingBean;
@@ -16,9 +13,10 @@ import org.openelisglobal.common.validator.ValidationHelper;
 import org.openelisglobal.resultvalidation.bean.AnalysisItem;
 import org.openelisglobal.sample.valueholder.OrderPriority;
 import org.openelisglobal.test.beanItems.TestResultItem;
+import org.openelisglobal.validation.annotations.SafeHtml;
 import org.openelisglobal.validation.annotations.ValidDate;
 
-public class WorkplanForm extends BaseForm  implements IPagingForm{
+public class WorkplanForm extends BaseForm implements IPagingForm {
     public interface PrintWorkplan {
     }
 

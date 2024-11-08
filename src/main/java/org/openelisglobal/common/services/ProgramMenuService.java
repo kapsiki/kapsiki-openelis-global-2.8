@@ -19,7 +19,6 @@ package org.openelisglobal.common.services;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 import org.openelisglobal.menu.service.MenuService;
 import org.openelisglobal.menu.util.MenuUtil;
 import org.openelisglobal.menu.valueholder.Menu;

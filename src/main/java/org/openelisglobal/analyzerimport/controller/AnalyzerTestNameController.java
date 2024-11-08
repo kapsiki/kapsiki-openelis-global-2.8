@@ -2,10 +2,8 @@ package org.openelisglobal.analyzerimport.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.openelisglobal.analyzer.service.AnalyzerService;
 import org.openelisglobal.analyzer.valueholder.Analyzer;
 import org.openelisglobal.analyzerimport.form.AnalyzerTestNameForm;

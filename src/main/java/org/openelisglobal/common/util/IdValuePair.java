@@ -1,11 +1,11 @@
 package org.openelisglobal.common.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /*
  * Nothing special, just for when id's and values should be encapsulated.
@@ -14,13 +14,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * other than identity of equals then over-ride equals and hash.
  */
 
-public class IdValuePair implements Serializable{
-    
-  
-   private String id;
-   private String value;
-   private static final long serialVersionUID = 1L;
-    
+public class IdValuePair implements Serializable {
+
+    private String id;
+    private String value;
+    private static final long serialVersionUID = 1L;
+
     @JsonCreator
     public IdValuePair(@JsonProperty("id") String id, @JsonProperty("value") String value) {
         this.setId(id);

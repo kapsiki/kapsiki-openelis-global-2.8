@@ -3,10 +3,9 @@ package org.openelisglobal.common.hibernateConverter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.persistence.AttributeConverter;
 
-public class StringListConverter  implements AttributeConverter<List<String>, String>{
+public class StringListConverter implements AttributeConverter<List<String>, String> {
     private static final String SPLIT_CHAR = ",";
 
     @Override
@@ -18,5 +17,4 @@ public class StringListConverter  implements AttributeConverter<List<String>, St
     public List<String> convertToEntityAttribute(String string) {
         return string != null ? Arrays.asList(string.split(SPLIT_CHAR)) : Collections.emptyList();
     }
-    
 }

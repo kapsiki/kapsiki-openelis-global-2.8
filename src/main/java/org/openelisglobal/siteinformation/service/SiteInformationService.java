@@ -2,7 +2,6 @@ package org.openelisglobal.siteinformation.service;
 
 import java.util.List;
 import java.util.Map;
-
 import org.openelisglobal.common.service.BaseObjectService;
 import org.openelisglobal.siteinformation.valueholder.SiteInformation;
 

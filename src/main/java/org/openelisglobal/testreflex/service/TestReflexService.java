@@ -1,7 +1,6 @@
 package org.openelisglobal.testreflex.service;
 
 import java.util.List;
-
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.service.BaseObjectService;
 import org.openelisglobal.testanalyte.valueholder.TestAnalyte;
@@ -31,15 +30,14 @@ public interface TestReflexService extends BaseObjectService<TestReflex, String>
     List<TestReflex> getTestReflexsByTestResultAnalyteTest(String testResultId, String analyteId, String testId);
 
     List<TestReflex> getTestReflexsByAnalyteAndTest(String analyteId, String testId);
-    
+
     void saveOrUpdateReflexRule(ReflexRule reflexRule);
 
     List<ReflexRule> getAllReflexRules();
 
-    void deactivateReflexRule(String id); 
+    void deactivateReflexRule(String id);
 
     ReflexRule getReflexRuleByAnalyteId(String analyteId);
 
-    List<TestReflex> getTestReflexsByTestAnalyteId(String testAnalyteId) ;
-
+    List<TestReflex> getTestReflexsByTestAnalyteId(String testAnalyteId);
 }

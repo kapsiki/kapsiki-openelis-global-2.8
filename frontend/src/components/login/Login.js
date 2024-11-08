@@ -8,6 +8,7 @@ import ProductOfLogo from "./kapsiki-logo/ProductOfLogo.component";
 import classNames from "classnames";
 import qs from "qs";
 import { FormattedMessage, injectIntl } from "react-intl";
+import { HardwareSecurityModule } from "@carbon/icons-react";
 import {
   Form,
   Section,
@@ -31,7 +32,7 @@ import UserSessionDetailsContext from "../../UserSessionDetailsContext";
 import { ConfigurationContext, NotificationContext } from "../layout/Layout";
 
 function Login(props) {
-  const { notificationVisible, setNotificationBody, setNotificationVisible } =
+  const { notificationVisible, addNotification, setNotificationVisible } =
     useContext(NotificationContext);
   const { configurationProperties } = useContext(ConfigurationContext);
 
@@ -40,7 +41,7 @@ function Login(props) {
   const firstInput = createRef();
 
   useEffect(() => {
-    firstInput.current.focus();
+    firstInput?.current?.focus();
 
     const interval = setInterval(() => {
       checkLogin();
@@ -71,13 +72,13 @@ function Login(props) {
       body: qs.stringify(data),
     })
       .then(async (response) => {
+        setSubmitting(false);
         // get json response here
         let data = await response.json();
-        setSubmitting(false);
         if (response.status === 200) {
           window.location.href = "/";
         } else {
-          setNotificationBody({
+          addNotification({
             title: props.intl.formatMessage({
               id: "notification.title",
             }),
@@ -91,18 +92,51 @@ function Login(props) {
       })
       .catch((error) => {
         setSubmitting(false);
-        setNotificationBody({
-          title: props.intl.formatMessage({
-            id: "notification.title",
-          }),
-          message: props.intl.formatMessage({
-            id: "notification.login.generic.error",
-          }),
-          kind: NotificationKinds.error,
-        });
-        setNotificationVisible(true);
-        console.log(error);
+        console.error(error);
+        if (error instanceof SyntaxError) {
+          addNotification({
+            title: props.intl.formatMessage({
+              id: "notification.title",
+            }),
+            message: props.intl.formatMessage({
+              id: "notification.login.syntax.error",
+            }),
+            kind: NotificationKinds.error,
+          });
+          setNotificationVisible(true);
+        } else {
+          addNotification({
+            title: props.intl.formatMessage({
+              id: "notification.title",
+            }),
+            message: props.intl.formatMessage({
+              id: "notification.login.generic.error",
+            }),
+            kind: NotificationKinds.error,
+          });
+          setNotificationVisible(true);
+        }
       });
+  };
+
+  const renderOauthButtons = () => {
+    return (
+      <span id="oauth-buttons">
+        {configurationProperties?.oauthUrls?.map((url) => (
+          <Button
+            key={url.key}
+            type="button"
+            renderIcon={HardwareSecurityModule}
+            onClick={() => {
+              console.log(url);
+              window.location.href = config.serverBaseUrl + "/" + url.value;
+            }}
+          >
+            <FormattedMessage id="label.button.login.sso" />
+          </Button>
+        ))}
+      </span>
+    );
   };
 
   return (
@@ -173,6 +207,7 @@ function Login(props) {
                         <button
                         className="continueButton"
                           type="button"
+                          renderIcon={HardwareSecurityModule}
                           onClick={() => {
                             const POPUP_HEIGHT = 700;
                             const POPUP_WIDTH = 600;

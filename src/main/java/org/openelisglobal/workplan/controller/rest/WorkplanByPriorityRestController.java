@@ -4,7 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -40,35 +39,34 @@ public class WorkplanByPriorityRestController extends WorkplanRestController {
     @Autowired
     private SampleQaEventService sampleQaEventService;
     @Autowired
-    private UserService userService;	
+    private UserService userService;
 
-	@RequestMapping(value = "/rest/workplan-by-priority", method = RequestMethod.GET)
+    @RequestMapping(value = "/rest/workplan-by-priority", method = RequestMethod.GET)
     public WorkplanForm showWorkPlanByPriority(HttpServletRequest request,
-			@RequestParam(name = "priority", defaultValue = "") OrderPriority priority)
+            @RequestParam(name = "priority", defaultValue = "") OrderPriority priority)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-        
+
         WorkplanPaging paging = new WorkplanPaging();
-		WorkplanForm form = new WorkplanForm();
+        WorkplanForm form = new WorkplanForm();
         List<TestResultItem> workplanTests = new ArrayList<TestResultItem>();
-        List<TestResultItem> filteredTests =  new ArrayList<TestResultItem>();
+        List<TestResultItem> filteredTests = new ArrayList<TestResultItem>();
 
-            String requestedPage = request.getParameter("page");
-            if (GenericValidator.isBlankOrNull(requestedPage)) {
-                workplanTests = getWorkplanByPriority(priority);
-                filteredTests = userService.filterResultsByLabUnitRoles(getSysUserId(request), workplanTests,
-                        Constants.ROLE_RESULTS);
+        String requestedPage = request.getParameter("page");
+        if (GenericValidator.isBlankOrNull(requestedPage)) {
+            workplanTests = getWorkplanByPriority(priority);
+            filteredTests = userService.filterResultsByLabUnitRoles(getSysUserId(request), workplanTests,
+                    Constants.ROLE_RESULTS);
 
-                ResultsLoadUtility resultsLoadUtility = new ResultsLoadUtility();
-                resultsLoadUtility.sortByAccessionAndSequence(filteredTests);
+            ResultsLoadUtility resultsLoadUtility = new ResultsLoadUtility();
+            resultsLoadUtility.sortByAccessionAndSequence(filteredTests);
 
-                paging.setDatabaseResults(request, form, filteredTests);
-            }else{
-                int requestedPageNumber = Integer.parseInt(requestedPage);
-                paging.page(request, form, requestedPageNumber);
-            }
-        
-		return form;
+            paging.setDatabaseResults(request, form, filteredTests);
+        } else {
+            int requestedPageNumber = Integer.parseInt(requestedPage);
+            paging.page(request, form, requestedPageNumber);
+        }
 
+        return form;
     }
 
     private List<TestResultItem> getWorkplanByPriority(OrderPriority priority) {
@@ -134,5 +132,4 @@ public class WorkplanByPriorityRestController extends WorkplanRestController {
     public List<SampleQaEvent> getSampleQaEvents(Sample sample) {
         return sampleQaEventService.getSampleQaEventsBySample(sample);
     }
-
 }

@@ -3,7 +3,6 @@ package org.openelisglobal.common.provider.query;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.util.resources.ResourceLocator;
@@ -14,9 +13,7 @@ import org.openelisglobal.common.util.resources.ResourceLocator;
  *
  * @version 1.0
  * @author diane benz
- *
  */
-
 public class QueryProviderFactory {
 
     private static class SingletonHelper {
@@ -28,11 +25,7 @@ public class QueryProviderFactory {
     // Properties object that holds validation provider mappings
     private Properties queryProviderClassMap = null;
 
-    /**
-     * Singleton global access for ValidationProviderFactory
-     *
-     */
-
+    /** Singleton global access for ValidationProviderFactory */
     public static QueryProviderFactory getInstance() {
         return SingletonHelper.INSTANCE;
     }
@@ -110,5 +103,4 @@ public class QueryProviderFactory {
 
         return provider;
     }
-
 }

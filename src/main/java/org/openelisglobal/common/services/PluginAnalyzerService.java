@@ -21,9 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
 import javax.annotation.PostConstruct;
-
 import org.openelisglobal.analyzer.service.AnalyzerService;
 import org.openelisglobal.analyzer.valueholder.Analyzer;
 import org.openelisglobal.analyzerimport.service.AnalyzerTestMappingService;
@@ -159,7 +157,6 @@ public class PluginAnalyzerService {
                     testMappings.add(createAnalyzerTestMapping(names, test.getId()));
                 }
             }
-
         }
         return testMappings;
     }
@@ -218,5 +215,4 @@ public class PluginAnalyzerService {
             return dbbTestLoincCode;
         }
     }
-
 }

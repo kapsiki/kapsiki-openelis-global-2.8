@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.openelisglobal.common.util.LabelValuePair;
 import org.openelisglobal.dictionary.service.DictionaryService;
 import org.openelisglobal.testreflex.action.bean.ReflexRule;
-import org.openelisglobal.testreflex.action.bean.ReflexRuleOptionsDisplayItem;
 import org.openelisglobal.testreflex.action.bean.ReflexRuleOptions;
+import org.openelisglobal.testreflex.action.bean.ReflexRuleOptionsDisplayItem;
 import org.openelisglobal.testreflex.service.TestReflexService;
 import org.openelisglobal.typeofsample.service.TypeOfSampleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +42,11 @@ public class TestReflexRuleRestController {
     @PostMapping(value = "deactivate-reflexrule/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public void deactivateReflexRule(@PathVariable String id) {
-        reflexService.deactivateReflexRule(id);
+        try {
+            reflexService.deactivateReflexRule(id);
+        } catch (Exception e) {
+        }
+
     }
 
     @GetMapping(value = "reflexrules", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,14 +65,11 @@ public class TestReflexRuleRestController {
         ReflexRuleOptions.OverallOptions.stream()
                 .forEach(option -> overallOptions.add(new LabelValuePair(option.getDisplayName(), option.name())));
         List<LabelValuePair> generalRelationOptions = new ArrayList<>();
-        ReflexRuleOptions.GeneralRelationOptions.stream()
-                .forEach(
-                        option -> generalRelationOptions
-                                .add(new LabelValuePair(option.getDisplayName(), option.name())));
+        ReflexRuleOptions.GeneralRelationOptions.stream().forEach(
+                option -> generalRelationOptions.add(new LabelValuePair(option.getDisplayName(), option.name())));
         List<LabelValuePair> numericRelationOptions = new ArrayList<>();
         ReflexRuleOptions.NumericRelationOptions.stream().forEach(
-                option -> numericRelationOptions
-                        .add(new LabelValuePair(option.getDisplayName(), option.name())));
+                option -> numericRelationOptions.add(new LabelValuePair(option.getDisplayName(), option.name())));
         options.setOverallOptions(overallOptions);
         options.setGeneralRelationOptions(generalRelationOptions);
         options.setNumericRelationOptions(numericRelationOptions);

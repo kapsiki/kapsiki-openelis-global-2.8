@@ -4,7 +4,8 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -28,9 +29,6 @@ import org.openelisglobal.sampleorganization.service.SampleOrganizationService;
 import org.openelisglobal.sampleorganization.valueholder.SampleOrganization;
 import org.openelisglobal.spring.util.SpringContext;
 import org.openelisglobal.test.service.TestServiceImpl;
-
-import net.sf.jasperreports.engine.JRDataSource;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 public abstract class PatientVLReport extends RetroCIPatientReport {
 
@@ -74,7 +72,6 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
         setPatientInfo(data);
         setTestInfo(data);
         reportItems.add(data);
-        
     }
 
     protected void setTestInfo(VLReportData data) {
@@ -88,7 +85,8 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
         long maxCompleationTime = 0L;
         Date maxReleasedDate = null;
         long maxReleasedTime = 0L;
-//		String invalidValue = MessageUtil.getMessage("report.test.status.inProgress");
+        // String invalidValue =
+        // MessageUtil.getMessage("report.test.status.inProgress");
 
         for (Analysis analysis : analysisList) {
 
@@ -101,10 +99,10 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
                 }
             }
             if (analysis.getReleasedDate() != null) {
-            	if (analysis.getReleasedDate().getTime() > maxReleasedTime) {
-            		maxReleasedDate = analysis.getReleasedDate();
-            		maxReleasedTime = maxReleasedDate.getTime();
-            	}
+                if (analysis.getReleasedDate().getTime() > maxReleasedTime) {
+                    maxReleasedDate = analysis.getReleasedDate();
+                    maxReleasedTime = maxReleasedDate.getTime();
+                }
             }
 
             String testName = TestServiceImpl.getUserLocalizedTestName(analysis.getTest());
@@ -140,9 +138,7 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
                             data.setAmpli2lo("");
                         }
                     }
-
                 }
-
             }
             if (mayBeDuplicate
                     && SpringContext.getBean(IStatusService.class).matches(analysis.getStatusId(),
@@ -150,7 +146,6 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
                     && lastReport != null && lastReport.before(analysis.getLastupdated())) {
                 mayBeDuplicate = false;
             }
-
         }
         if (maxCompleationDate != null) {
             data.setCompleationdate(DateUtil.convertSqlDateToStringDate(maxCompleationDate));
@@ -167,7 +162,8 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
     protected void setPatientInfo(VLReportData data) {
 
         data.setVlSuckle(ohService.getMostRecentValueForPatient(ObservationType.VL_SUCKLE, reportPatient.getId()));
-        data.setVlPregnancy(ohService.getMostRecentValueForPatient(ObservationType.VL_PREGNANCY, reportPatient.getId()));
+        data.setVlPregnancy(
+                ohService.getMostRecentValueForPatient(ObservationType.VL_PREGNANCY, reportPatient.getId()));
         data.setvih(ohService.getMostRecentValueForPatient(ObservationType.HIV_STATUS, reportPatient.getId()));
         data.setSubjectno(reportPatient.getNationalId());
         data.setSitesubjectno(reportPatient.getExternalId());
@@ -184,8 +180,7 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
         if (AccessionFormat.ALPHANUM.toString()
                 .equals(ConfigurationProperties.getInstance().getPropertyValue(Property.AccessionFormat))) {
             data.setAccessionNumber(
-                    AlphanumAccessionValidator
-                            .convertAlphaNumLabNumForDisplay(reportSample.getAccessionNumber()));
+                    AlphanumAccessionValidator.convertAlphaNumLabNumForDisplay(reportSample.getAccessionNumber()));
         } else {
             data.setAccessionNumber(reportSample.getAccessionNumber());
         }
@@ -200,7 +195,6 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
             } else {
                 data.setAgeMonth(String.valueOf((int) Math.floor(collectionTime / MONTH)));
             }
-
         }
         data.getSampleQaEventItems(reportSample);
     }
@@ -210,5 +204,4 @@ public abstract class PatientVLReport extends RetroCIPatientReport {
         return ANTIRETROVIRAL_STUDY_ID + ":" + ANTIRETROVIRAL_FOLLOW_UP_STUDY_ID + ":" + VL_STUDY_ID;
         // return ANTIRETROVIRAL_ID;
     }
-
 }

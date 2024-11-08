@@ -3,7 +3,6 @@ package org.openelisglobal.notification.dao;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
@@ -61,7 +60,8 @@ public class TestNotificationConfigDAOImpl extends BaseDAOImpl<TestNotificationC
     public TestNotificationConfig getForConfigOption(Integer configOptionId) {
         TestNotificationConfig data;
         try {
-            String sql = "SELECT tnc From TestNotificationConfig as tnc join tnc.options as tnco where tnco.id = :configOptionId";
+            String sql = "SELECT tnc From TestNotificationConfig as tnc join tnc.options as tnco where tnco.id ="
+                    + " :configOptionId";
             Query<TestNotificationConfig> query = entityManager.unwrap(Session.class).createQuery(sql,
                     TestNotificationConfig.class);
             query.setParameter("configOptionId", configOptionId);
@@ -73,5 +73,4 @@ public class TestNotificationConfigDAOImpl extends BaseDAOImpl<TestNotificationC
 
         return data;
     }
-
 }

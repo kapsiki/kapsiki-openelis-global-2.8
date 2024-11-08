@@ -67,7 +67,5 @@ public class BarcodeInformationServiceImpl implements BarcodeInformationService 
             siteInformation.setSysUserId(sysUserId);
             siteInformationService.update(siteInformation);
         }
-
     }
-
 }

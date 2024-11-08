@@ -1,7 +1,6 @@
 package org.openelisglobal.testconfiguration.service;
 
 import java.util.List;
-
 import org.openelisglobal.typeofsample.service.TypeOfSampleService;
 import org.openelisglobal.typeofsample.service.TypeOfSampleTestService;
 import org.openelisglobal.typeofsample.valueholder.TypeOfSample;
@@ -45,5 +44,4 @@ public class SampleTypeTestAssignServiceImpl implements SampleTypeTestAssignServ
             typeOfSampleService.update(deActivateTypeOfSample);
         }
     }
-
 }

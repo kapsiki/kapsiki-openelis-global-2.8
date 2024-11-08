@@ -2,10 +2,8 @@ package org.openelisglobal.siteinformation.controller;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.common.constants.Constants;
 import org.openelisglobal.common.controller.BaseMenuController;
@@ -172,7 +170,6 @@ public class SiteInformationMenuController extends BaseMenuController<SiteInform
                 siteInformation.setValue(siteInformation.getValue().replaceAll(".", "*"));
             }
         }
-
     }
 
     @Override
@@ -215,10 +212,9 @@ public class SiteInformationMenuController extends BaseMenuController<SiteInform
             result.reject(errorMsg);
             redirectAttributes.addFlashAttribute(Constants.REQUEST_ERRORS, result);
             return findForward(FWD_FAIL_DELETE, form);
-
         }
 
-        ConfigurationProperties.forceReload();
+        ConfigurationProperties.loadDBValuesIntoConfiguration();
 
         redirectAttributes.addFlashAttribute(FWD_SUCCESS, true);
         return findForward(FWD_SUCCESS_DELETE, form);

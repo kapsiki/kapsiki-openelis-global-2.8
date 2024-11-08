@@ -1,19 +1,17 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
- * Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.result.action.util;
 
@@ -26,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -92,7 +88,6 @@ import org.openelisglobal.test.beanItems.TestResultItem;
 import org.openelisglobal.test.beanItems.TestResultItem.ResultDisplayType;
 import org.openelisglobal.test.service.TestService;
 import org.openelisglobal.test.valueholder.Test;
-//import org.openelisglobal.test.valueholder.TestSection;
 import org.openelisglobal.testreflex.action.util.TestReflexUtil;
 import org.openelisglobal.testreflex.valueholder.TestReflex;
 import org.openelisglobal.testresult.valueholder.TestResult;
@@ -265,19 +260,19 @@ public class ResultsLoadUtility {
 
     public List<TestResultItem> getUnfinishedTestResultItemsInTestSection(String testSectionId) {
 
-//      List<Analysis> fullAnalysisList = analysisService.getAllAnalysisByTestSectionAndStatus(testSectionId,
-//          analysisStatusList, sampleStatusList);
-//      request.setAttribute("analysisesSize", fullAnalysisList.size());
-        List<Analysis> analysisList = analysisService.getPageAnalysisByTestSectionAndStatus(testSectionId,
+        List<Analysis> fullAnalysisList = analysisService.getAllAnalysisByTestSectionAndStatus(testSectionId,
                 analysisStatusList, sampleStatusList);
+        // request.setAttribute("analysisesSize", fullAnalysisList.size());
+        // List<Analysis> analysisList =
+        // analysisService.getPageAnalysisByTestSectionAndStatus(testSectionId,
+        // analysisStatusList, sampleStatusList);
 
-        return getGroupedTestsForAnalysisList(analysisList, SORT_FORWARD);
+        return getGroupedTestsForAnalysisList(fullAnalysisList, SORT_FORWARD);
     }
 
     public int getTotalCountAnalysisByTestSectionAndStatus(String testSectionId) {
         return analysisService.getCountAnalysisByTestSectionAndStatus(testSectionId, analysisStatusList,
                 sampleStatusList);
-
     }
 
     public List<TestResultItem> getGroupedTestsForAnalysisList(List<Analysis> filteredAnalysisList, boolean forwardSort)
@@ -394,7 +389,6 @@ public class ResultsLoadUtility {
             }
 
             item.setSampleGroupingNumber(groupingNumber);
-
         }
     }
 
@@ -534,7 +528,6 @@ public class ResultsLoadUtility {
 
                 currentAccessionNumber = testItem.getAccessionNumber();
                 reflexGroup++;
-
             }
 
             testList.add(testItem);
@@ -618,11 +611,8 @@ public class ResultsLoadUtility {
                     }
                     groupedSibReflexMapping.put(testReflex.getId(), resultItem);
                 }
-
             }
-
         }
-
     }
 
     private List<SampleItem> getSampleItemsForSample(Sample sample) {
@@ -713,8 +703,8 @@ public class ResultsLoadUtility {
         testItem.setUnitsOfMeasure(uom);
         testItem.setTestDate(testDate);
         testItem.setResultDisplayType(resultDisplayType);
-        testItem.setTestMethod(testMethodName);
         testItem.setAnalysisMethod(analysisService.getAnalysisType(analysis));
+        testItem.setTestMethod(analysisService.getMethodId(analysis));
         testItem.setResult(result);
         testItem.setResultValue(getFormattedResultValue(result));
         testItem.setMultiSelectResultValues(analysisService.getJSONMultiSelectResults(analysis));
@@ -788,11 +778,10 @@ public class ResultsLoadUtility {
             testItem.setUpperAbnormalRange(
                     resultLimit.getHighValid() == Double.POSITIVE_INFINITY ? 0 : resultLimit.getHighValid());
             testItem.setLowerCritical(
-                        resultLimit.getLowCritical() == Double.NEGATIVE_INFINITY ? 0 : resultLimit.getLowCritical());
+                    resultLimit.getLowCritical() == Double.NEGATIVE_INFINITY ? 0 : resultLimit.getLowCritical());
             testItem.setHigherCritical(
-                        resultLimit.getHighCritical() == Double.POSITIVE_INFINITY ? 0 : resultLimit.getHighCritical());
-                               
-                               
+                    resultLimit.getHighCritical() == Double.POSITIVE_INFINITY ? 0 : resultLimit.getHighCritical());
+
             testItem.setValid(getIsValid(testItem.getResultValue(), resultLimit));
             testItem.setNormal(getIsNormal(testItem.getResultValue(), resultLimit));
             testItem.setNormalRange(SpringContext.getBean(ResultLimitService.class).getDisplayReferenceRange(
@@ -881,18 +870,18 @@ public class ResultsLoadUtility {
         return result != null ? resultResultService.getResultValue(result, false) : "";
     }
 
-    private boolean hasLogValue(Test test) {// Analysis analysis, String resultValue) {
+    private boolean hasLogValue(Test test) { // Analysis analysis, String resultValue) {
         // TO-DO refactor
         // if ( ){
-//			if (GenericValidator.isBlankOrNull(resultValue)) {
-//				return true;
-//			}
-//			try {
-//				Double.parseDouble(resultValue);
-//				return true;
-//			} catch (NumberFormatException e) {
-//				return false;
-//			}
+        // if (GenericValidator.isBlankOrNull(resultValue)) {
+        // return true;
+        // }
+        // try {
+        // Double.parseDouble(resultValue);
+        // return true;
+        // } catch (NumberFormatException e) {
+        // return false;
+        // }
 
         // return true;
         // }
@@ -927,7 +916,6 @@ public class ResultsLoadUtility {
         }
 
         return values;
-
     }
 
     private boolean getIsValid(String resultValue, ResultLimit resultLimit) {
@@ -944,7 +932,6 @@ public class ResultsLoadUtility {
                 // no-op
             }
         }
-
         return valid;
     }
 
@@ -956,7 +943,6 @@ public class ResultsLoadUtility {
                 double value = Double.valueOf(resultValue);
 
                 normal = value >= resultLimit.getLowNormal() && value <= resultLimit.getHighNormal();
-
             } catch (NumberFormatException e) {
                 LogEvent.logInfo(this.getClass().getSimpleName(), "getIsNormal", e.getMessage());
                 // no-op
@@ -1047,18 +1033,17 @@ public class ResultsLoadUtility {
 
         return getGroupedTestsForAnalysisList(analysisList, SORT_FORWARD);
     }
-    
-    public List<TestResultItem> getUnfinishedTestResultItemsByAccession(String accessionNumber,String upperRangeAccessionNumber, boolean doRange, boolean finished) {
+
+    public List<TestResultItem> getUnfinishedTestResultItemsByAccession(String accessionNumber,
+            String upperRangeAccessionNumber, boolean doRange, boolean finished) {
         List<Analysis> analysisList = analysisService.getPageAnalysisByStatusFromAccession(analysisStatusList,
-                sampleStatusList, accessionNumber,upperRangeAccessionNumber, doRange, finished);
+                sampleStatusList, accessionNumber, upperRangeAccessionNumber, doRange, finished);
 
         return getGroupedTestsForAnalysisList(analysisList, SORT_FORWARD);
     }
-
 
     public int getTotalCountAnalysisByAccessionAndStatus(String accessionNumber) {
         return analysisService.getCountAnalysisByStatusFromAccession(analysisStatusList, sampleStatusList,
                 accessionNumber);
     }
-
 }

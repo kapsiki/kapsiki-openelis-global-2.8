@@ -1,10 +1,9 @@
 package org.openelisglobal.dataexchange.common;
 
 import java.util.List;
-
 import org.apache.http.HttpStatus;
 
-abstract public class HttpSender implements IExternalSender {
+public abstract class HttpSender implements IExternalSender {
 
     protected String message;
     protected String url;
@@ -12,7 +11,7 @@ abstract public class HttpSender implements IExternalSender {
     String serviceTargetName = "";
     List<String> errors;
 
-    abstract public boolean sendMessage();
+    public abstract boolean sendMessage();
 
     @Override
     public void setTargetName(String name) {
@@ -38,5 +37,4 @@ abstract public class HttpSender implements IExternalSender {
     public int getSendResponse() {
         return returnStatus;
     }
-
 }

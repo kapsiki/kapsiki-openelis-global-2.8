@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.services.DisplayListService;
@@ -32,8 +31,7 @@ import org.openelisglobal.reports.action.implementation.reportBeans.RejectionRep
 import org.openelisglobal.reports.form.ReportForm;
 import org.openelisglobal.spring.util.SpringContext;
 
-/**
- */
+/** */
 public class RejectionReportByTest extends RejectionReport implements IReportParameterSetter {
     private String testName = "";
 
@@ -53,8 +51,8 @@ public class RejectionReportByTest extends RejectionReport implements IReportPar
         createReportParameters();
 
         rejections = new ArrayList<>();
-        List<Note> testRejectionNotes = SpringContext.getBean(NoteService.class).getTestNotesInDateRangeByType(dateRange.getLowDate(),
-                dateRange.getHighDate(), NoteServiceImpl.NoteType.REJECTION_REASON);
+        List<Note> testRejectionNotes = SpringContext.getBean(NoteService.class).getTestNotesInDateRangeByType(
+                dateRange.getLowDate(), dateRange.getHighDate(), NoteServiceImpl.NoteType.REJECTION_REASON);
 
         Analysis currentAnalysis = new Analysis();
         String noteText = null;

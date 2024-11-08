@@ -1,12 +1,26 @@
 package org.openelisglobal.barcode;
 
+import com.lowagie.text.BadElementException;
+import com.lowagie.text.Chunk;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Image;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.Barcode;
+import com.lowagie.text.pdf.Barcode128;
+import com.lowagie.text.pdf.PdfContentByte;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfWriter;
+import com.lowagie.text.pdf.draw.LineSeparator;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.openelisglobal.barcode.labeltype.BlankLabel;
 import org.openelisglobal.barcode.labeltype.BlockLabel;
 import org.openelisglobal.barcode.labeltype.Label;
@@ -32,28 +46,11 @@ import org.openelisglobal.sampleitem.valueholder.SampleItem;
 import org.openelisglobal.spring.util.SpringContext;
 import org.openelisglobal.test.valueholder.Test;
 
-import com.lowagie.text.BadElementException;
-import com.lowagie.text.Chunk;
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.Image;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.Barcode;
-import com.lowagie.text.pdf.Barcode128;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfPCell;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.pdf.draw.LineSeparator;
-
 /**
  * Class for taking lists of Label objects and turning them into a printable
  * format
  *
  * @author Caleb
- *
  */
 public class BarcodeLabelMaker {
 
@@ -72,6 +69,7 @@ public class BarcodeLabelMaker {
     private BarcodeLabelInfoService barcodeLabelService = SpringContext.getBean(BarcodeLabelInfoService.class);
 
     private static final Set<Integer> ENTERED_STATUS_SAMPLE_LIST = new HashSet<>();
+
     static {
         ENTERED_STATUS_SAMPLE_LIST
                 .add(Integer.parseInt(SpringContext.getBean(IStatusService.class).getStatusID(SampleStatus.Entered)));
@@ -113,21 +111,21 @@ public class BarcodeLabelMaker {
             String accessionNumber = genNextPrePrintedAccessionNumber(accessionValidator, startingAt);
             OrderLabel orderLabel = new OrderLabel(accessionNumber, facilityName);
             orderLabel.setNumLabels(numOrderLabelsPerSet);
-//          orderLabel.linkBarcodeLabelInfo();
+            // orderLabel.linkBarcodeLabelInfo();
             // get sysUserId from login module
-//            orderLabel.setSysUserId(sysUserId);
-//          if (orderLabel.checkIfPrintable() || "true".equals(override)) {
+            // orderLabel.setSysUserId(sysUserId);
+            // if (orderLabel.checkIfPrintable() || "true".equals(override)) {
             labels.add(orderLabel);
-//          }
+            // }
 
             SpecimenLabel specimenLabel = new SpecimenLabel(accessionNumber, facilityName, tests);
             specimenLabel.setNumLabels(numSpecimenLabelsPerSet);
-//          specimenLabel.linkBarcodeLabelInfo();
+            // specimenLabel.linkBarcodeLabelInfo();
             // get sysUserId from login module
-//            specimenLabel.setSysUserId(sysUserId);
-//          if (specimenLabel.checkIfPrintable() || "true".equals(override)) {
+            // specimenLabel.setSysUserId(sysUserId);
+            // if (specimenLabel.checkIfPrintable() || "true".equals(override)) {
             labels.add(specimenLabel);
-//          }
+            // }
         }
     }
 
@@ -136,11 +134,11 @@ public class BarcodeLabelMaker {
         if (accessionValidator == null) {
             accessionValidator = AccessionNumberUtil.getMainAccessionNumberGenerator();
         }
-//        if (GenericValidator.isBlankOrNull(startingAt)) {
+        // if (GenericValidator.isBlankOrNull(startingAt)) {
         return accessionValidator.getNextAvailableAccessionNumber("", true);
-//        } else {
-//            return accessionValidator.getNextAccessionNumber("", true);
-//        }
+        // } else {
+        // return accessionValidator.getNextAccessionNumber("", true);
+        // }
     }
 
     /**
@@ -158,8 +156,8 @@ public class BarcodeLabelMaker {
     public void generateLabels(String labNo, String type, String quantity, String override) {
 
         /*
-         * LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "labNo: " +
-         * labNo + "\n" + "patientId: " + patientId + "\n" + "type: " + type + "\n" +
+         * LogEvent.logInfo(this.getClass().getSimpleName(), "method unkown", "labNo: "
+         * + labNo + "\n" + "patientId: " + patientId + "\n" + "type: " + type + "\n" +
          * "quantity: " + quantity + "\n" + "override: " + override);
          */
 
@@ -261,7 +259,7 @@ public class BarcodeLabelMaker {
                     label.pdfWidth = 350;
                     label.pdfHeight = label.pdfWidth * ratio;
                     drawLabel(label, writer, document);
-//                  label.incrementNumPrinted();
+                    // label.incrementNumPrinted();
                 }
             }
             document.close();
@@ -339,8 +337,8 @@ public class BarcodeLabelMaker {
                 }
                 table.addCell(createFieldAsPDFField(label, field));
             }
-        table.completeRow();
-    }
+            table.completeRow();
+        }
 
         // add bar code
         if (label.getScaledBarcodeSpace() != NUM_COLUMNS) {
@@ -527,5 +525,4 @@ public class BarcodeLabelMaker {
         // TODO Auto-generated method stub
 
     }
-
 }

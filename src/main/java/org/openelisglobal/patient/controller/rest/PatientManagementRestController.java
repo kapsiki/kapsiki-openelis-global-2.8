@@ -3,31 +3,26 @@ package org.openelisglobal.patient.controller.rest;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
-
-import org.openelisglobal.common.util.ConfigurationProperties;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.StaleObjectStateException;
+import org.openelisglobal.common.exception.LIMSRuntimeException;
+import org.openelisglobal.common.log.LogEvent;
+import org.openelisglobal.common.rest.BaseRestController;
 import org.openelisglobal.dataexchange.fhir.exception.FhirPersistanceException;
 import org.openelisglobal.dataexchange.fhir.exception.FhirTransformationException;
 import org.openelisglobal.dataexchange.fhir.service.FhirTransformService;
 import org.openelisglobal.patient.action.IPatientUpdate.PatientUpdateStatus;
 import org.openelisglobal.patient.action.bean.PatientManagementInfo;
 import org.openelisglobal.patient.service.PatientService;
-import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.StaleObjectStateException;
-import org.openelisglobal.common.exception.LIMSRuntimeException;
-import org.openelisglobal.common.log.LogEvent;
-import org.openelisglobal.common.provider.query.PatientSearchResults;
-import org.openelisglobal.common.rest.BaseRestController;
+import org.openelisglobal.patient.validator.ValidatePatientInfo;
 import org.openelisglobal.patient.valueholder.Patient;
 import org.openelisglobal.patientidentity.service.PatientIdentityService;
 import org.openelisglobal.patientidentity.valueholder.PatientIdentity;
 import org.openelisglobal.person.valueholder.Person;
 import org.openelisglobal.sample.form.SamplePatientEntryForm;
 import org.openelisglobal.search.service.SearchResultsService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -52,14 +47,12 @@ public class PatientManagementRestController extends BaseRestController {
     @Autowired
     FhirTransformService fhirTransformService;
 
-    private static final String AMBIGUOUS_DATE_CHAR = ConfigurationProperties.getInstance()
-            .getPropertyValue(ConfigurationProperties.Property.AmbiguousDateHolder);
-    private static final String AMBIGUOUS_DATE_HOLDER = AMBIGUOUS_DATE_CHAR + AMBIGUOUS_DATE_CHAR;
-
     @PostMapping(value = "patient-management", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public void savepatient(HttpServletRequest request, @Validated(SamplePatientEntryForm.SamplePatientEntry.class) @RequestBody PatientManagementInfo patientInfo ,BindingResult bindingResult)
-            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException{
+    public void savepatient(HttpServletRequest request,
+            @Validated(SamplePatientEntryForm.SamplePatientEntry.class) @RequestBody PatientManagementInfo patientInfo,
+            BindingResult bindingResult)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
         if (StringUtils.isNotBlank(patientInfo.getPatientPK())) {
             patientInfo.setPatientUpdateStatus(PatientUpdateStatus.UPDATE);
@@ -69,25 +62,24 @@ public class PatientManagementRestController extends BaseRestController {
         Patient patient = new Patient();
 
         if (patientInfo.getPatientUpdateStatus() != PatientUpdateStatus.NO_ACTION) {
-            preparePatientData(bindingResult ,request, patientInfo, patient);
-            if(bindingResult.hasErrors()){
+            preparePatientData(bindingResult, request, patientInfo, patient);
+            if (bindingResult.hasErrors()) {
                 try {
                     throw new BindException(bindingResult);
-                }
-                catch (BindException e) {
+                } catch (BindException e) {
                     LogEvent.logError(e);
                 }
             }
             try {
                 patientService.persistPatientData(patientInfo, patient, getSysUserId(request));
-                fhirTransformService.transformPersistPatient(patientInfo);
+                fhirTransformService.transformPersistPatient(patientInfo,
+                        (patientInfo.getPatientUpdateStatus() == PatientUpdateStatus.ADD));
             } catch (LIMSRuntimeException e) {
 
                 if (e.getCause() instanceof StaleObjectStateException) {
 
                 } else {
                     LogEvent.logDebug(e);
-
                 }
                 request.setAttribute(ALLOW_EDITS_KEY, "false");
 
@@ -95,15 +87,14 @@ public class PatientManagementRestController extends BaseRestController {
                 LogEvent.logError(e);
             }
         }
-
     }
 
-    private void preparePatientData(Errors errors ,HttpServletRequest request, PatientManagementInfo patientInfo,
+    private void preparePatientData(Errors errors, HttpServletRequest request, PatientManagementInfo patientInfo,
             Patient patient) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 
-        validatePatientInfo(errors, patientInfo);
+        ValidatePatientInfo.validatePatientInfo(errors, patientInfo);
         if (errors.hasErrors()) {
-           return;
+            return;
         }
 
         initMembers(patient);
@@ -119,61 +110,6 @@ public class PatientManagementRestController extends BaseRestController {
         setSystemUserID(patientInfo, patient, request);
 
         setLastUpdatedTimeStamps(patientInfo, patient);
-
-    }
-
-    private void validatePatientInfo(Errors errors, PatientManagementInfo patientInfo) {
-        if (ConfigurationProperties.getInstance()
-                .isPropertyValueEqual(ConfigurationProperties.Property.ALLOW_DUPLICATE_SUBJECT_NUMBERS, "false")) {
-            String newSTNumber = org.apache.commons.validator.GenericValidator.isBlankOrNull(patientInfo.getSTnumber())
-                    ? null
-                    : patientInfo.getSTnumber();
-            String newSubjectNumber = org.apache.commons.validator.GenericValidator
-                    .isBlankOrNull(patientInfo.getSubjectNumber()) ? null : patientInfo.getSubjectNumber();
-            String newNationalId = org.apache.commons.validator.GenericValidator
-                    .isBlankOrNull(patientInfo.getNationalId()) ? null : patientInfo.getNationalId();
-
-            List<PatientSearchResults> results = searchService.getSearchResults(null, null, newSTNumber,
-                    newSubjectNumber, newNationalId, null, null, null, null, null);
-
-            if (!results.isEmpty()) {
-                for (PatientSearchResults result : results) {
-                    if (!result.getPatientID().equals(patientInfo.getPatientPK())) {
-                        if (newSTNumber != null && newSTNumber.equals(result.getSTNumber())) {
-                            errors.reject("error.duplicate.STNumber", "error.duplicate.STNumber");
-                        }
-                        if (newSubjectNumber != null && newSubjectNumber.equals(result.getSubjectNumber())) {
-                            errors.reject("error.duplicate.subjectNumber", "error.duplicate.subjectNumber");
-                        }
-                        if (newNationalId != null && newNationalId.equals(result.getNationalId())) {
-                            errors.reject("error.duplicate.nationalId", "error.duplicate.nationalId");
-                        }
-                    }
-                }
-            }
-        }
-
-        validateBirthdateFormat(patientInfo, errors);
-
-    }
-
-    private void validateBirthdateFormat(PatientManagementInfo patientInfo, Errors errors) {
-        String birthDate = patientInfo.getBirthDateForDisplay();
-        boolean validBirthDateFormat = true;
-
-        if (!org.apache.commons.validator.GenericValidator.isBlankOrNull(birthDate)) {
-            validBirthDateFormat = birthDate.length() == 10;
-            // the regex matches ambiguous day and month or ambiguous day or completely
-            // formed date
-            if (validBirthDateFormat) {
-                validBirthDateFormat = birthDate.matches("(((" + AMBIGUOUS_DATE_HOLDER + "|\\d{2})/\\d{2})|"
-                        + AMBIGUOUS_DATE_HOLDER + "/(" + AMBIGUOUS_DATE_HOLDER + "|\\d{2}))/\\d{4}");
-            }
-
-            if (!validBirthDateFormat) {
-                errors.reject("error.birthdate.format", "error.birthdate.format");
-            }
-        }
     }
 
     private void copyFormBeanToValueHolders(PatientManagementInfo patientInfo, Patient patient)
@@ -215,5 +151,4 @@ public class PatientManagementRestController extends BaseRestController {
         patientInfo.setPatientIdentities(patientIdentityService.getPatientIdentitiesForPatient(patient.getId()));
         return patient;
     }
-
 }

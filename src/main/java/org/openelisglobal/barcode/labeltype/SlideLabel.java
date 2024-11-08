@@ -35,5 +35,4 @@ public class SlideLabel extends Label {
     public int getMaxNumLabels() {
         return -1;
     }
-
 }

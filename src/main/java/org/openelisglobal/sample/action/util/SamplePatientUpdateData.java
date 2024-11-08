@@ -19,7 +19,6 @@ package org.openelisglobal.sample.action.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.validator.GenericValidator;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
 import org.openelisglobal.address.valueholder.OrganizationAddress;
@@ -36,7 +35,6 @@ import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.ConfigurationProperties.Property;
 import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.dataexchange.order.valueholder.ElectronicOrder;
 import org.openelisglobal.dataexchange.service.order.ElectronicOrderService;
 import org.openelisglobal.observationhistory.service.ObservationHistoryService;
@@ -66,8 +64,7 @@ import org.openelisglobal.samplehuman.valueholder.SampleHuman;
 import org.openelisglobal.spring.util.SpringContext;
 import org.springframework.validation.Errors;
 
-/**
- */
+/** */
 public class SamplePatientUpdateData {
     private boolean savePatient = false;
     private Person providerPerson;
@@ -324,7 +321,7 @@ public class SamplePatientUpdateData {
             sample.setCollectionDateForDisplay(collectionDateFromReceiveDate);
         }
 
-        sample.setDomain(SystemConfiguration.getInstance().getHumanDomain());
+        sample.setDomain(ConfigurationProperties.getInstance().getPropertyValue("domain.human"));
         sample.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(OrderStatus.Entered));
 
         setElectronicOrderIfNeeded(sampleOrder);
@@ -525,16 +522,15 @@ public class SamplePatientUpdateData {
     }
 
     public void initProgramQuestions(String programId, QuestionnaireResponse additionalQuestions) {
-        Program program = programService.get(programId) ;
+        Program program = programService.get(programId);
         setProgramQuestionnaireResponse(additionalQuestions);
         if (program.getProgramName().toLowerCase().contains("pathology")) {
             setProgramSample(new PathologySample());
         } else if (program.getProgramName().toLowerCase().contains("immunohistochemistry")) {
             setProgramSample(new ImmunohistochemistrySample());
-        }else if(program.getProgramName().toLowerCase().contains("cytology")){
+        } else if (program.getProgramName().toLowerCase().contains("cytology")) {
             setProgramSample(new CytologySample());
-        }
-         else {
+        } else {
             setProgramSample(new ProgramSample());
         }
         getProgramSample().setProgram(program);
@@ -575,9 +571,9 @@ public class SamplePatientUpdateData {
                     ValueType.DICTIONARY);
         }
         if (ConfigurationProperties.getInstance().isPropertyValueEqual(Property.ORDER_PROGRAM, "true")) {
-            if (!GenericValidator.isBlankOrNull(sampleOrder.getProgramId())){
+            if (!GenericValidator.isBlankOrNull(sampleOrder.getProgramId())) {
                 createObservation(programService.get(sampleOrder.getProgramId()).getProgramName(),
-                    observationHistoryService.getObservationTypeIdForType(ObservationType.PROGRAM),
+                        observationHistoryService.getObservationTypeIdForType(ObservationType.PROGRAM),
                         ValueType.LITERAL);
             }
         }
@@ -668,5 +664,4 @@ public class SamplePatientUpdateData {
     public void setProgramQuestionnaireResponse(QuestionnaireResponse programQuestionnaireResponse) {
         this.programQuestionnaireResponse = programQuestionnaireResponse;
     }
-
 }

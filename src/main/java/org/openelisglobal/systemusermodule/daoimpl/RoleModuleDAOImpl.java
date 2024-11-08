@@ -1,26 +1,23 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*
-* Contributor(s): CIRG, University of Washington, Seattle WA.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ *
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
+ */
 package org.openelisglobal.systemusermodule.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -28,17 +25,15 @@ import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.systemusermodule.dao.RoleModuleDAO;
 import org.openelisglobal.systemusermodule.valueholder.RoleModule;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- *
- */
+/** */
 @Component
 @Transactional
 @Qualifier("RoleModuleDAO")
@@ -104,7 +99,9 @@ public class RoleModuleDAOImpl extends BaseDAOImpl<RoleModule, String> implement
         List<RoleModule> list;
         try {
             // calculate maxRow to be one more than the page size
-            int endingRecNo = startingRecNo + (SystemConfiguration.getInstance().getDefaultPageSize() + 1);
+            int endingRecNo = startingRecNo
+                    + (Integer.parseInt(ConfigurationProperties.getInstance().getPropertyValue("page.defaultPageSize"))
+                            + 1);
 
             String sql = "from RoleModule s order by s.role.id";
             Query<RoleModule> query = entityManager.unwrap(Session.class).createQuery(sql, RoleModule.class);
@@ -163,7 +160,8 @@ public class RoleModuleDAOImpl extends BaseDAOImpl<RoleModule, String> implement
 
             List<RoleModule> list;
 
-            String sql = "from RoleModule s where s.role.id = :param and s.systemModule.id = :param2 and s.id != :param3";
+            String sql = "from RoleModule s where s.role.id = :param and s.systemModule.id = :param2 and s.id !="
+                    + " :param3";
             Query<RoleModule> query = entityManager.unwrap(Session.class).createQuery(sql, RoleModule.class);
             query.setParameter("param", Integer.parseInt(roleModule.getRole().getId()));
             query.setParameter("param2", Integer.parseInt(roleModule.getSystemModule().getId()));

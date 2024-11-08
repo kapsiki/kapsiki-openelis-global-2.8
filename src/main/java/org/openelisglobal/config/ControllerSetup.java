@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.propertyeditor.CaseInsensitiveEnumPropertyEditor;
@@ -37,6 +36,7 @@ public class ControllerSetup extends ResponseEntityExceptionHandler {
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {
+        binder.setAutoGrowCollectionLimit(2048);
         StringTrimmerEditor stringTrimmer = new StringTrimmerEditor(false);
         binder.registerCustomEditor(String.class, stringTrimmer);
         binder.registerCustomEditor(URI.class, new URIEditor(false));
@@ -95,7 +95,6 @@ public class ControllerSetup extends ResponseEntityExceptionHandler {
         }
 
         return new ResponseEntity<>(body, headers, status);
-
     }
 
     @Override

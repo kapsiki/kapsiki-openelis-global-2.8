@@ -3,9 +3,7 @@ package org.openelisglobal.program.service.cytology;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
@@ -19,9 +17,9 @@ import org.openelisglobal.organization.valueholder.Organization;
 import org.openelisglobal.patient.valueholder.Patient;
 import org.openelisglobal.program.valueholder.cytology.CytologyCaseViewDisplayItem;
 import org.openelisglobal.program.valueholder.cytology.CytologyDiagnosis;
+import org.openelisglobal.program.valueholder.cytology.CytologyDiagnosis.CytologyDiagnosisResultType;
 import org.openelisglobal.program.valueholder.cytology.CytologyDisplayItem;
 import org.openelisglobal.program.valueholder.cytology.CytologySample;
-import org.openelisglobal.program.valueholder.cytology.CytologyDiagnosis.CytologyDiagnosisResultType;
 import org.openelisglobal.sample.bean.SampleOrderItem;
 import org.openelisglobal.sample.service.SampleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,22 +27,22 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CytologyDisplayServiceImpl implements CytologyDisplayService {
-    
+
     @Autowired
     private SampleService sampleService;
-    
+
     @Autowired
     private CytologySampleService cytologySampleService;
-    
+
     @Autowired
     private FhirUtil fhirUtil;
-    
+
     @Autowired
     private OrganizationService organizationService;
-    
+
     @Autowired
     private DictionaryService dictionaryService;
-    
+
     @Override
     @Transactional
     public CytologyCaseViewDisplayItem convertToCaseDisplayItem(Integer cytologySampleId) {
@@ -67,42 +65,45 @@ public class CytologyDisplayServiceImpl implements CytologyDisplayService {
         displayItem.setPathologySampleId(cytologySample.getId());
         displayItem.setProgramQuestionnaire(fhirUtil.getLocalFhirClient().read().resource(Questionnaire.class)
                 .withId(cytologySample.getProgram().getQuestionnaireUUID().toString()).execute());
-        displayItem
-                .setProgramQuestionnaireResponse(fhirUtil.getLocalFhirClient().read().resource(QuestionnaireResponse.class)
+        displayItem.setProgramQuestionnaireResponse(
+                fhirUtil.getLocalFhirClient().read().resource(QuestionnaireResponse.class)
                         .withId(cytologySample.getQuestionnaireResponseUuid().toString()).execute());
-        
+
         cytologySample.getSlides().size();
         displayItem.setSlides(cytologySample.getSlides());
         cytologySample.getReports().size();
-        if(cytologySample.getReports() != null){
-           displayItem.setReports(cytologySample.getReports());
+        if (cytologySample.getReports() != null) {
+            displayItem.setReports(cytologySample.getReports());
         }
         if (cytologySample.getSpecimenAdequacy() != null) {
             CytologyCaseViewDisplayItem.SpecimenAdequacy adquecy = new CytologyCaseViewDisplayItem.SpecimenAdequacy();
             adquecy.setSatisfaction(cytologySample.getSpecimenAdequacy().getSatisfaction());
             adquecy.setValues(cytologySample.getSpecimenAdequacy().getValues().stream().filter(e -> e != null)
-                    .map(e -> new IdValuePair(e, dictionaryService.get(e).getLocalizedName())).collect(Collectors.toList()));
+                    .map(e -> new IdValuePair(e, dictionaryService.get(e).getLocalizedName()))
+                    .collect(Collectors.toList()));
             displayItem.setSpecimenAdequacy(adquecy);
         }
         CytologyDiagnosis cytoDiagnosis = cytologySample.getDiagnosis();
         if (cytoDiagnosis != null) {
             CytologyCaseViewDisplayItem.Diagnosis diagnosis = new CytologyCaseViewDisplayItem.Diagnosis();
             diagnosis.setNegativeDiagnosis(cytologySample.getDiagnosis().getNegativeDiagnosis());
-            
+
             List<CytologyCaseViewDisplayItem.Diagnosis.DiagnosisResultsMap> resultsMaps = new ArrayList<>();
             if (cytoDiagnosis.getDiagnosisResultsMaps() != null) {
                 cytoDiagnosis.getDiagnosisResultsMaps().forEach(diagnosisResult -> {
                     CytologyCaseViewDisplayItem.Diagnosis.DiagnosisResultsMap resultsMap = new CytologyCaseViewDisplayItem.Diagnosis.DiagnosisResultsMap();
                     resultsMap.setCategory(diagnosisResult.getCategory());
                     resultsMap.setResultType(diagnosisResult.getResultType());
-                    if(diagnosisResult.getResultType().equals(CytologyDiagnosisResultType.DICTIONARY)){
-                       resultsMap.setResults(diagnosisResult.getResults().stream().filter(e -> StringUtils.isNotBlank(e))
-                            .map(e -> new IdValuePair(e, dictionaryService.get(e).getLocalizedName()))
-                            .collect(Collectors.toList()));
-                    }else{
+                    if (diagnosisResult.getResultType().equals(CytologyDiagnosisResultType.DICTIONARY)) {
+                        resultsMap
+                                .setResults(diagnosisResult.getResults().stream().filter(e -> StringUtils.isNotBlank(e))
+                                        .map(e -> new IdValuePair(e, dictionaryService.get(e).getLocalizedName()))
+                                        .collect(Collectors.toList()));
+                    } else {
                         List<IdValuePair> result = new ArrayList<>();
-                        result.add(new IdValuePair(diagnosisResult.getResults().get(0), diagnosisResult.getResults().get(0)));
-                       resultsMap.setResults(result);
+                        result.add(new IdValuePair(diagnosisResult.getResults().get(0),
+                                diagnosisResult.getResults().get(0)));
+                        resultsMap.setResults(result);
                     }
 
                     resultsMaps.add(resultsMap);
@@ -125,7 +126,7 @@ public class CytologyDisplayServiceImpl implements CytologyDisplayService {
         displayItem.setSex(patient.getGender());
         return displayItem;
     }
-    
+
     @Override
     @Transactional
     public CytologyDisplayItem convertToDisplayItem(Integer cytologySampleId) {
@@ -148,13 +149,12 @@ public class CytologyDisplayServiceImpl implements CytologyDisplayService {
     }
 
     @Override
-        @Transactional
+    @Transactional
     public CytologySample getCytologySampleWithLoadedAttributes(Integer cytologySampleId) {
         CytologySample cytologySample = cytologySampleService.get(cytologySampleId);
-        if(cytologySample.getDiagnosis() != null){
-           cytologySample.getDiagnosis().getDiagnosisResultsMaps().size();
+        if (cytologySample.getDiagnosis() != null) {
+            cytologySample.getDiagnosis().getDiagnosisResultsMaps().size();
         }
         return cytologySample;
     }
-    
 }

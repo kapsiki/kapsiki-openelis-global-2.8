@@ -1,7 +1,6 @@
 package org.openelisglobal.externalconnections.dao;
 
 import java.util.Optional;
-
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import org.openelisglobal.common.daoimpl.BaseDAOImpl;
@@ -24,7 +23,8 @@ public class CertificateAuthenticationDataDAOImpl extends BaseDAOImpl<Certificat
     public Optional<CertificateAuthenticationData> getByExternalConnection(Integer externalConnectionId) {
         CertificateAuthenticationData data;
         try {
-            String sql = "from CertificateAuthenticationData as cad where cad.externalConnection.id = :externalConnectionId";
+            String sql = "from CertificateAuthenticationData as cad where cad.externalConnection.id ="
+                    + " :externalConnectionId";
             Query<CertificateAuthenticationData> query = entityManager.unwrap(Session.class).createQuery(sql,
                     CertificateAuthenticationData.class);
             query.setParameter("externalConnectionId", externalConnectionId);
@@ -38,5 +38,4 @@ public class CertificateAuthenticationDataDAOImpl extends BaseDAOImpl<Certificat
 
         return Optional.ofNullable(data);
     }
-
 }

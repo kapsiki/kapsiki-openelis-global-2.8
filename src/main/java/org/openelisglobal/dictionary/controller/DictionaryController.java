@@ -3,10 +3,8 @@ package org.openelisglobal.dictionary.controller;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.openelisglobal.common.controller.BaseController;
 import org.openelisglobal.common.exception.LIMSDuplicateRecordException;
@@ -15,8 +13,8 @@ import org.openelisglobal.common.exception.LIMSRuntimeException;
 import org.openelisglobal.common.form.BaseForm;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.services.DisplayListService;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.StringUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.common.validator.BaseErrors;
 import org.openelisglobal.common.validator.ValidationHelper;
 import org.openelisglobal.dictionary.form.DictionaryForm;
@@ -204,7 +202,6 @@ public class DictionaryController extends BaseController {
             request.setAttribute(PREVIOUS_DISABLED, "true");
             request.setAttribute(NEXT_DISABLED, "true");
             return findForward(FWD_FAIL_INSERT, form);
-
         }
 
         status.setComplete();
@@ -234,7 +231,6 @@ public class DictionaryController extends BaseController {
         DictionaryCategory dictionaryCategory = dictionaryCategoryService.get(selectedCategoryId);
         dictionary.setDictionaryCategory(dictionaryCategory);
         return dictionary;
-
     }
 
     private boolean checkForDictionaryFrozenCheck(DictionaryForm form) {
@@ -249,7 +245,8 @@ public class DictionaryController extends BaseController {
         String dirtyFormFields = form.getDirtyFormFields();
         String isActiveValue = form.getIsActive();
 
-        String[] dirtyFields = dirtyFormFields.split(SystemConfiguration.getInstance().getDefaultIdSeparator(), -1);
+        String[] dirtyFields = dirtyFormFields
+                .split(ConfigurationProperties.getInstance().getPropertyValue("default.idSeparator"), -1);
         List<String> listOfDirtyFields = new ArrayList<>();
 
         for (int i = 0; i < dirtyFields.length; i++) {

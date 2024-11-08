@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.service.BaseObjectService;
 import org.openelisglobal.panel.valueholder.Panel;
@@ -198,9 +197,10 @@ public interface AnalysisService extends BaseObjectService<Analysis, String> {
 
     List<Analysis> getPageAnalysisByStatusFromAccession(List<Integer> analysisStatusList,
             List<Integer> sampleStatusList, String accessionNumber);
-    
+
     List<Analysis> getPageAnalysisByStatusFromAccession(List<Integer> analysisStatusList,
-            List<Integer> sampleStatusList, String accessionNumber,String upperRangeAccessionNumber, boolean doRange, boolean finished);
+            List<Integer> sampleStatusList, String accessionNumber, String upperRangeAccessionNumber, boolean doRange,
+            boolean finished);
 
     List<Analysis> getAnalysisForSiteBetweenResultDates(String referringSiteId, LocalDate lowerDate,
             LocalDate upperDate);
@@ -208,9 +208,13 @@ public interface AnalysisService extends BaseObjectService<Analysis, String> {
     List<Analysis> getStudyAnalysisForSiteBetweenResultDates(String referringSiteId, LocalDate lowerDate,
             LocalDate upperDate);
 
-    List<Analysis> getAnalysisCompletedOnByStatusId(Date completedDate, String statusId);  
+    List<Analysis> getAnalysesCompletedOnByStatusId(Date completedDate, String statusId);
 
-    int getCountOfAnalysisCompletedOnByStatusId(Date completedDate, List<Integer> statusIds); 
-    
-    int getCountOfAnalysisStartedOnByStatusId(Date startedDate, List<Integer> statusIds); 
+    List<Analysis> getAnalysesResultEnteredOnExcludedByStatusId(Date completedDate, Set<Integer> statusIds);
+
+    int getCountOfAnalysisCompletedOnByStatusId(Date completedDate, List<Integer> statusIds);
+
+    int getCountOfAnalysisStartedOnByStatusId(Date startedDate, List<Integer> statusIds);
+
+    String getMethodId(Analysis analysis);
 }

@@ -5,15 +5,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-
 import javax.transaction.Transactional;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
 import org.openelisglobal.common.action.IActionConstants;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.common.services.IStatusService;
 import org.openelisglobal.common.services.ResultSaveService;
 import org.openelisglobal.common.services.StatusService.AnalysisStatus;
@@ -46,45 +44,46 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySample, Integer> implements CytologySampleService {
-    
+public class CytologySampleServiceImpl extends AuditableBaseObjectServiceImpl<CytologySample, Integer>
+        implements CytologySampleService {
+
     @Autowired
-    
     protected CytologySampleDAO baseObjectDAO;
-    
+
     @Autowired
     protected SystemUserService systemUserService;
-    
+
     @Autowired
     private SampleService sampleService;
-    
+
     @Autowired
     private AnalysisService analysisService;
-    
+
     @Autowired
     private LogbookResultsPersistService logbookResultsPersistService;
-    
+
     CytologySampleServiceImpl() {
         super(CytologySample.class);
+        this.auditTrailLog = true;
     }
 
-     @Override
+    @Override
     protected CytologySampleDAO getBaseObjectDAO() {
         return baseObjectDAO;
     }
-    
+
     @Override
     public List<CytologySample> getWithStatus(List<CytologyStatus> statuses) {
         return baseObjectDAO.getWithStatus(statuses);
     }
-    
+
     @Transactional
     @Override
     public void assignTechnician(Integer cytologySampleId, SystemUser systemUser) {
         CytologySample cytologySample = get(cytologySampleId);
         cytologySample.setTechnician(systemUser);
     }
-    
+
     @Transactional
     @Override
     public List<CytologySample> searchWithStatusAndTerm(List<CytologyStatus> statuses, String searchTerm) {
@@ -105,27 +104,27 @@ public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySam
                 cytologySamples = filteredCytologySamples;
             }
         }
-        
+
         return cytologySamples;
     }
-    
+
     @Transactional
     @Override
     public void assignCytoPathologist(Integer cytologySampleId, SystemUser systemUser) {
         CytologySample cytologySample = get(cytologySampleId);
         cytologySample.setCytoPathologist(systemUser);
     }
-    
+
     @Override
     public Long getCountWithStatus(List<CytologyStatus> statuses) {
         return baseObjectDAO.getCountWithStatus(statuses);
     }
-    
+
     @Override
     public Long getCountWithStatusBetweenDates(List<CytologyStatus> statuses, Timestamp from, Timestamp to) {
-        return baseObjectDAO.getCountWithStatusBetweenDates(statuses ,from ,to);
+        return baseObjectDAO.getCountWithStatusBetweenDates(statuses, from, to);
     }
-    
+
     @Transactional
     @Override
     public void updateWithFormValues(Integer cytologySampleId, CytologySampleForm form) {
@@ -134,10 +133,10 @@ public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySam
             cytologySample.setCytoPathologist(systemUserService.get(form.getAssignedCytoPathologistId()));
         }
         if (!GenericValidator.isBlankOrNull(form.getAssignedTechnicianId())) {
-            cytologySample .setTechnician(systemUserService.get(form.getAssignedTechnicianId()));
+            cytologySample.setTechnician(systemUserService.get(form.getAssignedTechnicianId()));
         }
         cytologySample.setStatus(form.getStatus());
-        
+
         cytologySample.getSlides().removeAll(cytologySample.getSlides());
         if (form.getSlides() != null)
             form.getSlides().stream().forEach(e -> e.setId(null));
@@ -150,11 +149,11 @@ public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySam
         if (form.getReports() != null)
             form.getReports().stream().forEach(e -> e.setId(null));
         cytologySample.getReports().addAll(form.getReports());
-        
+
         if (form.getDiagnosis() != null) {
             cytologySample.setDiagnosis(form.getDiagnosis());
         }
-        
+
         if (form.getRelease()) {
             validateCytologySample(cytologySample, form);
         }
@@ -183,15 +182,15 @@ public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySam
 
                     if (newResult) {
                         analysis.setRevision("1");
-                         actionDataSet.getNewResults()
-                            .add(new ResultSet(result, null, null, patient, sample, new HashMap<>(), false));
+                        actionDataSet.getNewResults()
+                                .add(new ResultSet(result, null, null, patient, sample, new HashMap<>(), false));
                     } else {
                         analysis.setRevision(String.valueOf(Integer.parseInt(analysis.getRevision()) + 1));
-                         actionDataSet.getModifiedResults()
-                            .add(new ResultSet(result, null, null, patient, sample, new HashMap<>(), false));
-                    }           
+                        actionDataSet.getModifiedResults()
+                                .add(new ResultSet(result, null, null, patient, sample, new HashMap<>(), false));
+                    }
 
-                    analysis.setStartedDateForDisplay(testResultItem.getTestDate());
+                    // analysis.setStartedDateForDisplay(testResultItem.getTestDate());
 
                     // This needs to be refactored -- part of the logic is in
                     // getStatusForTestResult. RetroCI over rides to whatever was set before
@@ -216,21 +215,21 @@ public class CytologySampleServiceImpl extends BaseObjectServiceImpl<CytologySam
                     }
 
                     // this code is pulled from LogbookResultsRestController
-//                addResult(result, testResultItem, analysis, results.size() > 1, actionDataSet, useTechnicianName);
-//
-//                if (analysisShouldBeUpdated(testResultItem, result, supportReferrals)) {
-//                    updateAnalysis(testResultItem, testResultItem.getTestDate(), analysis, statusRuleSet);
-//                }
+                    // addResult(result, testResultItem, analysis, results.size() > 1,
+                    // actionDataSet, useTechnicianName);
+                    //
+                    // if (analysisShouldBeUpdated(testResultItem, result, supportReferrals)) {
+                    // updateAnalysis(testResultItem, testResultItem.getTestDate(),
+                    // analysis, statusRuleSet);
+                    // }
                 }
                 analysis.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized));
                 analysis.setReleasedDate(new java.sql.Date(Calendar.getInstance().getTimeInMillis()));
             }
-
         }
 
         logbookResultsPersistService.persistDataSet(actionDataSet, ResultUpdateRegister.getRegisteredUpdaters(),
                 form.getSystemUserId());
         sample.setStatusId(SpringContext.getBean(IStatusService.class).getStatusID(OrderStatus.Finished));
-
-    }  
+    }
 }

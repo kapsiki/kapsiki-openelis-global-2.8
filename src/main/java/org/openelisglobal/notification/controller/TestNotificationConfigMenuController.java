@@ -3,10 +3,8 @@ package org.openelisglobal.notification.controller;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.openelisglobal.common.controller.BaseMenuController;
 import org.openelisglobal.common.form.AdminOptionMenuForm;
 import org.openelisglobal.common.log.LogEvent;
@@ -130,5 +128,4 @@ public class TestNotificationConfigMenuController extends BaseMenuController<Tes
         // TODO Auto-generated method stub
         return null;
     }
-
 }

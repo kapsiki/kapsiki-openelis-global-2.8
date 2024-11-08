@@ -1,11 +1,15 @@
 package org.openelisglobal.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
-
 import org.apache.commons.validator.GenericValidator;
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.hl7.fhir.r4.model.QuestionnaireResponse;
@@ -19,20 +23,17 @@ import org.openelisglobal.fhir.springserialization.QuestionnaireSerializer;
 import org.openelisglobal.interceptor.CommonPageAttributesInterceptor;
 import org.openelisglobal.interceptor.UrlErrorsInterceptor;
 import org.openelisglobal.internationalization.GlobalLocaleResolver;
-import org.openelisglobal.internationalization.MessageUtil;
 import org.openelisglobal.security.SecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -47,16 +48,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
-
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module; 
-
-
 
 @EnableWebMvc
 @Configuration
@@ -64,18 +56,24 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 @PropertySource("classpath:application.properties")
 @PropertySource("file:/run/secrets/common.properties")
 @PropertySource(value = "file:/run/secrets/extra.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "classpath:SystemConfiguration.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "file:/var/lib/openelis-global/properties/TotalSystemConfiguration.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "file:/var/lib/openelis-global/properties/SystemConfiguration.properties", ignoreResourceNotFound = true)
 @ComponentScan(basePackages = { "spring", "org.openelisglobal", "org.itech", "org.ozeki.sms", "oe.plugin" })
 public class AppConfig implements WebMvcConfigurer {
 
     @Autowired
     @Qualifier(value = "ModuleAuthenticationInterceptor")
     HandlerInterceptor moduleAuthenticationInterceptor;
+
     @Autowired
     UrlErrorsInterceptor urlLocatedErrorsInterceptor;
     @Autowired
     CommonPageAttributesInterceptor pageAttributesInterceptor;
     @Autowired
-    RequestMappingHandlerMapping requestMappingHandlerMapping;
+    LocaleChangeInterceptor localeChangeInterceptor;
+    @Autowired
+    LocaleResolver localResolver;
 
     @Bean
     public ViewResolver internalResourceViewResolver() {
@@ -84,32 +82,6 @@ public class AppConfig implements WebMvcConfigurer {
         viewResolver.setSuffix("");
         viewResolver.setContentType("text/html; charset=UTF-8");
         return viewResolver;
-    }
-
-    @Bean
-    public MessageSource messageSource() {
-        ReloadableResourceBundleMessageSource messageSource = new ReloadableResourceBundleMessageSource();
-        messageSource.setBasename("classpath:/languages/message");
-        messageSource.setDefaultEncoding("UTF-8");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        MessageUtil.setMessageSource(messageSource);
-        return messageSource;
-    }
-
-    @Bean("localeResolver")
-    public LocaleResolver localeResolver() {
-        GlobalLocaleResolver localeResolver = new GlobalLocaleResolver();
-        String localeName = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
-        localeResolver.setDefaultLocale(Locale.forLanguageTag(localeName));
-        LocaleContextHolder.setDefaultLocale(Locale.forLanguageTag(localeName));
-        return localeResolver;
-    }
-
-    @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor localeChangeInterceptor = new LocaleChangeInterceptor();
-        localeChangeInterceptor.setParamName("lang");
-        return localeChangeInterceptor;
     }
 
     @Bean(name = "filterMultipartResolver")
@@ -123,15 +95,15 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(localeChangeInterceptor).addPathPatterns("/**");
         registry.addInterceptor(moduleAuthenticationInterceptor).addPathPatterns("/**")
-                .excludePathPatterns(SecurityConfig.OPEN_PAGES)//
-                .excludePathPatterns(SecurityConfig.LOGIN_PAGES)//
-                .excludePathPatterns(SecurityConfig.RESOURCE_PAGES)//
+                .excludePathPatterns(SecurityConfig.OPEN_PAGES) //
+                .excludePathPatterns(SecurityConfig.LOGIN_PAGES) //
+                .excludePathPatterns(SecurityConfig.RESOURCE_PAGES) //
                 .excludePathPatterns(SecurityConfig.AUTH_OPEN_PAGES)
                 // TO DO ,we need to have a better way to handle user roles for rest controllers
                 .excludePathPatterns(SecurityConfig.REST_CONTROLLERS);
-//                .excludePathPatterns(SecurityConfig.CLIENT_CERTIFICATE_PAGES);
+        // .excludePathPatterns(SecurityConfig.CLIENT_CERTIFICATE_PAGES);
         registry.addInterceptor(urlLocatedErrorsInterceptor).addPathPatterns("/**");
         registry.addInterceptor(pageAttributesInterceptor).addPathPatterns("/**");
     }
@@ -184,17 +156,27 @@ public class AppConfig implements WebMvcConfigurer {
         return mailSender;
     }
 
+    @Bean("localeResolver")
+    @Primary
+    // this belongs in InternationalizationConfig.java, but putting it there breaks
+    // functionality
+    public LocaleResolver localeResolver() {
+        GlobalLocaleResolver localeResolver = new GlobalLocaleResolver();
+        return localeResolver;
+    }
+
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
     }
-    
+
     @Bean
-    public MappingJackson2HttpMessageConverter jacksonMessageConverter(){
+    public MappingJackson2HttpMessageConverter jacksonMessageConverter() {
         MappingJackson2HttpMessageConverter messageConverter = new MappingJackson2HttpMessageConverter();
 
         ObjectMapper mapper = new ObjectMapper();
-        //Registering Hibernate4Module to support lazy objects
+        // Registering Hibernate4Module to support lazy objects
+        mapper.registerModule(new JavaTimeModule());
         mapper.registerModule(new Hibernate5Module());
         mapper.registerModule(new Jdk8Module());
         mapper.setSerializationInclusion(Include.NON_NULL);
@@ -208,13 +190,12 @@ public class AppConfig implements WebMvcConfigurer {
 
         messageConverter.setObjectMapper(mapper);
         return messageConverter;
-
     }
-    
+
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        //Here we add our custom-configured HttpMessageConverter
+        // Here we add our custom-configured HttpMessageConverter
         converters.add(jacksonMessageConverter());
-        //super.configureMessageConverters(converters);
+        // super.configureMessageConverters(converters);
     }
 }

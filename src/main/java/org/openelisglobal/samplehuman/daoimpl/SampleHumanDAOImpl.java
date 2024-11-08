@@ -1,26 +1,23 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
  *
- * Contributor(s): CIRG, University of Washington, Seattle WA.
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
  */
 package org.openelisglobal.samplehuman.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -99,7 +96,6 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
             LogEvent.logError(e);
             throw new LIMSRuntimeException("Error in SampleHuman getDataBySample()", e);
         }
-
     }
 
     @Override
@@ -107,7 +103,8 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
     public Patient getPatientForSample(Sample sample) throws LIMSRuntimeException {
         Patient patient = null;
         try {
-            String sql = "select patient from Patient as patient, SampleHuman as sampleHuman where sampleHuman.patientId = patient.id and sampleHuman.sampleId = :sId";
+            String sql = "select patient from Patient as patient, SampleHuman as sampleHuman where"
+                    + " sampleHuman.patientId = patient.id and sampleHuman.sampleId = :sId";
             Query<Patient> query = entityManager.unwrap(Session.class).createQuery(sql, Patient.class);
             query.setParameter("sId", Integer.parseInt(sample.getId()));
             patient = query.uniqueResult();
@@ -123,7 +120,8 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
     @Transactional(readOnly = true)
     public Provider getProviderForSample(Sample sample) throws LIMSRuntimeException {
         try {
-            String sql = "select provider from Provider as provider, SampleHuman as sampleHuman where sampleHuman.providerId = provider.id and sampleHuman.sampleId = :sId";
+            String sql = "select provider from Provider as provider, SampleHuman as sampleHuman where"
+                    + " sampleHuman.providerId = provider.id and sampleHuman.sampleId = :sId";
             Query<Provider> query = entityManager.unwrap(Session.class).createQuery(sql, Provider.class);
             query.setParameter("sId", Integer.parseInt(sample.getId()));
             Provider provider = query.uniqueResult();
@@ -137,14 +135,15 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<Sample> getSamplesForPatient(String patientID) throws LIMSRuntimeException {
 
         List<Sample> samples;
 
         try {
-            String sql = "select sample from Sample as sample, SampleHuman as sampleHuman where sampleHuman.sampleId = sample.id and sampleHuman.patientId = :patientId order by sample.id";
+            String sql = "select sample from Sample as sample, SampleHuman as sampleHuman where"
+                    + " sampleHuman.sampleId = sample.id and sampleHuman.patientId = :patientId order by"
+                    + " sample.id";
             Query<Sample> query = entityManager.unwrap(Session.class).createQuery(sql, Sample.class);
             query.setParameter("patientId", Integer.parseInt(patientID));
             samples = query.list();
@@ -160,7 +159,8 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
     public List<Patient> getAllPatientsWithSampleEntered() {
         List<Patient> patients = new ArrayList<>();
         try {
-            String sql = "select distinct patient from Patient as patient, SampleHuman as sampleHuman where sampleHuman.patientId = patient.id";
+            String sql = "select distinct patient from Patient as patient, SampleHuman as sampleHuman where"
+                    + " sampleHuman.patientId = patient.id";
             Query<Patient> query = entityManager.unwrap(Session.class).createQuery(sql, Patient.class);
             patients = query.getResultList();
         } catch (HibernateException e) {
@@ -175,7 +175,8 @@ public class SampleHumanDAOImpl extends BaseDAOImpl<SampleHuman, String> impleme
     public List<Patient> getAllPatientsWithSampleEnteredMissingFhirUuid() {
         List<Patient> patients = new ArrayList<>();
         try {
-            String sql = "select distinct patient from Patient as patient, SampleHuman as sampleHuman where sampleHuman.patientId = patient.id AND patient.fhirUuid is null";
+            String sql = "select distinct patient from Patient as patient, SampleHuman as sampleHuman where"
+                    + " sampleHuman.patientId = patient.id AND patient.fhirUuid is null";
             Query<Patient> query = entityManager.unwrap(Session.class).createQuery(sql, Patient.class);
             patients = query.getResultList();
         } catch (HibernateException e) {

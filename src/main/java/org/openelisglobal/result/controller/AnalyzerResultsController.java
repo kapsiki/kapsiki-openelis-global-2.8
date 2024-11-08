@@ -9,10 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisService;
 import org.openelisglobal.analysis.valueholder.Analysis;
@@ -41,6 +39,7 @@ import org.openelisglobal.common.services.StatusService.SampleStatus;
 import org.openelisglobal.common.services.StatusSet;
 import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.DateUtil;
+import org.openelisglobal.common.util.StringUtil;
 import org.openelisglobal.dictionary.service.DictionaryService;
 import org.openelisglobal.dictionary.valueholder.Dictionary;
 import org.openelisglobal.internationalization.MessageUtil;
@@ -286,7 +285,8 @@ public class AnalyzerResultsController extends BaseController {
                 // If there is a nonconforming sample item then we need to check if it is the
                 // one for this
                 // test if it is then it is nonconforming if not then it is not nonconforming
-                TypeOfSample sampleType = analysisService.getTypeOfSample(analysisService.get(resultItem.getAnalysisId()));
+                TypeOfSample sampleType = analysisService
+                        .getTypeOfSample(analysisService.get(resultItem.getAnalysisId()));
                 nonconforming = false;
                 for (SampleItem nonConformingSampleItem : nonConformingSampleItems) {
                     if (sampleType.getId().equals(nonConformingSampleItem.getTypeOfSample().getId())) {
@@ -350,7 +350,6 @@ public class AnalyzerResultsController extends BaseController {
 
             analyzerResultsService.updateAll(resolvedResults);
         }
-
     }
 
     private List<AnalyzerResults> getAnalyzerResults() {
@@ -474,7 +473,8 @@ public class AnalyzerResultsController extends BaseController {
                     } else {
                         // find if the sibling reflex is satisfied
                         TestReflex sibTestReflex = testReflexService.get(possibleTestReflex.getSiblingReflexId());
-//                        TestResult sibTestResult = testResultService.get(sibTestReflex.getTestResultId());
+                        // TestResult sibTestResult =
+                        // testResultService.get(sibTestReflex.getTestResultId());
 
                         for (Analysis analysis : analysisList) {
                             List<Result> resultList = resultService.getResultsByAnalysis(analysis);
@@ -565,7 +565,6 @@ public class AnalyzerResultsController extends BaseController {
         TestResult testResult = testResults.get(0);
 
         return testResult.getSignificantDigits();
-
     }
 
     private String getRoundedToSignificantDigits(AnalyzerResults result) {
@@ -590,12 +589,8 @@ public class AnalyzerResultsController extends BaseController {
                 return result.getResult();
             }
 
-            if (significantDigits == 0) {
-                return String.valueOf(Math.round(results));
-            }
-
-            double power = Math.pow(10, significantDigits);
-            return String.valueOf(Math.round(results * power) / power);
+            // not truly significant digits, just decimal places
+            return StringUtil.doubleWithSignificantDigits(results, significantDigits);
         } else {
             return result.getResult();
         }
@@ -720,15 +715,16 @@ public class AnalyzerResultsController extends BaseController {
 
         redirectAttibutes.addFlashAttribute(FWD_SUCCESS, true);
         return findForward(FWD_SUCCESS_INSERT, form);
-//        if (GenericValidator.isBlankOrNull(form.getType())) {
-//            return findForward(FWD_SUCCESS_INSERT, form);
-//        } else {
-//            Map<String, String> params = new HashMap<>();
-//            params.put("type", form.getType());
-//            // params.put("page", form.getPaging().getCurrentPage());
-//            params.put("forward", FWD_SUCCESS_INSERT);
-//            return getForwardWithParameters(findForward(FWD_SUCCESS_INSERT, form), params);
-//        }
+        // if (GenericValidator.isBlankOrNull(form.getType())) {
+        // return findForward(FWD_SUCCESS_INSERT, form);
+        // } else {
+        // Map<String, String> params = new HashMap<>();
+        // params.put("type", form.getType());
+        // // params.put("page", form.getPaging().getCurrentPage());
+        // params.put("forward", FWD_SUCCESS_INSERT);
+        // return getForwardWithParameters(findForward(FWD_SUCCESS_INSERT, form),
+        // params);
+        // }
     }
 
     private Errors validateSavableItems(List<AnalyzerResultItem> savableResults, Errors errors) {
@@ -779,7 +775,6 @@ public class AnalyzerResultsController extends BaseController {
             if (!analyzerResultItem.isReadOnly()) {
                 groupedResultList.add(analyzerResultItem);
             }
-
         }
 
         // for the last set of results the grouping number will not change
@@ -790,7 +785,6 @@ public class AnalyzerResultsController extends BaseController {
             sampleGrouping.triggersToSelectedReflexesMap = new HashMap<>();
             sampleGroupList.add(sampleGrouping);
         }
-
     }
 
     private SampleGrouping createRecordsForNewResult(List<AnalyzerResultItem> groupedAnalyzerResultItems) {
@@ -834,7 +828,6 @@ public class AnalyzerResultsController extends BaseController {
 
         // This last case is that non-conformity may have been done
         return sampleService.getSampleByAccessionNumber(accessionNumber) == null;
-
     }
 
     /*
@@ -883,7 +876,8 @@ public class AnalyzerResultsController extends BaseController {
 
         List<TypeOfSampleTest> typeOfSampleForNewTest = typeOfSampleTestService
                 .getTypeOfSampleTestsForTest(groupedAnalyzerResultItems.get(0).getTestId());
-        List<String> typeOfSampleIds = typeOfSampleForNewTest.stream().map(e -> e.getTypeOfSampleId()).collect(Collectors.toList());
+        List<String> typeOfSampleIds = typeOfSampleForNewTest.stream().map(e -> e.getTypeOfSampleId())
+                .collect(Collectors.toList());
 
         SampleItem sampleItem = null;
         int maxSampleItemSortOrder = 0;
@@ -1001,7 +995,8 @@ public class AnalyzerResultsController extends BaseController {
                 // if the type of sample is found then assign to analysis
                 // otherwise create it and assign
                 for (SampleItem item : sampleItemsForSample) {
-                    if (typeOfSamples.stream().map(e -> e.getId()).collect(Collectors.toList()).contains(item.getTypeOfSample().getId())) {
+                    if (typeOfSamples.stream().map(e -> e.getId()).collect(Collectors.toList())
+                            .contains(item.getTypeOfSample().getId())) {
                         sampleItem = item;
                         analysis.setSampleItem(sampleItem);
                     }
@@ -1124,12 +1119,10 @@ public class AnalyzerResultsController extends BaseController {
                     return DBS_SAMPLE_TYPE_ID;
                 }
             }
-
         }
 
         return typeOfSampleTestService.getTypeOfSampleTestsForTest(analysisList.get(0).getTest().getId()).get(0)
                 .getTypeOfSampleId();
-
     }
 
     private void createAndAddItems_Analysis_Results(List<AnalyzerResultItem> groupedAnalyzerResultItems,
@@ -1275,7 +1268,6 @@ public class AnalyzerResultsController extends BaseController {
             analysis.setIsReportable(test.getIsReportable());
             analysis.setRevision("0");
         }
-
     }
 
     private List<AnalyzerResults> getRemovableAnalyzerResults(List<AnalyzerResultItem> actionableResults,
@@ -1348,7 +1340,7 @@ public class AnalyzerResultsController extends BaseController {
         List<AnalyzerResultItem> childLessControlList = new ArrayList<>();
         int sampleGroupingNumber = 0;
         boolean lastGroupIsControl = false;
-        boolean inControlGroup = true;// covers the bottom control has no
+        boolean inControlGroup = true; // covers the bottom control has no
         // children
 
         for (int i = resultItemList.size() - 1; i >= 0; i--) {
@@ -1409,7 +1401,6 @@ public class AnalyzerResultsController extends BaseController {
                     .getKeyForAction("/AnalyzerResults?type=" + request.getParameter("type"));
         }
         return key;
-
     }
 
     public class SampleGrouping {
@@ -1427,6 +1418,5 @@ public class AnalyzerResultsController extends BaseController {
         public boolean updateSample = false;
         public boolean addSampleItem = false;
         public Map<Result, String> resultToUserserSelectionMap;
-
     }
 }

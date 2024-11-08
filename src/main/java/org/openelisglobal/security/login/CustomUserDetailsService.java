@@ -2,7 +2,6 @@ package org.openelisglobal.security.login;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.openelisglobal.common.action.IActionConstants;
 import org.openelisglobal.login.service.LoginUserService;
 import org.openelisglobal.login.valueholder.LoginUser;
@@ -25,9 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String loginName) {
-
         LoginUser user = loginService.getMatch("loginName", loginName).orElseThrow(() -> new UsernameNotFoundException(
-                "Unique Username not found, could be duplicates in database or it doesn't exist"));
+                "Unique Username not found, could be duplicates in database or it doesn't" + " exist"));
 
         boolean disabled = user.getAccountDisabled().equalsIgnoreCase(IActionConstants.YES);
         boolean locked = user.getAccountLocked().equalsIgnoreCase(IActionConstants.YES);
@@ -36,9 +34,11 @@ public class CustomUserDetailsService implements UserDetailsService {
                 !disabled, true, !credentialsExpired, !locked, getGrantedAuthorities(user));
     }
 
+    // TODO flesh this out so we can do permissions solely through granted
+    // authorities
+    // for sso and form login methods
     private List<GrantedAuthority> getGrantedAuthorities(LoginUser user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         return authorities;
     }
-
 }

@@ -21,13 +21,16 @@ import {
   NotificationKinds,
 } from "../../common/CustomNotification";
 import { FormattedMessage, useIntl } from "react-intl";
+import PageBreadCrumb from "../../common/PageBreadCrumb.js";
 
+let breadcrumbs = [{ label: "home.label", link: "/" }];
 function PatientMenuManagement() {
-  const { notificationVisible, setNotificationVisible, setNotificationBody } =
+  const { notificationVisible, setNotificationVisible, addNotification } =
     useContext(NotificationContext);
+
   const intl = useIntl();
 
-  const componentMounted = useRef(true);
+  const componentMounted = useRef(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showChildren, setShowChildren] = useState(false);
@@ -37,18 +40,18 @@ function PatientMenuManagement() {
     setNotificationVisible(true);
     setIsSubmitting(false);
     if (res.status == "200") {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.success,
-        title: <FormattedMessage id="notification.title" />,
-        message: <FormattedMessage id="success.add.edited.msg" />,
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "success.add.edited.msg" }),
       });
       var body = await res.json();
       setMenuItem(body);
     } else {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.error,
-        title: <FormattedMessage id="notification.title" />,
-        message: <FormattedMessage id="error.add.edited.msg" />,
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "error.add.edited.msg" }),
       });
     }
   }
@@ -70,6 +73,7 @@ function PatientMenuManagement() {
   };
 
   useEffect(() => {
+    componentMounted.current = true;
     getFromOpenElisServer("/rest/menu/menu_patient", handleMenuItems);
     return () => {
       componentMounted.current = false;
@@ -80,6 +84,7 @@ function PatientMenuManagement() {
     <>
       {notificationVisible === true ? <AlertDialog /> : ""}
       <div className="adminPageContent">
+        <PageBreadCrumb breadcrumbs={breadcrumbs} />
         <Grid>
           <Column lg={16}>
             <Section>

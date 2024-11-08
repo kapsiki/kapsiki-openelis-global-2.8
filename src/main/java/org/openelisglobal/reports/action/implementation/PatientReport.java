@@ -1,18 +1,15 @@
 /**
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.1 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
  *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations under
- * the License.
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
  *
- * The Original Code is OpenELIS code.
+ * <p>The Original Code is OpenELIS code.
  *
- * Copyright (C) CIRG, University of Washington, Seattle WA.  All Rights Reserved.
- *
+ * <p>Copyright (C) CIRG, University of Washington, Seattle WA. All Rights Reserved.
  */
 package org.openelisglobal.reports.action.implementation;
 
@@ -28,10 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.address.service.AddressPartService;
 import org.openelisglobal.address.service.PersonAddressService;
@@ -54,7 +50,6 @@ import org.openelisglobal.common.services.TestIdentityService;
 import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.ConfigurationProperties.Property;
 import org.openelisglobal.common.util.DateUtil;
-import org.openelisglobal.common.util.StringUtil;
 import org.openelisglobal.dictionary.service.DictionaryService;
 import org.openelisglobal.dictionary.valueholder.Dictionary;
 import org.openelisglobal.internationalization.MessageUtil;
@@ -123,8 +118,9 @@ public abstract class PatientReport extends Report {
     protected PersonAddressService addressService = SpringContext.getBean(PersonAddressService.class);
     protected AddressPartService addressPartService = SpringContext.getBean(AddressPartService.class);
     protected OrganizationService organizationService = SpringContext.getBean(OrganizationService.class);
-    protected SampleOrganizationService sampleOrganizationService = SpringContext.getBean(SampleOrganizationService.class);
-    protected UserService userService =  SpringContext.getBean(UserService.class);;
+    protected SampleOrganizationService sampleOrganizationService = SpringContext
+            .getBean(SampleOrganizationService.class);
+    protected UserService userService = SpringContext.getBean(UserService.class);;
     private List<String> handledOrders;
     private List<Analysis> updatedAnalysis = new ArrayList<>();
 
@@ -148,6 +144,7 @@ public abstract class PatientReport extends Report {
     protected String completionDate;
     protected Sample currentSample;
     protected Patient currentPatient;
+    protected Boolean onlyResultsForReportBySite = false;
 
     protected static final NoteType[] FILTER = { NoteType.EXTERNAL, NoteType.REJECTION_REASON,
             NoteType.NON_CONFORMITY };
@@ -166,13 +163,13 @@ public abstract class PatientReport extends Report {
         }
     }
 
-    abstract protected String getReportNameForParameterPage();
+    protected abstract String getReportNameForParameterPage();
 
-    abstract protected void postSampleBuild();
+    protected abstract void postSampleBuild();
 
-    abstract protected void createReportItems();
+    protected abstract void createReportItems();
 
-    abstract protected void setReferredResult(ClinicalPatientData data, Result result);
+    protected abstract void setReferredResult(ClinicalPatientData data, Result result);
 
     protected boolean appendUOMToRange() {
         return true;
@@ -186,6 +183,18 @@ public abstract class PatientReport extends Report {
         return true;
     }
 
+    protected String convertToAlphaNumericDisplay(Sample currentSample) {
+        String displayAccesionNumber = "";
+        if (AccessionFormat.ALPHANUM.toString()
+                .equals(ConfigurationProperties.getInstance().getPropertyValue(Property.AccessionFormat))) {
+            displayAccesionNumber = AlphanumAccessionValidator
+                    .convertAlphaNumLabNumForDisplay(sampleService.getAccessionNumber(currentSample).split("-")[0]);
+        } else {
+            displayAccesionNumber = sampleService.getAccessionNumber(currentSample).split("-")[0];
+        }
+        return displayAccesionNumber;
+    }
+
     public void setRequestParameters(ReportForm form) {
         form.setReportName(getReportNameForParameterPage());
 
@@ -197,7 +206,6 @@ public abstract class PatientReport extends Report {
         form.setUseSiteSearch(true);
         form.setReferringSiteList(
                 DisplayListService.getInstance().getList(DisplayListService.ListType.SAMPLE_PATIENT_REFERRING_CLINIC));
-
     }
 
     @Override
@@ -242,11 +250,11 @@ public abstract class PatientReport extends Report {
             }
             if (!GenericValidator.isBlankOrNull(form.getUpperDateRange())
                     && !GenericValidator.isBlankOrNull(form.getLowerDateRange())) {
+                onlyResultsForReportBySite = form.isOnlyResults();
                 reportSampleList = findReportSamplesForSite(form.getReferringSiteId(),
                         form.getReferringSiteDepartmentId(), form.isOnlyResults(), form.getDateType(),
                         form.getLowerDateRange(), form.getUpperDateRange());
             }
-
         }
 
         sampleCompleteMap = new HashMap<>();
@@ -260,7 +268,7 @@ public abstract class PatientReport extends Report {
             for (Sample sample : reportSampleList) {
                 currentSample = sample;
                 handledOrders.add(sample.getId());
-                sampleCompleteMap.put(sample.getAccessionNumber(), Boolean.TRUE);
+                sampleCompleteMap.put(convertToAlphaNumericDisplay(sample), Boolean.TRUE);
                 findCompletionDate();
                 findPatientFromSample();
                 findContactInfo();
@@ -303,19 +311,12 @@ public abstract class PatientReport extends Report {
                     DateUtil.convertStringDateToLocalDate(upperDateRange));
             sampleList = sampleService
                     .getSamplesByAnalysisIds(analysises.stream().map(e -> e.getId()).collect(Collectors.toList()));
-
         }
 
         if (onlyResults) {
             Set<Integer> analysisStatusIds = new HashSet<>();
-            analysisStatusIds.add(Integer.parseInt(
-                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.BiologistRejected)));
             analysisStatusIds.add(Integer
                     .parseInt(SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.Finalized)));
-            analysisStatusIds.add(Integer.parseInt(
-                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalAcceptance)));
-            analysisStatusIds.add(Integer.parseInt(
-                    SpringContext.getBean(IStatusService.class).getStatusID(AnalysisStatus.TechnicalRejected)));
             sampleList = sampleList.stream().filter(
                     e -> (analysisService.getAnalysesBySampleIdAndStatusId(e.getId(), analysisStatusIds).size() > 0))
                     .collect(Collectors.toList());
@@ -358,7 +359,6 @@ public abstract class PatientReport extends Report {
                 patientCommune = deptAddress.getValue();
             }
         }
-
     }
 
     private void findContactInfo() {
@@ -375,9 +375,11 @@ public abstract class PatientReport extends Report {
         currentSiteInfo += referringOrg == null ? "" : referringOrg.getOrganizationName();
         currentSiteInfo += "|" + (referringDepartmentOrg == null ? "" : referringDepartmentOrg.getOrganizationName());
 
-        //Person person = sampleService.getPersonRequester(currentSample);
-        Person person = sampleHumanService.getProviderForSample(currentSample).getPerson();
-        
+        // Person person = sampleService.getPersonRequester(currentSample);
+        Person person = (ObjectUtils.isNotEmpty(sampleHumanService.getProviderForSample(currentSample)))
+                ? sampleHumanService.getProviderForSample(currentSample).getPerson()
+                : null;
+
         if (person != null) {
             PersonService personService = SpringContext.getBean(PersonService.class);
             currentContactInfo = personService.getLastFirstName(person);
@@ -570,7 +572,10 @@ public abstract class PatientReport extends Report {
                         AnalysisStatus.TechnicalRejected)
                         && ConfigurationProperties.getInstance().isPropertyValueEqual(
                                 ConfigurationProperties.Property.VALIDATE_REJECTED_TESTS, "false"))) {
-            sampleCompleteMap.put(sampleService.getAccessionNumber(currentSample), Boolean.FALSE);
+
+            if (sampleCompleteMap != null) {
+                sampleCompleteMap.put(convertToAlphaNumericDisplay(currentSample), Boolean.FALSE);
+            }
             setEmptyResult(data);
         } else {
             if (resultList.isEmpty()) {
@@ -600,8 +605,9 @@ public abstract class PatientReport extends Report {
 
     private void setCorrectedStatus(Result result, ClinicalPatientData data) {
         if (currentAnalysis.isCorrectedSincePatientReport() && !GenericValidator.isBlankOrNull(result.getValue())) {
-            data.setCorrectedResult(true);data.setContactInfo(currentContactInfo);
-            sampleCorrectedMap.put(sampleService.getAccessionNumber(currentSample), true);
+            data.setCorrectedResult(true);
+            data.setContactInfo(currentContactInfo);
+            sampleCorrectedMap.put(convertToAlphaNumericDisplay(currentSample), true);
             currentAnalysis.setCorrectedSincePatientReport(false);
             updatedAnalysis.add(currentAnalysis);
         }
@@ -812,7 +818,6 @@ public abstract class PatientReport extends Report {
             }
         }
         data.setResult(reportResult);
-
     }
 
     protected void setCollectionTime(Set<SampleItem> sampleSet, List<ClinicalPatientData> currentSampleReportItems,
@@ -858,10 +863,8 @@ public abstract class PatientReport extends Report {
      * If you have a string that you wish to add a suffix like units of measure, use
      * this.
      *
-     * @param base
-     *            something
-     * @param plus
-     *            something to add, if the above is not null or blank.
+     * @param base something
+     * @param plus something to add, if the above is not null or blank.
      * @return the two args put together, or the original if it was blank to begin
      *         with.
      */
@@ -939,15 +942,11 @@ public abstract class PatientReport extends Report {
         if (AccessionFormat.ALPHANUM.toString()
                 .equals(ConfigurationProperties.getInstance().getPropertyValue(Property.AccessionFormat))) {
             if (doAnalysis) {
-                data.setSampleId(
-                        AlphanumAccessionValidator
-                                .convertAlphaNumLabNumForDisplay(sampleService.getAccessionNumber(currentSample))
-                                + "-" + data.getSampleSortOrder());
+                data.setSampleId(AlphanumAccessionValidator.convertAlphaNumLabNumForDisplay(
+                        sampleService.getAccessionNumber(currentSample)) + "-" + data.getSampleSortOrder());
             }
-            data.setAccessionNumber(
-                    AlphanumAccessionValidator
-                            .convertAlphaNumLabNumForDisplay(sampleService.getAccessionNumber(currentSample))
-                            + "-" + data.getSampleSortOrder());
+            data.setAccessionNumber(AlphanumAccessionValidator.convertAlphaNumLabNumForDisplay(
+                    sampleService.getAccessionNumber(currentSample)) + "-" + data.getSampleSortOrder());
         } else {
             if (doAnalysis) {
                 data.setSampleId(sampleService.getAccessionNumber(currentSample) + "-" + data.getSampleSortOrder());
@@ -967,21 +966,21 @@ public abstract class PatientReport extends Report {
                             AdditionalFieldName.CONTACT_TRACING_INDEX_RECORD_NUMBER).getFieldValue());
         }
         String testSection = analysisService.getTestSection(currentAnalysis).getDescription();
-        if(testSection.equals("Tuberculose")) {
-        	data.setTbOrderReason(observationHistoryService.getValueForSample(ObservationType.TB_ORDER_REASON,
-                sampleService.getId(currentSample)));
-        	data.setTbDiagnosticReason(observationHistoryService.getValueForSample(ObservationType.TB_DIAGNOSTIC_REASON,
+        if (testSection.equals("Tuberculose")) {
+            data.setTbOrderReason(observationHistoryService.getValueForSample(ObservationType.TB_ORDER_REASON,
                     sampleService.getId(currentSample)));
-        	data.setTbFollowupReason(observationHistoryService.getValueForSample(ObservationType.TB_FOLLOWUP_REASON,
-        			sampleService.getId(currentSample)));
-        	data.setTbAnalysisMethod(observationHistoryService.getValueForSample(ObservationType.TB_ANALYSIS_METHOD,
-        			sampleService.getId(currentSample)));
-        	data.setTbSampleAspect(observationHistoryService.getValueForSample(ObservationType.TB_SAMPLE_ASPECT,
-        			sampleService.getId(currentSample)));
-        	data.setTbFollowupPeriodLine1(observationHistoryService.getValueForSample(ObservationType.TB_FOLLOWUP_PERIOD_LINE1,
-        			sampleService.getId(currentSample)));
-        	data.setTbFollowupPeriodLine2(observationHistoryService.getValueForSample(ObservationType.TB_FOLLOWUP_PERIOD_LINE2,
-        			sampleService.getId(currentSample)));
+            data.setTbDiagnosticReason(observationHistoryService.getValueForSample(ObservationType.TB_DIAGNOSTIC_REASON,
+                    sampleService.getId(currentSample)));
+            data.setTbFollowupReason(observationHistoryService.getValueForSample(ObservationType.TB_FOLLOWUP_REASON,
+                    sampleService.getId(currentSample)));
+            data.setTbAnalysisMethod(observationHistoryService.getValueForSample(ObservationType.TB_ANALYSIS_METHOD,
+                    sampleService.getId(currentSample)));
+            data.setTbSampleAspect(observationHistoryService.getValueForSample(ObservationType.TB_SAMPLE_ASPECT,
+                    sampleService.getId(currentSample)));
+            data.setTbFollowupPeriodLine1(observationHistoryService
+                    .getValueForSample(ObservationType.TB_FOLLOWUP_PERIOD_LINE1, sampleService.getId(currentSample)));
+            data.setTbFollowupPeriodLine2(observationHistoryService
+                    .getValueForSample(ObservationType.TB_FOLLOWUP_PERIOD_LINE2, sampleService.getId(currentSample)));
         }
 
         return data;
@@ -1008,10 +1007,8 @@ public abstract class PatientReport extends Report {
      * starting at the given index. It uses multiresult form the list when the
      * results are for the same test.
      *
-     * @param referralResultsForReferral
-     *            The referral
-     * @param i
-     *            starting index.
+     * @param referralResultsForReferral The referral
+     * @param i                          starting index.
      * @return last index actually used. If you start with 2 and this routine uses
      *         just item #2, then return result is 2, but if there are two results
      *         for the same test (e.g. a multi-select result) and those are in item
@@ -1038,8 +1035,7 @@ public abstract class PatientReport extends Report {
      * Derive the appropriate displayable string results, either dictionary result
      * or direct value.
      *
-     * @param result
-     *            The result
+     * @param result The result
      * @return a reportable result string.
      */
     private String findDisplayableReportResult(Result result) {
@@ -1081,7 +1077,6 @@ public abstract class PatientReport extends Report {
             int days = DateUtil.getAgeInDays(dobDate, DateUtil.getNowAsSqlDate());
             return days + " " + MessageUtil.getMessage("abbreviation.day.single");
         }
-
     }
 
     @Override

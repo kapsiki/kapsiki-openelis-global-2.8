@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Column, Form, Grid, Section, Button } from "@carbon/react";
+import { Column, Form, Grid, Section, Button, Link } from "@carbon/react";
+import { ArrowLeft, ArrowRight } from "@carbon/react/icons";
 import { FormattedMessage } from "react-intl";
 import "../Style.css";
 import TestSectionSelectForm from "./TestSectionSelectForm";
@@ -16,6 +17,8 @@ export default function WorkplanSearchForm(props) {
   const [nextPage, setNextPage] = useState(null);
   const [previousPage, setPreviousPage] = useState(null);
   const [pagination, setPagination] = useState(false);
+  const [currentApiPage, setCurrentApiPage] = useState(null);
+  const [totalApiPages, setTotalApiPages] = useState(null);
   const [url, setUrl] = useState("");
 
   let title = "";
@@ -44,7 +47,6 @@ export default function WorkplanSearchForm(props) {
 
   const handleSelectedValue = (v, l) => {
     if (mounted.current) {
-      setIsLoading(true);
       setSelectedValue(v);
       setSelectedLabel(l);
       props.selectedValue(v);
@@ -59,6 +61,8 @@ export default function WorkplanSearchForm(props) {
         var { totalPages, currentPage } = res.paging;
         if (totalPages > 1) {
           setPagination(true);
+          setCurrentApiPage(currentPage);
+          setTotalApiPages(totalPages);
           if (parseInt(currentPage) < parseInt(totalPages)) {
             setNextPage(parseInt(currentPage) + 1);
           } else {
@@ -87,6 +91,7 @@ export default function WorkplanSearchForm(props) {
 
   useEffect(() => {
     mounted.current = true;
+    setIsLoading(true);
     setNextPage(null);
     setPreviousPage(null);
     setPagination(false);
@@ -103,11 +108,10 @@ export default function WorkplanSearchForm(props) {
     setPagination(false);
   }, []);
 
-
   return (
     <>
       <Grid fullWidth={true}>
-        <Column lg={16}>
+        <Column lg={16} md={8} sm={4}>
           <Section>
             <h5 className="contentHeader2">
               <FormattedMessage id="label.form.searchby" />
@@ -117,7 +121,7 @@ export default function WorkplanSearchForm(props) {
         </Column>
       </Grid>
       <Grid fullWidth={true}>
-        <Column lg={6}>
+        <Column sm={4} md={4} lg={6}>
           <Form className="container-form">
             {type === "test" && (
               <TestSelectForm title={title} value={handleSelectedValue} />
@@ -136,7 +140,7 @@ export default function WorkplanSearchForm(props) {
             )}
           </Form>
         </Column>
-        <Column lg={4}>
+        <Column sm={1} md={2} lg={4}>
           {isLoading && (
             <img
               src={`images/loading.gif`}
@@ -150,10 +154,10 @@ export default function WorkplanSearchForm(props) {
       <hr />
       <br />
       <Grid fullWidth={true}>
-        <Column lg={16}>
+        <Column lg={16} md={8} sm={4}>
           {selectedLabel && (
             <Section>
-              <h4 className="contentHeader1">&nbsp; {selectedLabel} </h4>
+              <h4 className="contentHeader1">&nbsp;</h4>
             </Section>
           )}
         </Column>
@@ -161,26 +165,38 @@ export default function WorkplanSearchForm(props) {
       <>
         {pagination && (
           <Grid>
-            <Column lg={11} />
-            <Column lg={2}>
-              <Button
-                type=""
-                id="loadpreviousresults"
-                onClick={loadPreviousResultsPage}
-                disabled={previousPage != null ? false : true}
-              >
-                <FormattedMessage id="button.label.loadprevious" />
-              </Button>
-            </Column>
-            <Column lg={2}>
-              <Button
-                type=""
-                id="loadnextresults"
-                disabled={nextPage != null ? false : true}
-                onClick={loadNextResultsPage}
-              >
-                <FormattedMessage id="button.label.loadnext" />
-              </Button>
+            <Column lg={14} />
+            <Column
+              lg={2}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "10px",
+                width: "110%",
+              }}
+            >
+              <Link>
+                {currentApiPage} / {totalApiPages}
+              </Link>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <Button
+                  hasIconOnly
+                  id="loadpreviousresults"
+                  onClick={loadPreviousResultsPage}
+                  disabled={previousPage != null ? false : true}
+                  renderIcon={ArrowLeft}
+                  iconDescription="previous"
+                ></Button>
+                <Button
+                  hasIconOnly
+                  id="loadnextresults"
+                  onClick={loadNextResultsPage}
+                  disabled={nextPage != null ? false : true}
+                  renderIcon={ArrowRight}
+                  iconDescription="next"
+                ></Button>
+              </div>
             </Column>
           </Grid>
         )}

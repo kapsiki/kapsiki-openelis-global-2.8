@@ -7,13 +7,12 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import org.hibernate.annotations.Type;
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
 @Table(name = "cytology_slide")
-public class CytologySlide extends BaseObject<Integer>{
+public class CytologySlide extends BaseObject<Integer> {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "cytology_slide_generator")
     @SequenceGenerator(name = "cytology_slide_generator", sequenceName = "cytology_slide_seq", allocationSize = 1)

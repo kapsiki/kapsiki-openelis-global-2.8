@@ -6,14 +6,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.validator.GenericValidator;
 import org.json.simple.JSONObject;
 import org.openelisglobal.analysis.valueholder.Analysis;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.dictionary.service.DictionaryService;
 import org.openelisglobal.dictionary.valueholder.Dictionary;
@@ -39,17 +37,20 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @DependsOn({ "springContext" })
-public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> implements ResultService {
+public class ResultServiceImpl extends AuditableBaseObjectServiceImpl<Result, String> implements ResultService {
 
     private static String TABLE_REFERENCE_ID;
 
     private static ResultDAO baseObjectDAO = SpringContext.getBean(ResultDAO.class);
     private static DictionaryService dictionaryService = SpringContext.getBean(DictionaryService.class);
     private static ResultSignatureService signatureService = SpringContext.getBean(ResultSignatureService.class);
+
     @Autowired
     private ReferenceTablesService referenceTablesService = SpringContext.getBean(ReferenceTablesService.class);
+
     @Autowired
     private TypeOfSampleService typeOfSampleService = SpringContext.getBean(TypeOfSampleService.class);
+
     @Autowired
     private ResultLimitService resultLimitService = SpringContext.getBean(ResultLimitService.class);
 
@@ -107,7 +108,9 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
 
     @Transactional(readOnly = true)
     public String getSampleType(Result result) {
-        return result.getAnalysis() != null ? typeOfSampleService.getNameForTypeOfSampleId(result.getAnalysis().getSampleItem().getTypeOfSampleId()) : "";
+        return result.getAnalysis() != null
+                ? typeOfSampleService.getNameForTypeOfSampleId(result.getAnalysis().getSampleItem().getTypeOfSampleId())
+                : "";
     }
 
     @Override
@@ -454,7 +457,6 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
     }
 
     /**
-     *
      * @return true if any of the result limits for this test have a gender
      *         specification
      */
@@ -592,7 +594,6 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
     @Transactional(readOnly = true)
     public void getData(Result result) {
         getBaseObjectDAO().getData(result);
-
     }
 
     @Override
@@ -605,7 +606,6 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
     @Transactional(readOnly = true)
     public void getResultByAnalysisAndAnalyte(Result result, Analysis analysis, TestAnalyte ta) {
         getBaseObjectDAO().getResultByAnalysisAndAnalyte(result, analysis, ta);
-
     }
 
     @Override
@@ -642,7 +642,6 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
     @Transactional(readOnly = true)
     public void getResultByTestResult(Result result, TestResult testResult) {
         getBaseObjectDAO().getResultByTestResult(result, testResult);
-
     }
 
     @Override
@@ -692,5 +691,4 @@ public class ResultServiceImpl extends BaseObjectServiceImpl<Result, String> imp
     public List<Result> getPageOfResults(int startingRecNo) {
         return getBaseObjectDAO().getPageOfResults(startingRecNo);
     }
-
 }

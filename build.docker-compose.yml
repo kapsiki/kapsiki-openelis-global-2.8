@@ -50,7 +50,6 @@ services:
     networks:
       default:
         ipv4_address: 172.20.1.121
-
     environment:
       - DEFAULT_PW=adminADMIN!
       - TZ=Africa/Nairobi
@@ -60,13 +59,22 @@ services:
       -  key_trust-store-volume:/etc/openelis-global
       - ./volume/plugins/:/var/lib/openelis-global/plugins
       - ./volume/tomcat/oe_server.xml:/usr/local/tomcat/conf/server.xml
+      -  lucene_index-vol:/var/lib/lucene_index
     secrets:
       - source: datasource.password
       - source: common.properties
+    healthcheck:
+      test: ["CMD", "/healthcheck.sh"]
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 2m
 
   fhir.openelis.org:
     container_name: external-fhir-api
-    image: hapiproject/hapi:v6.6.0-tomcat
+    build:
+      context: ./fhir
+      dockerfile: ./Dockerfile
     depends_on:
       - database
       - certs
@@ -109,8 +117,11 @@ services:
       - CHOKIDAR_USEPOLLING=true
     tty: true
 
+
   proxy:
-    image: nginx:1.15-alpine
+    build:
+      context: ./nginx-proxy
+      dockerfile: ./Dockerfile
     container_name: openelisglobal-proxy
     ports:
       - 80:80
@@ -145,3 +156,4 @@ volumes:
   key_trust-store-volume:
   certs-vol:
   keys-vol:
+  lucene_index-vol:

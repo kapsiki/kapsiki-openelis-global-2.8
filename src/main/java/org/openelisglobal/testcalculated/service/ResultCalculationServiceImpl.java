@@ -1,9 +1,8 @@
 package org.openelisglobal.testcalculated.service;
 
 import java.util.List;
-
 import org.openelisglobal.common.dao.BaseDAO;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.patient.valueholder.Patient;
 import org.openelisglobal.test.valueholder.Test;
 import org.openelisglobal.testcalculated.dao.ResultCalculationDAO;
@@ -13,10 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ResultCalculationServiceImpl extends BaseObjectServiceImpl<ResultCalculation, Integer> implements ResultCalculationService{
-   @Autowired
-   ResultCalculationDAO resultCalculationDAO;
-   
+public class ResultCalculationServiceImpl extends AuditableBaseObjectServiceImpl<ResultCalculation, Integer>
+        implements ResultCalculationService {
+    @Autowired
+    ResultCalculationDAO resultCalculationDAO;
+
     public ResultCalculationServiceImpl() {
         super(ResultCalculation.class);
     }
@@ -33,12 +33,12 @@ public class ResultCalculationServiceImpl extends BaseObjectServiceImpl<ResultCa
 
     @Override
     public List<ResultCalculation> getResultCalculationByTest(Test test) {
-       return resultCalculationDAO.getResultCalculationByTest(test);
+        return resultCalculationDAO.getResultCalculationByTest(test);
     }
 
     @Override
-    public List<ResultCalculation> getResultCalculationByPatientAndCalculation(Patient patient, Calculation calculation) {
+    public List<ResultCalculation> getResultCalculationByPatientAndCalculation(Patient patient,
+            Calculation calculation) {
         return resultCalculationDAO.getResultCalculationByPatientAndCalculation(patient, calculation);
     }
-    
 }

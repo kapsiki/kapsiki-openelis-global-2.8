@@ -3,15 +3,13 @@ package org.openelisglobal.siteinformation.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
-
+import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
 import org.apache.commons.validator.GenericValidator;
 import org.jasypt.util.text.TextEncryptor;
-import org.openelisglobal.common.service.BaseObjectServiceImpl;
+import org.openelisglobal.common.service.AuditableBaseObjectServiceImpl;
 import org.openelisglobal.common.util.ConfigurationSideEffects;
 import org.openelisglobal.siteinformation.dao.SiteInformationDAO;
 import org.openelisglobal.siteinformation.valueholder.SiteInformation;
@@ -20,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class SiteInformationServiceImpl extends BaseObjectServiceImpl<SiteInformation, String>
+public class SiteInformationServiceImpl extends AuditableBaseObjectServiceImpl<SiteInformation, String>
         implements SiteInformationService {
 
     // this approach of getting the entity manager is not recommended in the service
@@ -71,7 +69,6 @@ public class SiteInformationServiceImpl extends BaseObjectServiceImpl<SiteInform
     public void getData(SiteInformation siteInformation) {
         getBaseObjectDAO().getData(siteInformation);
         decryptSiteInformation(siteInformation);
-
     }
 
     @Override
@@ -101,10 +98,10 @@ public class SiteInformationServiceImpl extends BaseObjectServiceImpl<SiteInform
     public void persistData(SiteInformation siteInformation, boolean newSiteInformation) {
         if (newSiteInformation) {
             insert(siteInformation);
-//			siteInformationDAO.insertData(siteInformation);
+            // siteInformationDAO.insertData(siteInformation);
         } else {
             update(siteInformation);
-//			siteInformationDAO.updateData(siteInformation);
+            // siteInformationDAO.updateData(siteInformation);
         }
 
         configurationSideEffects.siteInformationChanged(siteInformation);
@@ -426,6 +423,4 @@ public class SiteInformationServiceImpl extends BaseObjectServiceImpl<SiteInform
         }
         return updatedSiteInfomration;
     }
-
-
 }

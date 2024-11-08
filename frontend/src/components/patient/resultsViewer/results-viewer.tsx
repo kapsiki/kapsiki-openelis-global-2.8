@@ -19,6 +19,7 @@ import TreeViewWrapper from "./tree-view";
 import { FormattedMessage, injectIntl, useIntl } from "react-intl";
 import config from "../../../config.json";
 import { getFromOpenElisServer } from "../../utils/Utils";
+import PatientHeader from "../../common/PatientHeader.js";
 
 interface ResultsViewerProps {
   basePath: string;
@@ -33,6 +34,7 @@ interface Patient {
   birthDateForDisplay: string;
   subjectNumber: string;
   nationalId: string;
+  patientPK: number;
 }
 const RoutedResultsViewer: React.FC<ResultsViewerProps> = () => {
   const patientObj: Patient = {
@@ -42,6 +44,7 @@ const RoutedResultsViewer: React.FC<ResultsViewerProps> = () => {
     birthDateForDisplay: "",
     subjectNumber: "",
     nationalId: "",
+    patientPK: null,
   };
 
   const { patientId } = useParams();
@@ -85,10 +88,12 @@ const RoutedResultsViewer: React.FC<ResultsViewerProps> = () => {
       <>
         <Loading></Loading>
         <Grid fullWidth={true}>
-          <Column lg={16}>
+          <Column lg={16} md={8} sm={4}>
             <EmptyState
-              headerTitle={t("testResults", "Test Results")}
-              displayText={t("testResultsData", "Test results data")}
+              headerTitle={intl.formatMessage({ id: "label.test.results" })}
+              displayText={intl.formatMessage({
+                id: "label.test.resultsData",
+              })}
             />
           </Column>
         </Grid>
@@ -99,7 +104,7 @@ const RoutedResultsViewer: React.FC<ResultsViewerProps> = () => {
   return (
     <>
       <Grid fullWidth={true}>
-        <Column lg={16}>
+        <Column lg={16} md={8} sm={4}>
           <Breadcrumb>
             <BreadcrumbItem href="/">
               {intl.formatMessage({ id: "home.label" })}
@@ -110,82 +115,55 @@ const RoutedResultsViewer: React.FC<ResultsViewerProps> = () => {
           </Breadcrumb>
         </Column>
       </Grid>
-
       <Grid fullWidth={true}>
-        <Column lg={16}>
+        <Column lg={16} md={8} sm={4}>
           <Section>
             <Section>
-              {patient ? (
-                <div className="patient-header">
-                  <div className="patient-name">
-                    <Tag type="blue">
-                      <FormattedMessage id="patient.label.name" /> :
-                    </Tag>
-                    {patient.lastName} {patient.firstName}
-                  </div>
-                  <div className="patient-dob">
-                    {" "}
-                    <Tag type="blue">
-                      <FormattedMessage id="patient.label.sex" /> :
-                    </Tag>
-                    {patient.gender === "M" ? (
-                      <FormattedMessage id="patient.male" />
-                    ) : (
-                      <FormattedMessage id="patient.female" />
-                    )}{" "}
-                    <Tag type="blue">
-                      <FormattedMessage id="patient.dob" /> :
-                    </Tag>{" "}
-                    {patient.birthDateForDisplay}
-                  </div>
-                  <div className="patient-id">
-                    <Tag type="blue">
-                      <FormattedMessage id="patient.subject.number" /> :
-                    </Tag>
-                    {patient.subjectNumber}{" "}
-                  </div>
-                  <div className="patient-id">
-                    <Tag type="blue">
-                      <FormattedMessage id="patient.natioanalid" /> :
-                    </Tag>
-                    {patient.nationalId}
-                  </div>
-                </div>
-              ) : (
-                <div className="patient-header">
-                  <div className="patient-name">
-                    {" "}
-                    <FormattedMessage id="patient.label.nopatientid" />{" "}
-                  </div>
-                </div>
-              )}
+              <Heading>
+                <FormattedMessage id="label.page.patientHistory" />
+              </Heading>
             </Section>
           </Section>
         </Column>
       </Grid>
+      <Grid fullWidth={true}>
+        <Column lg={16} md={8} sm={4}>
+          <PatientHeader
+            id={patient.patientPK}
+            lastName={patient.lastName}
+            firstName={patient.firstName}
+            gender={patient.gender}
+            dob={patient.birthDateForDisplay}
+            subjectNumber={patient.subjectNumber}
+            nationalId={patient.nationalId}
+            className="patient-header2"
+          >
+            {" "}
+          </PatientHeader>
+        </Column>
+      </Grid>
+
       {roots?.length ? (
-        <Grid fullWidth={true}>
-          <Column lg={16}>
-            <div className="orderLegendBody">
-              <FilterProvider roots={loading ? roots : []}>
-                <ResultsViewer
-                  patientId={patientId}
-                  basePath={config.serverBaseUrl}
-                  loading={loading}
-                />
-              </FilterProvider>
-            </div>
+        <Grid fullWidth={true} className="orderLegendBody">
+          <Column lg={16} md={8} sm={4}>
+            <FilterProvider roots={loading ? roots : []}>
+              <ResultsViewer
+                patientId={patientId}
+                basePath={config.serverBaseUrl}
+                loading={loading}
+              />
+            </FilterProvider>
           </Column>
         </Grid>
       ) : (
-        <Grid fullWidth={true}>
+        <Grid fullWidth={true} className="orderLegendBody">
           <Column lg={16}>
-            <div className="orderLegendBody">
-              <EmptyState
-                headerTitle={t("testResults", "Test Results")}
-                displayText={t("testResultsData", "Test results data")}
-              />
-            </div>
+            <EmptyState
+              headerTitle={intl.formatMessage({ id: "label.test.results" })}
+              displayText={intl.formatMessage({
+                id: "label.test.resultsData",
+              })}
+            />
           </Column>
         </Grid>
       )}
@@ -200,13 +178,14 @@ const ResultsViewer: React.FC<ResultsViewerProps> = ({
   const { t } = useTranslation();
   const { totalResultsCount } = useContext(FilterContext);
   const { type, testUuid } = useParams();
+  const intl = useIntl();
   return (
     <div className="resultsContainer">
       <div className="resultsHeader">
-        <div className="leftSection leftHeaderSection">
-          <h4 style={{ flexGrow: 1 }}>{`${t("Results", "Results")} ${
-            totalResultsCount ? `(${totalResultsCount})` : ""
-          }`}</h4>
+        <div className="leftSection leftHeaderSection desktopHeading">
+          <h4 style={{ flexGrow: 1 }}>{`${intl.formatMessage({
+            id: "sidenav.label.results",
+          })} ${totalResultsCount ? `(${totalResultsCount})` : ""}`}</h4>
         </div>
       </div>
 

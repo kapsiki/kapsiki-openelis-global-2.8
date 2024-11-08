@@ -31,13 +31,13 @@ public class ReflexRuleCondition {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "relation")
-    private ReflexRuleOptions.NumericRelationOptions relation ;
+    private ReflexRuleOptions.NumericRelationOptions relation;
 
     @Column(name = "value")
-    private String value ;
+    private String value;
 
     @Column(name = "value2")
-    private String value2 ;
+    private String value2;
 
     @Column(name = "test_analyte_id")
     private Integer testAnalyteId;
@@ -45,53 +45,63 @@ public class ReflexRuleCondition {
     public Integer getId() {
         return id;
     }
+
     public void setId(Integer id) {
         this.id = id;
     }
-    
+
     public String getSampleId() {
         return sampleId;
     }
+
     public void setSampleId(String sampleId) {
         this.sampleId = sampleId;
     }
+
     public String getTestName() {
         return testName;
     }
+
     public void setTestName(String testName) {
         this.testName = testName;
     }
+
     public String getTestId() {
         return testId;
     }
+
     public void setTestId(String testId) {
         this.testId = testId;
     }
+
     public ReflexRuleOptions.NumericRelationOptions getRelation() {
         return relation;
     }
+
     public void setRelation(ReflexRuleOptions.NumericRelationOptions relation) {
         this.relation = relation;
     }
+
     public String getValue() {
         return value;
     }
+
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public String getValue2() {
         return value2;
     }
-    
+
     public void setValue2(String value2) {
         this.value2 = value2;
     }
-    
+
     public Integer getTestAnalyteId() {
         return testAnalyteId;
     }
-    
+
     public void setTestAnalyteId(Integer testAnalyteId) {
         this.testAnalyteId = testAnalyteId;
     }

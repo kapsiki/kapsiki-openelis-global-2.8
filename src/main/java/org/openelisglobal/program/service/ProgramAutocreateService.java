@@ -1,15 +1,18 @@
 package org.openelisglobal.program.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
-
+import liquibase.repackaged.org.apache.commons.lang3.StringUtils;
 import org.hl7.fhir.r4.model.Questionnaire;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.services.DisplayListService;
@@ -27,13 +30,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
-
-import liquibase.repackaged.org.apache.commons.lang3.StringUtils;
-
 @Component
 public class ProgramAutocreateService {
 
@@ -50,66 +46,75 @@ public class ProgramAutocreateService {
     @Autowired
     private FhirPersistanceService fhirPersistanceService;
 
-    @PostConstruct 
-	@Transactional
+    @PostConstruct
+    @Transactional
     public void autocreateProgram() {
         if (autocreateOn) {
             for (Resource programResource : programResources) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(programResource.getInputStream()))) {
-                   reader.mark(100);
+                try (BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(programResource.getInputStream()))) {
+                    reader.mark(100);
                     String linee = reader.readLine();
-                   if (linee.startsWith("Test")) {
-                    while ((linee = reader.readLine()) != null) {
-                        String[] lines = linee.split("	");
-                        UUID uuid = UUID.randomUUID();
-                        System.out.println(
-                            "\t\t<insert schemaName=\"clinlims\" tableName=\"localization\">\n" + //
-                                "\t\t\t<column name=\"id\" valueSequenceNext=\"localization_seq\" />\n" + //
-                                "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\" />\n" + //
-                                "\t\t\t<column name=\"description\" value=\"test name\" />\n" + //
-                                "\t\t\t<column name=\"english\" value=\"" + lines[1].trim() + "\" />\n" + //
-                                "\t\t\t<column name=\"french\" value=\"" + lines[1].trim() + "\"/>\n" + //
-                                "\t\t</insert>\n" + //
-                                "\t\t<insert schemaName=\"clinlims\" tableName=\"localization\">\n" + //
-                                "\t\t\t<column name=\"id\" valueSequenceNext=\"localization_seq\" />\n" + //
-                                "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\" />\n" + //
-                                "\t\t\t<column name=\"description\" value=\"test reporting name\" />\n" + //
-                                "\t\t\t<column name=\"english\" value=\"" + lines[2].trim() + "\" />\n" + //
-                                "\t\t\t<column name=\"french\" value=\"" + lines[2].trim() + "\"/>\n" + //
-                                "\t\t</insert>\n" + //
-                                "\t\t<insert schemaName=\"clinlims\" tableName=\"test\">\n" + //
-                                "\t\t\t<column name=\"id\" valueNumeric=\"nextval('test_seq') \"/>\n" + //
-                                "\t\t\t<column name=\"description\" value=\"" + lines[1].trim() + "\"/> \n" + //
-                                "\t\t\t<column name=\"lastupdated\" valueDate='now()' /> \n" + //
-                                "\t\t\t<column name=\"is_active\" value='Y' /> \n" + //
-                                "\t\t\t<column name=\"is_reportable\" value='N' /> \n" + //
-                                "\t\t\t<column name=\"test_section_id\" valueComputed=\"(select id from test_section where name = 'Immunohistochemistry' limit 1)\" />\n" + //
-                                "\t\t\t<column name=\"local_code\" value='" + lines[0].trim() + "' />\n" + //
-                                "\t\t\t<column name=\"name\" value=\"test." + lines[0].trim() + "\"/>\n" + //
-                                "\t\t\t<column name=\"name_localization_id\" valueComputed=\"(select id from localization where english = '" + lines[1].trim() + "' and description = 'test name' limit 1)\" />\n" + //
-                                "\t\t\t<column name=\"reporting_name_localization_id\" valueComputed=\"(select id from localization where english = '" + lines[2].trim() + "' and description = 'test reporting name' limit 1)\" />\n" + //
-                                "\t\t\t<column name=\"guid\" value=\"" + uuid + "\"/>\n" + //
-                                "\t\t</insert> \n" + //
-                                "\t\t<insert tableName=\"test_result\">\n" + //
-                                "\t\t\t<column name=\"id\" valueNumeric=\"nextval( 'test_result_seq' )\"/>\n" + //
-                                "\t\t\t<column name=\"test_id\"  valueNumeric=\" ( select id from clinlims.test where description = '" + lines[1].trim() + "' ) \" />\n" + //
-                                "\t\t\t<column name=\"tst_rslt_type\" value=\"R\" />\n" + //
-                                "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\"/>\n" + //
-                                "\t\t\t<column name=\"is_active\" value=\"t\"/>\n" + //
-                                "\t\t\t<column name=\"sort_order\" valueNumeric=\"0\" />\n" + //
-                                "\t\t</insert>\n" + //
-                                "\t\t<insert schemaName=\"clinlims\" tableName=\"sampletype_test\">\n" + //
-                                "\t\t\t<column name=\"id\" valueNumeric=\" nextval( 'sample_type_test_seq' ) \"/>\n" + //
-                                "\t\t\t<column name=\"sample_type_id\" valueNumeric=\" ( select id from clinlims.type_of_sample where description = 'Immunohistochemistry specimen' ) \"/>\n" + //
-                                "\t\t\t<column name=\"test_id\"  valueNumeric=\" ( select id from clinlims.test where description = '" + lines[1].trim() + "' ) \" />\n" + //
-                                "\t\t</insert>"
-                            );
-                    } 
-                    continue;
-                   } else {
-                    reader.reset();
-                   }
-                    
+                    if (linee.startsWith("Test")) {
+                        while ((linee = reader.readLine()) != null) {
+                            String[] lines = linee.split("	");
+                            UUID uuid = UUID.randomUUID();
+                            System.out.println("\t\t<insert schemaName=\"clinlims\" tableName=\"localization\">\n" + //
+                                    "\t\t\t<column name=\"id\" valueSequenceNext=\"localization_seq\" />\n" + //
+                                    "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\" />\n" + //
+                                    "\t\t\t<column name=\"description\" value=\"test name\" />\n" + //
+                                    "\t\t\t<column name=\"english\" value=\"" + lines[1].trim() + "\" />\n" + //
+                                    "\t\t\t<column name=\"french\" value=\"" + lines[1].trim() + "\"/>\n" + //
+                                    "\t\t</insert>\n" + //
+                                    "\t\t<insert schemaName=\"clinlims\" tableName=\"localization\">\n" + //
+                                    "\t\t\t<column name=\"id\" valueSequenceNext=\"localization_seq\" />\n" + //
+                                    "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\" />\n" + //
+                                    "\t\t\t<column name=\"description\" value=\"test reporting name\" />\n" + //
+                                    "\t\t\t<column name=\"english\" value=\"" + lines[2].trim() + "\" />\n" + //
+                                    "\t\t\t<column name=\"french\" value=\"" + lines[2].trim() + "\"/>\n" + //
+                                    "\t\t</insert>\n" + //
+                                    "\t\t<insert schemaName=\"clinlims\" tableName=\"test\">\n" + //
+                                    "\t\t\t<column name=\"id\" valueNumeric=\"nextval('test_seq') \"/>\n" + //
+                                    "\t\t\t<column name=\"description\" value=\"" + lines[1].trim() + "\"/> \n" + //
+                                    "\t\t\t<column name=\"lastupdated\" valueDate='now()' /> \n" + //
+                                    "\t\t\t<column name=\"is_active\" value='Y' /> \n" + //
+                                    "\t\t\t<column name=\"is_reportable\" value='N' /> \n" + //
+                                    "\t\t\t<column name=\"test_section_id\" valueComputed=\"(select id from"
+                                    + " test_section where name = 'Immunohistochemistry' limit 1)\" />\n" + //
+                                    "\t\t\t<column name=\"local_code\" value='" + lines[0].trim() + "' />\n" + //
+                                    "\t\t\t<column name=\"name\" value=\"test." + lines[0].trim() + "\"/>\n" + //
+                                    "\t\t\t<column name=\"name_localization_id\" valueComputed=\"(select id from"
+                                    + " localization where english = '" + lines[1].trim()
+                                    + "' and description = 'test name' limit 1)\" />\n" + //
+                                    "\t\t\t<column name=\"reporting_name_localization_id\""
+                                    + " valueComputed=\"(select id from localization where english = '"
+                                    + lines[2].trim() + "' and description = 'test reporting name' limit 1)\" />\n" + //
+                                    "\t\t\t<column name=\"guid\" value=\"" + uuid + "\"/>\n" + //
+                                    "\t\t</insert> \n" + //
+                                    "\t\t<insert tableName=\"test_result\">\n" + //
+                                    "\t\t\t<column name=\"id\" valueNumeric=\"nextval( 'test_result_seq' )\"/>\n" + //
+                                    "\t\t\t<column name=\"test_id\"  valueNumeric=\" ( select id from"
+                                    + " clinlims.test where description = '" + lines[1].trim() + "' ) \" />\n" + //
+                                    "\t\t\t<column name=\"tst_rslt_type\" value=\"R\" />\n" + //
+                                    "\t\t\t<column name=\"lastupdated\" valueComputed=\"${now}\"/>\n" + //
+                                    "\t\t\t<column name=\"is_active\" value=\"t\"/>\n" + //
+                                    "\t\t\t<column name=\"sort_order\" valueNumeric=\"0\" />\n" + //
+                                    "\t\t</insert>\n" + //
+                                    "\t\t<insert schemaName=\"clinlims\" tableName=\"sampletype_test\">\n" + //
+                                    "\t\t\t<column name=\"id\" valueNumeric=\" nextval( 'sample_type_test_seq' )"
+                                    + " \"/>\n" + //
+                                    "\t\t\t<column name=\"sample_type_id\" valueNumeric=\" ( select id from"
+                                    + " clinlims.type_of_sample where description = 'Immunohistochemistry specimen'"
+                                    + " ) \"/>\n" + //
+                                    "\t\t\t<column name=\"test_id\"  valueNumeric=\" ( select id from"
+                                    + " clinlims.test where description = '" + lines[1].trim() + "' ) \" />\n" + //
+                                    "\t\t</insert>");
+                        }
+                        continue;
+                    } else {
+                        reader.reset();
+                    }
+
                     String contents = reader.lines().map(line -> line + "\n").collect(Collectors.joining());
                     ObjectMapper mapper = new ObjectMapper();
                     mapper.registerModule(new Hibernate5Module());
@@ -118,8 +123,8 @@ public class ProgramAutocreateService {
                     SimpleModule module = new SimpleModule();
                     module.addDeserializer(Questionnaire.class, new QuestionnaireDeserializer());
                     mapper.registerModule(module);
-                    EditProgramForm form = mapper.readValue(contents, EditProgramForm.class); 
-                  
+                    EditProgramForm form = mapper.readValue(contents, EditProgramForm.class);
+
                     Questionnaire questionnaire = form.getAdditionalOrderEntryQuestions();
 
                     Program program = form.getProgram();
@@ -140,9 +145,10 @@ public class ProgramAutocreateService {
                     if (questionnaire == null) {
                         questionnaire = new Questionnaire();
                     }
-                    if(StringUtils.isNotBlank(form.getTestSectionName())){
-                        Optional<TestSection> testSection = testSectionService.getMatch("testSectionName", form.getTestSectionName());
-                        if(testSection.isPresent()){
+                    if (StringUtils.isNotBlank(form.getTestSectionName())) {
+                        Optional<TestSection> testSection = testSectionService.getMatch("testSectionName",
+                                form.getTestSectionName());
+                        if (testSection.isPresent()) {
                             program.setTestSection(testSection.get());
                         } else {
                             program.setTestSection(null);
@@ -153,14 +159,12 @@ public class ProgramAutocreateService {
                     fhirPersistanceService.updateFhirResourceInFhirStore(questionnaire);
                     DisplayListService.getInstance().refreshList(ListType.PROGRAM);
 
-                // }
-                    
+                    // }
+
                 } catch (IOException | FhirLocalPersistingException e) {
                     LogEvent.logError(e);
                 }
             }
         }
     }
-
-
 }

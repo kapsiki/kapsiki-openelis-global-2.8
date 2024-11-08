@@ -14,6 +14,8 @@ import {
   RadioButtonGroup,
   RadioButton,
   ModalWrapper,
+  Grid,
+  Column,
 } from "@carbon/react";
 import { Add, Subtract } from "@carbon/react/icons";
 import AutoComplete from "../../common/AutoComplete.js";
@@ -24,14 +26,17 @@ import {
   AlertDialog,
   NotificationKinds,
 } from "../../common/CustomNotification";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import "./ReflexStyles.css";
 
 var defaultTestResultList = {};
 var defaultSampleTests = { conditions: {}, actions: {} };
 
 function ReflexRule() {
-  const componentMounted = useRef(true);
+  const componentMounted = useRef(false);
+
+  const intl = useIntl();
+
   const FIELD = {
     conditions: "conditions",
     actions: "actions",
@@ -83,10 +88,11 @@ function ReflexRule() {
   const [counter, setCounter] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
-  const { notificationVisible, setNotificationVisible, setNotificationBody } =
+  const { notificationVisible, setNotificationVisible, addNotification } =
     useContext(NotificationContext);
 
   useEffect(() => {
+    componentMounted.current = true;
     getFromOpenElisServer("/rest/samples", fetchSamples);
     getFromOpenElisServer("/rest/reflexrule-options", fetchRuleOptions);
     getFromOpenElisServer("/rest/reflexrules", fetchReflexRules);
@@ -104,20 +110,41 @@ function ReflexRule() {
   }, [ruleList]);
 
   const loadDefaultTestResultList = () => {
+    var sampleList = [];
     ruleList.forEach(function (rule, index) {
       if (rule.conditions) {
         rule.conditions.forEach(function (condition, conditionIndex) {
           if (condition.sampleId) {
-            getFromOpenElisServer(
-              "/rest/test-display-beans?sampleType=" + condition.sampleId,
-              (resp) =>
-                fetchDeafultTests(
-                  resp,
-                  index,
-                  conditionIndex,
-                  FIELD.conditions,
-                  condition,
-                ),
+            sampleList.push(condition.sampleId);
+          }
+        });
+      }
+      if (rule.actions) {
+        rule.actions.forEach(function (action, actionIndex) {
+          if (action.sampleId) {
+            sampleList.push(action.sampleId);
+          }
+        });
+      }
+    });
+
+    getFromOpenElisServer(
+      "/rest/test-display-beans-map?samplesTypes=" + sampleList.join(","),
+      (resp) => buildSampleTests(resp),
+    );
+  };
+
+  const buildSampleTests = (sampleTestsMap) => {
+    ruleList.forEach(function (rule, index) {
+      if (rule.conditions) {
+        rule.conditions.forEach(function (condition, conditionIndex) {
+          if (condition.sampleId) {
+            fetchDeafultTests(
+              sampleTestsMap[condition.sampleId],
+              index,
+              conditionIndex,
+              FIELD.conditions,
+              condition,
             );
           }
         });
@@ -125,16 +152,12 @@ function ReflexRule() {
       if (rule.actions) {
         rule.actions.forEach(function (action, actionIndex) {
           if (action.sampleId) {
-            getFromOpenElisServer(
-              "/rest/test-display-beans?sampleType=" + action.sampleId,
-              (resp) =>
-                fetchDeafultTests(
-                  resp,
-                  index,
-                  actionIndex,
-                  FIELD.actions,
-                  null,
-                ),
+            fetchDeafultTests(
+              sampleTestsMap[action.sampleId],
+              index,
+              actionIndex,
+              FIELD.actions,
+              null,
             );
           }
         });
@@ -231,11 +254,12 @@ function ReflexRule() {
   };
 
   const handleTestSelected = (id, index, item_index, field) => {
-    var testDetails = {resultList : [] ,resultType :"N"};
+    var testDetails = { resultList: [], resultType: "N" };
     if (sampleTestList[field]) {
       testDetails = sampleTestList[field][index][item_index].find(
-        (test) => test.id == id)
-      }
+        (test) => test.id == id,
+      );
+    }
     const results = { ...testResultList };
     if (!results[index]) {
       results[index] = {};
@@ -265,11 +289,7 @@ function ReflexRule() {
     );
   };
 
-
   const handleRuleRemove = (index, id) => {
-    const list = [...ruleList];
-    list.splice(index, 1);
-    setRuleList(list);
     if (id) {
       postToOpenElisServer(
         "/rest/deactivate-reflexrule/" + id,
@@ -282,16 +302,17 @@ function ReflexRule() {
   const handleDelete = (status) => {
     setNotificationVisible(true);
     if (status == "200") {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.success,
-        title: <FormattedMessage id="notification.title" />,
-        message: "Succesfuly Deleted",
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "delete.success.msg" }),
       });
+      window.location.reload();
     } else {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.error,
-        title: <FormattedMessage id="notification.title" />,
-        message: "Error while Deleting",
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "delete.error.msg" }),
       });
     }
   };
@@ -323,23 +344,23 @@ function ReflexRule() {
     if (status == "200") {
       const element = document.getElementById("submit_" + index);
       element.disabled = true;
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.success,
-        title: <FormattedMessage id="notification.title" />,
-        message: "Succesfuly saved",
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "save.success" }),
       });
     } else {
-      setNotificationBody({
+      addNotification({
         kind: NotificationKinds.error,
-        title: <FormattedMessage id="notification.title" />,
-        message: "Duplicate Calculation Name or Error while saving",
+        title: intl.formatMessage({ id: "notification.title" }),
+        message: intl.formatMessage({ id: "error.duplicate.calculationname" }),
       });
     }
   };
 
   const handleSubmit = (event, index) => {
     event.preventDefault();
-    console.log(JSON.stringify(ruleList[index]));
+    console.debug(JSON.stringify(ruleList[index]));
     postToOpenElisServer(
       "/rest/reflexrule",
       JSON.stringify(ruleList[index]),
@@ -359,7 +380,7 @@ function ReflexRule() {
 
   const fetchReflexRules = (reflexRuleList) => {
     if (componentMounted.current) {
-      // console.log(JSON.stringify(reflexRuleList))
+      // console.debug(JSON.stringify(reflexRuleList))
       if (reflexRuleList.length > 0) {
         setRuleList(reflexRuleList);
       } else {
@@ -370,7 +391,7 @@ function ReflexRule() {
 
   const fetchRuleOptions = (options) => {
     if (componentMounted.current) {
-      console.log(JSON.stringify(options));
+      console.debug(JSON.stringify(options));
       if (options) {
         setGeneralRelationOptions(options.generalRelationOptions);
         setNumericRelationOptions(options.numericRelationOptions);
@@ -397,7 +418,7 @@ function ReflexRule() {
         //valid float
         return false;
       } else {
-        console.log("invalid value");
+        console.error("invalid value");
         return true;
       }
     }
@@ -412,7 +433,7 @@ function ReflexRule() {
         //valid float
         clearError(fieldName);
       } else {
-        console.log("invalid value");
+        console.error("invalid value");
         addError({ name: fieldName, error: "Invaid Numeric Value" });
       }
     }
@@ -485,15 +506,18 @@ function ReflexRule() {
                   {rule.toggled && (
                     <>
                       <div className="section">
-                        <div className="inlineDiv">
-                          <div>
+                        <Grid>
+                          <Column lg={16} sm={3}>
                             <h5>
                               <FormattedMessage id="rulebuilder.label.addRuleConditions" />
                             </h5>
-                          </div>
-                        </div>
-                        <div className="inlineDiv">
-                          <div>
+                          </Column>
+
+                          <Column lg={16} sm={3}>
+                            {" "}
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                          </Column>
+                          <Column lg={16} sm={3}>
                             <Select
                               value={rule.overall}
                               id={index + "_overall"}
@@ -514,14 +538,19 @@ function ReflexRule() {
                                 />
                               ))}
                             </Select>
-                          </div>
-                        </div>
+                          </Column>
+                          <Column lg={16}>
+                            {" "}
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                          </Column>
+                          <Column lg={16}>
+                            {" "}
+                            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                          </Column>
+                        </Grid>
                         {rule.conditions.map((condition, condition_index) => (
-                          <div
-                            key={index + "_" + condition_index}
-                            className="inlineDiv"
-                          >
-                            <div>
+                          <Grid key={index + "_" + condition_index}>
+                            <Column lg={3} sm={4}>
                               <Select
                                 id={index + "_" + condition_index + "_sample"}
                                 name="sampleId"
@@ -529,7 +558,6 @@ function ReflexRule() {
                                   <FormattedMessage id="rulebuilder.label.selectSample" />
                                 }
                                 value={condition.sampleId}
-                                className="reflexInputSelect"
                                 onChange={(e) => {
                                   handleRuleFieldItemChange(
                                     e,
@@ -555,17 +583,17 @@ function ReflexRule() {
                                   />
                                 ))}
                               </Select>
-                            </div>
+                            </Column>
 
-                            <div>
+                            <Column lg={3} sm={4}>
                               <AutoComplete
                                 id={
                                   index +
                                   "_" +
                                   condition_index +
                                   "_conditionTestId"
-                              }
-                               value={condition.testId}
+                                }
+                                value={condition.testId}
                                 onSelect={(id) => {
                                   handleAutoCompleteRuleFieldItemChange(
                                     id,
@@ -585,7 +613,6 @@ function ReflexRule() {
                                 label={
                                   <FormattedMessage id="rulebuilder.label.searchTest" />
                                 }
-                                class="autocomplete"
                                 suggestions={
                                   sampleTestList[FIELD.conditions][index]
                                     ? sampleTestList[FIELD.conditions][index][
@@ -595,9 +622,8 @@ function ReflexRule() {
                                 }
                                 required
                               />
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={3} sm={4}>
                               <Select
                                 value={condition.relation}
                                 id={index + "_" + condition_index + "_relation"}
@@ -605,7 +631,6 @@ function ReflexRule() {
                                 labelText={
                                   <FormattedMessage id="rulebuilder.label.relation" />
                                 }
-                                className="reflexInputSelect"
                                 onChange={(e) =>
                                   handleRuleFieldItemChange(
                                     e,
@@ -653,9 +678,8 @@ function ReflexRule() {
                                     </>
                                   )}
                               </Select>
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={3} sm={4}>
                               {testResultList[index] &&
                               testResultList[index][condition_index] &&
                               testResultList[index][condition_index]["type"] ? (
@@ -672,7 +696,6 @@ function ReflexRule() {
                                       labelText={
                                         <FormattedMessage id="rulebuilder.label.dictValue" />
                                       }
-                                      className="reflexInputSelect"
                                       onChange={(e) =>
                                         handleRuleFieldItemChange(
                                           e,
@@ -714,7 +737,6 @@ function ReflexRule() {
                                     <>
                                       <TextInput
                                         name="value"
-                                        className="reflexInputText"
                                         type="text"
                                         id={
                                           index +
@@ -771,7 +793,6 @@ function ReflexRule() {
                                 <>
                                   <TextInput
                                     name="value"
-                                    className="reflexInputText"
                                     type="text"
                                     id={
                                       index + "_" + condition_index + "_value"
@@ -792,9 +813,8 @@ function ReflexRule() {
                                   />
                                 </>
                               )}
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={2} sm={4}>
                               {testResultList[index] &&
                                 testResultList[index][condition_index] &&
                                 testResultList[index][condition_index][
@@ -807,7 +827,6 @@ function ReflexRule() {
                                       condition.relation === "BETWEEN" && (
                                         <TextInput
                                           name="value2"
-                                          className="reflexInputText"
                                           type="text"
                                           id={
                                             index +
@@ -851,33 +870,9 @@ function ReflexRule() {
                                       )}
                                   </>
                                 )}
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            {rule.conditions.length - 1 === condition_index && (
-                              <div className="second-row">
-                                <IconButton
-                                  label={
-                                    <FormattedMessage id="rulebuilder.label.addCondition" />
-                                  }
-                                  className="ruleFieldButton"
-                                  onClick={() =>
-                                    handleRuleFieldItemAdd(
-                                      index,
-                                      FIELD.conditions,
-                                      conditionsObj,
-                                    )
-                                  }
-                                  kind="tertiary"
-                                  size="sm"
-                                >
-                                  {" "}
-                                  <Add size={18} />
-                                </IconButton>
-                              </div>
-                            )}
-                            <div>&nbsp; &nbsp;</div>
-                            {rule.conditions.length !== 1 && (
-                              <div className="second-row">
+                            </Column>
+                            <Column lg={1} sm={4}>
+                              {rule.conditions.length !== 1 && (
                                 <IconButton
                                   label={
                                     <FormattedMessage id="rulebuilder.label.removeCondition" />
@@ -896,9 +891,40 @@ function ReflexRule() {
                                   {" "}
                                   <Subtract size={18} />
                                 </IconButton>
-                              </div>
-                            )}
-                          </div>
+                              )}
+                            </Column>
+                            <Column lg={1} sm={4}>
+                              {rule.conditions.length - 1 ===
+                                condition_index && (
+                                <IconButton
+                                  label={
+                                    <FormattedMessage id="rulebuilder.label.addCondition" />
+                                  }
+                                  className="ruleFieldButton"
+                                  onClick={() =>
+                                    handleRuleFieldItemAdd(
+                                      index,
+                                      FIELD.conditions,
+                                      conditionsObj,
+                                    )
+                                  }
+                                  kind="tertiary"
+                                  size="sm"
+                                >
+                                  {" "}
+                                  <Add size={18} />
+                                </IconButton>
+                              )}
+                            </Column>
+                            <Column lg={16}>
+                              {" "}
+                              &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                            </Column>
+                            <Column lg={16}>
+                              {" "}
+                              &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                            </Column>
+                          </Grid>
                         ))}
                       </div>
                       <div className="section">
@@ -910,11 +936,8 @@ function ReflexRule() {
                           </div>
                         </div>
                         {rule.actions.map((action, action_index) => (
-                          <div
-                            key={index + "_" + action_index}
-                            className="inlineDiv"
-                          >
-                            <div>
+                          <Grid key={index + "_" + action_index}>
+                            <Column lg={3} sm={4}>
                               <Select
                                 id={index + "_" + action_index + "_sample"}
                                 name="sampleId"
@@ -922,7 +945,6 @@ function ReflexRule() {
                                   <FormattedMessage id="rulebuilder.label.selectSample" />
                                 }
                                 value={action.sampleId}
-                                className="reflexInputSelect"
                                 onChange={(e) => {
                                   handleRuleFieldItemChange(
                                     e,
@@ -948,9 +970,8 @@ function ReflexRule() {
                                   />
                                 ))}
                               </Select>
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={3} sm={4}>
                               <AutoComplete
                                 id={
                                   index + "_" + action_index + "_reflexTestId"
@@ -969,7 +990,6 @@ function ReflexRule() {
                                 }
                                 name="reflexTestName"
                                 value={action.reflexTestId}
-                                class="autocomplete"
                                 suggestions={
                                   sampleTestList[FIELD.actions][index]
                                     ? sampleTestList[FIELD.actions][index][
@@ -978,9 +998,8 @@ function ReflexRule() {
                                     : []
                                 }
                               />
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={4} sm={4}>
                               <TextArea
                                 style={{
                                   width: "100%",
@@ -1002,9 +1021,8 @@ function ReflexRule() {
                                   )
                                 }
                               />
-                            </div>
-                            <div>&nbsp; &nbsp;</div>
-                            <div>
+                            </Column>
+                            <Column lg={4} sm={4}>
                               <TextArea
                                 name="externalNote"
                                 style={{
@@ -1026,7 +1044,7 @@ function ReflexRule() {
                                   )
                                 }
                               />
-                            </div>
+                            </Column>
                             {/* <div>&nbsp; &nbsp;</div>
                             <div>
                               <RadioButtonGroup
@@ -1062,32 +1080,8 @@ function ReflexRule() {
                                 />
                               </RadioButtonGroup>
                             </div> */}
-                            <div>&nbsp; &nbsp;</div>
-                            {rule.actions.length - 1 === action_index && (
-                              <div className="second-row">
-                                <IconButton
-                                  label={
-                                    <FormattedMessage id="rulebuilder.label.addAction" />
-                                  }
-                                  className="ruleFieldButton"
-                                  onClick={() =>
-                                    handleRuleFieldItemAdd(
-                                      index,
-                                      FIELD.actions,
-                                      actionObj,
-                                    )
-                                  }
-                                  kind="tertiary"
-                                  size="sm"
-                                >
-                                  {" "}
-                                  <Add size={18} />
-                                </IconButton>
-                              </div>
-                            )}
-                            <div>&nbsp; &nbsp;</div>
-                            {rule.actions.length !== 1 && (
-                              <div className="second-row">
+                            <Column lg={1} sm={4}>
+                              {rule.actions.length !== 1 && (
                                 <IconButton
                                   label={
                                     <FormattedMessage id="rulebuilder.label.removeAction" />
@@ -1106,9 +1100,39 @@ function ReflexRule() {
                                   {" "}
                                   <Subtract size={18} />
                                 </IconButton>
-                              </div>
-                            )}
-                          </div>
+                              )}
+                            </Column>
+                            <Column lg={1}>
+                              {rule.actions.length - 1 === action_index && (
+                                <IconButton
+                                  label={
+                                    <FormattedMessage id="rulebuilder.label.addAction" />
+                                  }
+                                  className="ruleFieldButton"
+                                  onClick={() =>
+                                    handleRuleFieldItemAdd(
+                                      index,
+                                      FIELD.actions,
+                                      actionObj,
+                                    )
+                                  }
+                                  kind="tertiary"
+                                  size="sm"
+                                >
+                                  {" "}
+                                  <Add size={18} />
+                                </IconButton>
+                              )}
+                            </Column>
+                            <Column lg={16}>
+                              {" "}
+                              &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                            </Column>
+                            <Column lg={16}>
+                              {" "}
+                              &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;{" "}
+                            </Column>
+                          </Grid>
                         ))}
                       </div>
                       <Button
@@ -1130,7 +1154,7 @@ function ReflexRule() {
             {ruleList.length - 1 === index && (
               <IconButton
                 onClick={handleRuleAdd}
-                label={<FormattedMessage id="rulebuilder.label.addRule" />}
+                label={intl.formatMessage({ id: "rulebuilder.label.addRule" })}
                 size="md"
                 kind="tertiary"
               >

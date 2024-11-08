@@ -28,3 +28,5 @@ src/main/resources/adminPassword.txt
 /docs_back
 /bin/
 /.apt_generated/
+*/plugins/*.jar
+Patient/*

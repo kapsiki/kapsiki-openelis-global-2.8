@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.address.service.OrganizationAddressService;
 import org.openelisglobal.address.valueholder.OrganizationAddress;
@@ -20,9 +18,9 @@ import org.openelisglobal.common.services.IStatusService;
 import org.openelisglobal.common.services.SampleAddService.SampleTestCollection;
 import org.openelisglobal.common.services.StatusService.AnalysisStatus;
 import org.openelisglobal.common.services.TableIdService;
+import org.openelisglobal.common.util.ConfigurationProperties;
 import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.common.util.IdValuePair;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.dataexchange.service.order.ElectronicOrderService;
 import org.openelisglobal.note.service.NoteService;
 import org.openelisglobal.note.service.NoteServiceImpl.NoteType;
@@ -141,7 +139,6 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
 
         request.getSession().setAttribute("lastAccessionNumber", updateData.getAccessionNumber());
         request.getSession().setAttribute("lastPatientId", updateData.getPatientId());
-
     }
 
     private void persistObservations(SamplePatientUpdateData updateData) {
@@ -172,24 +169,24 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
         if (updateData.getCurrentOrganization() != null) {
             organizationService.update(updateData.getCurrentOrganization());
         }
-//        newOrganization = updateData.getNewOrganizationDepartment();
-//        if (newOrganization != null) {
-//            organizationService.insert(newOrganization);
-//            organizationService.linkOrganizationAndType(newOrganization,
-//                    TableIdService.getInstance().REFERRING_ORG_TYPE_ID);
-//            if (updateData.getRequesterSite() != null) {
-//                updateData.getRequesterSite().setRequesterId(newOrganization.getId());
-//            }
-//
-//            for (OrganizationAddress address : updateData.getOrgAddressExtra()) {
-//                address.setOrganizationId(newOrganization.getId());
-//                organizationAddressService.insert(address);
-//            }
-//        }
-//
-//        if (updateData.getCurrentOrganizationDepartment() != null) {
-//            organizationService.update(updateData.getCurrentOrganizationDepartment());
-//        }
+        // newOrganization = updateData.getNewOrganizationDepartment();
+        // if (newOrganization != null) {
+        // organizationService.insert(newOrganization);
+        // organizationService.linkOrganizationAndType(newOrganization,
+        // TableIdService.getInstance().REFERRING_ORG_TYPE_ID);
+        // if (updateData.getRequesterSite() != null) {
+        // updateData.getRequesterSite().setRequesterId(newOrganization.getId());
+        // }
+        //
+        // for (OrganizationAddress address : updateData.getOrgAddressExtra()) {
+        // address.setOrganizationId(newOrganization.getId());
+        // organizationAddressService.insert(address);
+        // }
+        // }
+        //
+        // if (updateData.getCurrentOrganizationDepartment() != null) {
+        // organizationService.update(updateData.getCurrentOrganizationDepartment());
+        // }
 
     }
 
@@ -204,7 +201,7 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
     }
 
     private void persistSampleData(SamplePatientUpdateData updateData) {
-        String analysisRevision = SystemConfiguration.getInstance().getAnalysisDefaultRevision();
+        String analysisRevision = ConfigurationProperties.getInstance().getPropertyValue("analysis.default.revision");
 
         updateData.getSample().setFhirUuid(UUID.randomUUID());
         sampleService.insertDataWithAccessionNumber(updateData.getSample());
@@ -216,7 +213,9 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
         }
 
         if (updateData.getProgramSample() != null) {
-            updateData.getProgramSample().setQuestionnaireResponseUuid(UUID.randomUUID());
+            if (updateData.getProgramQuestionnaireResponse() != null) {
+                updateData.getProgramSample().setQuestionnaireResponseUuid(UUID.randomUUID());
+            }
             updateData.getProgramSample().setSample(updateData.getSample());
 
             if (updateData.getProgramSample() instanceof PathologySample) {
@@ -244,7 +243,6 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
                         noteService.insert(note);
                         break;
                     }
-
                 }
             }
             sampleTestCollection.analysises = new ArrayList<>();
@@ -261,7 +259,6 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
                     persistAnalysisNotificationConfigs(analysis, updateData);
                 }
             }
-
         }
 
         updateData.buildSampleHuman();
@@ -332,7 +329,6 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
             nto.setAdditionalContacts(new ArrayList<>());
             nto.getAdditionalContacts().addAll(nto2.getAdditionalContacts());
         }
-
     }
 
     private void persistRequesterData(SamplePatientUpdateData updateData) {
@@ -368,9 +364,10 @@ public class SamplePatientEntryServiceImpl implements SamplePatientEntryService 
                         TableIdService.getInstance().REFERRING_ORG_DEPARTMENT_TYPE_ID);
             }
             updateData.getRequesterSiteDepartment().setSampleId(Long.parseLong(updateData.getSample().getId()));
-//            if (updateData.getNewOrganizationDepartment() != null) {
-//                updateData.getRequesterSite().setRequesterId(updateData.getNewOrganizationDepartment().getId());
-//            }
+            // if (updateData.getNewOrganizationDepartment() != null) {
+            //
+            // updateData.getRequesterSite().setRequesterId(updateData.getNewOrganizationDepartment().getId());
+            // }
             sampleRequesterService.insert(updateData.getRequesterSiteDepartment());
         }
     }

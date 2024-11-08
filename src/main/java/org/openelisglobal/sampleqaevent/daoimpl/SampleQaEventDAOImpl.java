@@ -1,27 +1,24 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*
-* Contributor(s): ITECH, University of Washington, Seattle WA.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ *
+ * <p>Contributor(s): ITECH, University of Washington, Seattle WA.
+ */
 package org.openelisglobal.sampleqaevent.daoimpl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.beanutils.PropertyUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -114,7 +111,6 @@ public class SampleQaEventDAOImpl extends BaseDAOImpl<SampleQaEvent, String> imp
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<SampleQaEvent> getSampleQaEventsBySample(Sample sample) throws LIMSRuntimeException {
         List<SampleQaEvent> sampleQaEvents;
@@ -155,7 +151,6 @@ public class SampleQaEventDAOImpl extends BaseDAOImpl<SampleQaEvent, String> imp
             throw new LIMSRuntimeException("Exception occurred in getSampleQaEventBySampleAndQaEvent", e);
         }
         return analQaEvent;
-
     }
 
     /**
@@ -163,13 +158,13 @@ public class SampleQaEventDAOImpl extends BaseDAOImpl<SampleQaEvent, String> imp
      *      java.sql.Date)
      */
     @Override
-
     @Transactional(readOnly = true)
     public List<SampleQaEvent> getSampleQaEventsByUpdatedDate(Date lowDate, Date highDate) throws LIMSRuntimeException {
         List<SampleQaEvent> sampleQaEvents = null;
 
         try {
-            String sql = "FROM SampleQaEvent sqe WHERE sqe.lastupdated >= :lowDate AND sqe.lastupdated <= :highDate";
+            String sql = "FROM SampleQaEvent sqe WHERE sqe.lastupdated >= :lowDate AND sqe.lastupdated <="
+                    + " :highDate";
             Query<SampleQaEvent> query = entityManager.unwrap(Session.class).createQuery(sql, SampleQaEvent.class);
             query.setParameter("lowDate", lowDate);
             query.setParameter("highDate", highDate);
@@ -197,5 +192,4 @@ public class SampleQaEventDAOImpl extends BaseDAOImpl<SampleQaEvent, String> imp
 
         return null;
     }
-
 }

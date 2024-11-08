@@ -2,7 +2,6 @@ package org.openelisglobal.patientidentity.daoimpl;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -23,7 +22,6 @@ public class PatientIdentityDAOImpl extends BaseDAOImpl<PatientIdentity, String>
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<PatientIdentity> getPatientIdentitiesForPatient(String id) {
 
@@ -58,27 +56,28 @@ public class PatientIdentityDAOImpl extends BaseDAOImpl<PatientIdentity, String>
         return current;
     }
 
-//	@Override
-//	public void delete(String patientIdentityId, String activeUserId) throws LIMSRuntimeException {
-//		try {
-//
-//			PatientIdentity oldData = readPatientIdentity(patientIdentityId);
-//			Patient newData = new Patient();
-//
-//			String event = IActionConstants.AUDIT_TRAIL_DELETE;
-//			String tableName = "PATIENT_IDENTITY";
-//			auditDAO.saveHistory(newData, oldData, activeUserId, event, tableName);
-//
-//			entityManager.unwrap(Session.class).delete(oldData);
-//			// entityManager.unwrap(Session.class).flush(); // CSL remove old
-//			// entityManager.unwrap(Session.class).clear(); // CSL remove old
-//
-//		} catch (RuntimeException e) {
-//
-//			LogEvent.logError("PatientIdentityDAOImpl", "delete()", e.toString());
-//			throw new LIMSRuntimeException("Error in PatientIdentity delete()", e);
-//		}
-//	}
+    // @Override
+    // public void delete(String patientIdentityId, String activeUserId) throws
+    // LIMSRuntimeException {
+    // try {
+    //
+    // PatientIdentity oldData = readPatientIdentity(patientIdentityId);
+    // Patient newData = new Patient();
+    //
+    // String event = IActionConstants.AUDIT_TRAIL_DELETE;
+    // String tableName = "PATIENT_IDENTITY";
+    // auditDAO.saveHistory(newData, oldData, activeUserId, event, tableName);
+    //
+    // entityManager.unwrap(Session.class).delete(oldData);
+    // // entityManager.unwrap(Session.class).flush(); // CSL remove old
+    // // entityManager.unwrap(Session.class).clear(); // CSL remove old
+    //
+    // } catch (RuntimeException e) {
+    //
+    // LogEvent.logError("PatientIdentityDAOImpl", "delete()", e.toString());
+    // throw new LIMSRuntimeException("Error in PatientIdentity delete()", e);
+    // }
+    // }
 
     public PatientIdentity readPatientIdentity(String idString) {
 
@@ -94,13 +93,13 @@ public class PatientIdentityDAOImpl extends BaseDAOImpl<PatientIdentity, String>
     }
 
     @Override
-
     @Transactional(readOnly = true)
     public List<PatientIdentity> getPatientIdentitiesByValueAndType(String value, String identityType)
             throws LIMSRuntimeException {
-        String sql = "From PatientIdentity pi where pi.identityData = :value and pi.identityTypeId = :identityType";
+        String sql = "From PatientIdentity pi where pi.identityData = :value and pi.identityTypeId ="
+                + " :identityType";
 
-        if(value == null){
+        if (value == null) {
             return Collections.emptyList();
         }
         try {

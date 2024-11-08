@@ -2,7 +2,6 @@ package org.openelisglobal.common.valueholder;
 
 import java.io.Serializable;
 import java.util.Objects;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -11,9 +10,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
 import org.openelisglobal.common.provider.validation.AccessionNumberValidatorFactory.AccessionFormat;
-import org.openelisglobal.userrole.valueholder.UserRolePK;
 
 @Entity(name = "accession_number_info")
 public class AccessionNumberInfo {
@@ -53,7 +50,6 @@ public class AccessionNumberInfo {
         private AccessionFormat type;
 
         AccessionIdentity() {
-            
         }
 
         public AccessionIdentity(String prefix, AccessionFormat type) {
@@ -85,14 +81,11 @@ public class AccessionNumberInfo {
 
             AccessionIdentity that = (AccessionIdentity) o;
 
-            return Objects.equals(this.prefix, that.prefix)
-                    && Objects.equals(this.type, that.type);
+            return Objects.equals(this.prefix, that.prefix) && Objects.equals(this.type, that.type);
         }
 
         public int hashCode() {
             return Objects.hash(prefix, type);
         }
-
     }
-
 }

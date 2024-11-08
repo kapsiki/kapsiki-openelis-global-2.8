@@ -1,37 +1,33 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ */
 package org.openelisglobal.resultvalidation.bean;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-
 import javax.validation.constraints.Pattern;
-
 import org.openelisglobal.common.util.IdValuePair;
 import org.openelisglobal.common.validator.ValidationHelper;
 import org.openelisglobal.resultvalidation.form.ResultValidationForm;
 import org.openelisglobal.validation.annotations.SafeHtml;
 import org.openelisglobal.validation.annotations.ValidAccessionNumber;
 
-public class AnalysisItem implements Serializable{
+public class AnalysisItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-	private String id;
+    private String id;
 
     private String units;
 
@@ -39,9 +35,11 @@ public class AnalysisItem implements Serializable{
 
     @ValidAccessionNumber(groups = { ResultValidationForm.ResultValidation.class })
     private String accessionNumber;
+
     private String patientName;
 
     private String patientInfo;
+
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { ResultValidationForm.ResultValidation.class })
     private String result;
 
@@ -78,9 +76,10 @@ public class AnalysisItem implements Serializable{
 
     @Pattern(regexp = ValidationHelper.ID_REGEX, groups = { ResultValidationForm.ResultValidation.class })
     private String resultId;
+
     private double lowerCritical;
     private double higherCritical;
-    private  String normalRange;
+    private String normalRange;
 
     @SafeHtml(level = SafeHtml.SafeListLevel.NONE, groups = { ResultValidationForm.ResultValidation.class })
     private String resultType;
@@ -100,6 +99,10 @@ public class AnalysisItem implements Serializable{
     private String integralResult;
 
     private String integralAnalysisId;
+
+    private String genscreenResult;
+
+    private String genscreenAnalysisId;
 
     private String murexResult;
 
@@ -188,8 +191,8 @@ public class AnalysisItem implements Serializable{
 
     private boolean valid = true;
 
-    private boolean isNormal; 
-    
+    private boolean isNormal;
+
     public String getRejectReasonId() {
         return rejectReasonId;
     }
@@ -199,7 +202,6 @@ public class AnalysisItem implements Serializable{
     }
 
     public AnalysisItem() {
-
     }
 
     public void setId(String id) {
@@ -249,6 +251,7 @@ public class AnalysisItem implements Serializable{
     public void setNormalRange(String normalRange) {
         this.normalRange = normalRange;
     }
+
     public void setReceivedDate(String receivedDate) {
         this.receivedDate = receivedDate;
     }
@@ -355,7 +358,6 @@ public class AnalysisItem implements Serializable{
 
     public void setLastUpdated(Timestamp lastupdated) {
         lastUpdated = lastupdated;
-
     }
 
     public Timestamp getLastUpdated() {
@@ -577,6 +579,7 @@ public class AnalysisItem implements Serializable{
     public void setReferralReasons(List<IdValuePair> referralReasons) {
         this.referralReasons = referralReasons;
     }
+
     public void setAnalysisId(String analysisId) {
         this.analysisId = analysisId;
     }
@@ -783,6 +786,22 @@ public class AnalysisItem implements Serializable{
 
     public void setHigherCritical(double higherCritical) {
         this.higherCritical = higherCritical;
+    }
+
+    public String getGenscreenResult() {
+        return genscreenResult;
+    }
+
+    public void setGenscreenResult(String genscreenResult) {
+        this.genscreenResult = genscreenResult;
+    }
+
+    public String getGenscreenAnalysisId() {
+        return genscreenAnalysisId;
+    }
+
+    public void setGenscreenAnalysisId(String genscreenAnalysisId) {
+        this.genscreenAnalysisId = genscreenAnalysisId;
     }
 
     public String getPatientName() {

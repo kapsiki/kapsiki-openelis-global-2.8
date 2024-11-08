@@ -1,21 +1,43 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "../Style.css";
-import { injectIntl ,FormattedMessage} from "react-intl";
+import { injectIntl, FormattedMessage, useIntl } from "react-intl";
 import ResultSearchPage from "./SearchResultForm";
-import {
-
-  Heading,
-  Grid,
-  Column,
-  Section,
-
-} from "@carbon/react";
+import { Heading, Grid, Column, Section } from "@carbon/react";
+import PageBreadCrumb from "../common/PageBreadCrumb";
 
 function ResultSearch() {
+  const [source, setSource] = useState("");
+  useEffect(() => {
+    let sourceFromUrl = new URLSearchParams(window.location.search).get(
+      "source",
+    );
+    let sources = [
+      "WorkPlanByTest",
+      "WorkPlanByPanel",
+      "WorkPlanByTestSection",
+      "WorkPlanByPriority",
+    ];
+    sourceFromUrl = sources.includes(sourceFromUrl) ? sourceFromUrl : "";
+    setSource(sourceFromUrl);
+  }, []);
   return (
     <>
-    <Grid fullWidth={true}>
-        <Column lg={16}>
+      <PageBreadCrumb
+        breadcrumbs={
+          source
+            ? [
+                { label: "home.label", link: "/" },
+                {
+                  label: "banner.menu.workplan",
+                  link: `/${source}`,
+                },
+              ]
+            : [{ label: "home.label", link: "/" }]
+        }
+      />
+
+      <Grid fullWidth={true}>
+        <Column lg={16} md={8} sm={4}>
           <Section>
             <Section>
               <Heading>

@@ -17,7 +17,6 @@
 package org.openelisglobal.testconfiguration.beans;
 
 import java.util.List;
-
 import org.openelisglobal.localization.valueholder.Localization;
 
 public class TestCatalogBean {

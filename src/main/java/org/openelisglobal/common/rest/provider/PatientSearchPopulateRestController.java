@@ -1,13 +1,15 @@
 package org.openelisglobal.common.rest.provider;
 
 import java.util.List;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.address.service.AddressPartService;
 import org.openelisglobal.address.service.PersonAddressService;
 import org.openelisglobal.address.valueholder.AddressPart;
 import org.openelisglobal.address.valueholder.PersonAddress;
 import org.openelisglobal.common.rest.provider.bean.PatientInfoBean;
+import org.openelisglobal.common.util.ConfigurationProperties;
+import org.openelisglobal.common.util.ConfigurationProperties.Property;
+import org.openelisglobal.common.util.DateUtil;
 import org.openelisglobal.patient.service.PatientContactService;
 import org.openelisglobal.patient.service.PatientService;
 import org.openelisglobal.patient.util.PatientUtil;
@@ -29,44 +31,44 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 @RequestMapping(value = "/rest/")
 public class PatientSearchPopulateRestController {
-    
+
     @Autowired
     PatientService patientService;
-    
+
     @Autowired
     PatientContactService patientContactService;
-    
+
     @Autowired
     AddressPartService addressPartService;
-    
+
     @Autowired
     PersonAddressService personAddressService;
-    
+
     @Autowired
     PatientPatientTypeService patientPatientTypeService;
-    
+
     private String ADDRESS_PART_VILLAGE_ID;
-    
+
     private String ADDRESS_PART_COMMUNE_ID;
-    
+
     private String ADDRESS_PART_DEPT_ID;
-    
+
     @GetMapping(value = "patient-details", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public PatientInfoBean getPatientResults(@RequestParam String patientID) {
-        
+
         if (!GenericValidator.isBlankOrNull(patientID)) {
             return getPatientDetails(getPatientForID(patientID));
         } else {
             return new PatientInfoBean();
         }
     }
-    
+
     private Patient getPatientForID(String patientID) {
-        
+
         Patient patient = new Patient();
         patient.setId(patientID);
-        
+
         patientService.getData(patient);
         if (patient.getId() == null) {
             return null;
@@ -74,7 +76,7 @@ public class PatientSearchPopulateRestController {
             return patient;
         }
     }
-    
+
     private PatientInfoBean getPatientDetails(Patient patient) {
         List<AddressPart> partList = addressPartService.getAll();
         for (AddressPart addressPart : partList) {
@@ -86,21 +88,21 @@ public class PatientSearchPopulateRestController {
                 ADDRESS_PART_VILLAGE_ID = addressPart.getId();
             }
         }
-        
+
         Person person = patient.getPerson();
-        
+
         PatientIdentityTypeMap identityMap = PatientIdentityTypeMap.getInstance();
-        
+
         List<PatientIdentity> identityList = PatientUtil.getIdentityListForPatient(patient.getId());
         List<PatientContact> patientContacts = patientContactService.getForPatient(patient.getId());
-        
+
         String city = getAddress(person, ADDRESS_PART_VILLAGE_ID);
         if (GenericValidator.isBlankOrNull(city)) {
             city = person.getCity();
         }
         String commune = getAddress(person, ADDRESS_PART_COMMUNE_ID);
         String dept = getAddress(person, ADDRESS_PART_DEPT_ID);
-        
+
         PatientInfoBean patientInfo = new PatientInfoBean();
         patientInfo.setPatientPK(patient.getId());
         patientInfo.setNationalId(patient.getNationalId());
@@ -118,7 +120,12 @@ public class PatientSearchPopulateRestController {
         patientInfo.setPatientType(getPatientType(patient));
         patientInfo.setInsuranceNumber(identityMap.getIdentityValue(identityList, "INSURANCE"));
         patientInfo.setOccupation(identityMap.getIdentityValue(identityList, "OCCUPATION"));
-        patientInfo.setBirthDateForDisplay(patient.getBirthDateForDisplay());
+        String format1 = "dd/MM/yyyy";
+        String format2 = "MM/dd/yyyy";
+        patientInfo.setBirthDateForDisplay(
+                ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_DATE_LOCALE).equals("fr-FR")
+                        ? DateUtil.formatStringDate(patient.getBirthDateForDisplay(), format1)
+                        : DateUtil.formatStringDate(patient.getBirthDateForDisplay(), format2));
         patientInfo.setCommune(commune);
         patientInfo.setAddressDepartment(dept);
         patientInfo.setMothersInitial(identityMap.getIdentityValue(identityList, "MOTHERS_INITIAL"));
@@ -133,7 +140,7 @@ public class PatientSearchPopulateRestController {
             PatientContact contact = patientContacts.get(0);
             patientInfo.setPatientContact(contact);
         }
-        
+
         if (patient.getLastupdated() != null) {
             patientInfo.setPatientLastUpdated(patient.getLastupdated().toString());
         }
@@ -142,18 +149,19 @@ public class PatientSearchPopulateRestController {
         }
         return patientInfo;
     }
-    
+
     private String getAddress(Person person, String addressPartId) {
         if (GenericValidator.isBlankOrNull(addressPartId)) {
             return "";
         }
         PersonAddress address = personAddressService.getByPersonIdAndPartId(person.getId(), addressPartId);
-        
+
         return address != null ? address.getValue() : "";
     }
-    
+
     /**
-     * Fake the unknown patient by never return whatever happens to be in last name field.
+     * Fake the unknown patient by never return whatever happens to be in last name
+     * field.
      *
      * @param person
      * @return
@@ -165,10 +173,9 @@ public class PatientSearchPopulateRestController {
             return person.getLastName();
         }
     }
-    
+
     private String getPatientType(Patient patient) {
         PatientType patientType = patientPatientTypeService.getPatientTypeForPatient(patient.getId());
         return patientType != null ? patientType.getType() : null;
     }
-    
 }

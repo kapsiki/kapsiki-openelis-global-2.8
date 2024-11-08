@@ -49,5 +49,4 @@ public class TestOrderabilityFormValidator implements Validator {
             errors.rejectValue("jsonChangeList", "error.field.format.json");
         }
     }
-
 }

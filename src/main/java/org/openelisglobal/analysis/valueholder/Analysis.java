@@ -1,35 +1,33 @@
 /**
-* The contents of this file are subject to the Mozilla Public License
-* Version 1.1 (the "License"); you may not use this file except in
-* compliance with the License. You may obtain a copy of the License at
-* http://www.mozilla.org/MPL/
-*
-* Software distributed under the License is distributed on an "AS IS"
-* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-* License for the specific language governing rights and limitations under
-* the License.
-*
-* The Original Code is OpenELIS code.
-*
-* Copyright (C) The Minnesota Department of Health.  All Rights Reserved.
-*
-*
-* Contributor(s): CIRG, University of Washington, Seattle WA.
-*/
+ * The contents of this file are subject to the Mozilla Public License Version 1.1 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the
+ * License at http://www.mozilla.org/MPL/
+ *
+ * <p>Software distributed under the License is distributed on an "AS IS" basis, WITHOUT WARRANTY OF
+ * ANY KIND, either express or implied. See the License for the specific language governing rights
+ * and limitations under the License.
+ *
+ * <p>The Original Code is OpenELIS code.
+ *
+ * <p>Copyright (C) The Minnesota Department of Health. All Rights Reserved.
+ *
+ * <p>Contributor(s): CIRG, University of Washington, Seattle WA.
+ */
 package org.openelisglobal.analysis.valueholder;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.analysis.service.AnalysisServiceImpl;
+import org.openelisglobal.common.util.ConfigurationProperties;
+import org.openelisglobal.common.util.ConfigurationProperties.Property;
 import org.openelisglobal.common.util.DateUtil;
-import org.openelisglobal.common.util.SystemConfiguration;
 import org.openelisglobal.common.valueholder.BaseObject;
 import org.openelisglobal.common.valueholder.ValueHolder;
 import org.openelisglobal.common.valueholder.ValueHolderInterface;
+import org.openelisglobal.method.valueholder.Method;
 import org.openelisglobal.note.service.NoteObject;
 import org.openelisglobal.note.service.NoteServiceImpl.BoundTo;
 import org.openelisglobal.panel.valueholder.Panel;
@@ -85,6 +83,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     private String sampleTypeName;
     private List<Analysis> children;
     private boolean correctedSincePatientReport;
+    private ValueHolderInterface method;
 
     public Analysis() {
         super();
@@ -94,6 +93,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
         parentAnalysis = new ValueHolder();
         parentResult = new ValueHolder();
         panel = new ValueHolder();
+        method = new ValueHolder();
     }
 
     @Override
@@ -167,7 +167,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setCompletedDateForDisplay(String completedDateForDisplay) {
         this.completedDateForDisplay = completedDateForDisplay;
 
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         completedDate = DateUtil.convertStringDateToSqlDate(this.completedDateForDisplay, locale);
     }
 
@@ -195,7 +195,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setStartedDateForDisplay(String startedDateForDisplay) {
         this.startedDateForDisplay = startedDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         startedDate = DateUtil.convertStringDateToSqlDate(this.startedDateForDisplay, locale);
     }
 
@@ -231,7 +231,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setPrintedDateForDisplay(String printedDateForDisplay) {
         this.printedDateForDisplay = printedDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         printedDate = DateUtil.convertStringDateToSqlDate(this.printedDateForDisplay, locale);
     }
 
@@ -251,7 +251,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setReleasedDateForDisplay(String releasedDateForDisplay) {
         this.releasedDateForDisplay = releasedDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         releasedDate = DateUtil.convertStringDateToSqlDate(this.releasedDateForDisplay, locale);
     }
 
@@ -279,7 +279,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setSoNotifyReceivedDateForDisplay(String soNotifyReceivedDateForDisplay) {
         this.soNotifyReceivedDateForDisplay = soNotifyReceivedDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         soNotifyReceivedDate = DateUtil.convertStringDateToSqlDate(this.soNotifyReceivedDateForDisplay, locale);
     }
 
@@ -299,7 +299,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setSoNotifySendDateForDisplay(String soNotifySendDateForDisplay) {
         this.soNotifySendDateForDisplay = soNotifySendDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         soNotifySendDate = DateUtil.convertStringDateToSqlDate(this.soNotifySendDateForDisplay, locale);
     }
 
@@ -319,7 +319,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setSoSendDateForDisplay(String soSendDateForDisplay) {
         this.soSendDateForDisplay = soSendDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         soSendDate = DateUtil.convertStringDateToSqlDate(this.soSendDateForDisplay, locale);
     }
 
@@ -347,7 +347,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setSoSendEntryDateForDisplay(String soSendEntryDateForDisplay) {
         this.soSendEntryDateForDisplay = soSendEntryDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         soSendEntryDate = DateUtil.convertStringDateToSqlDate(this.soSendEntryDateForDisplay, locale);
     }
 
@@ -367,7 +367,7 @@ public class Analysis extends BaseObject<String> implements NoteObject {
     public void setSoSendReadyDateForDisplay(String soSendReadyDateForDisplay) {
         this.soSendReadyDateForDisplay = soSendReadyDateForDisplay;
         // also update the java.sql.Date
-        String locale = SystemConfiguration.getInstance().getDefaultLocale().toString();
+        String locale = ConfigurationProperties.getInstance().getPropertyValue(Property.DEFAULT_LANG_LOCALE);
         soSendReadyDate = DateUtil.convertStringDateToSqlDate(this.soSendReadyDateForDisplay, locale);
     }
 
@@ -500,5 +500,13 @@ public class Analysis extends BaseObject<String> implements NoteObject {
 
     public void setFhirUuid(UUID fhirUuid) {
         this.fhirUuid = fhirUuid;
+    }
+
+    public Method getMethod() {
+        return (Method) method.getValue();
+    }
+
+    public void setMethod(Method method) {
+        this.method.setValue(method);
     }
 }

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.util.ConfigurationProperties;
@@ -87,7 +86,6 @@ public class SchedulerConfig implements SchedulingConfigurer {
         } catch (SchedulerException e) {
             LogEvent.logError(e);
         }
-
     }
 
     public synchronized void reloadSchedules() {
@@ -152,5 +150,4 @@ public class SchedulerConfig implements SchedulingConfigurer {
                     "Malformed cron statement." + cronScheduler.getCronStatement());
         }
     }
-
 }

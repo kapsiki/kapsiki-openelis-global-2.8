@@ -54,7 +54,5 @@ public class TestActivationFormValidator implements Validator {
             LogEvent.logError(e);
             errors.rejectValue("jsonChangeList", "error.field.format.json");
         }
-
     }
-
 }

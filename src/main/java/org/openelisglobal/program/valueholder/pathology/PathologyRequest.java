@@ -8,7 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
-
 import org.openelisglobal.common.valueholder.BaseObject;
 
 @Entity
@@ -16,14 +15,14 @@ import org.openelisglobal.common.valueholder.BaseObject;
 public class PathologyRequest extends BaseObject<Integer> {
 
     public enum RequestStatus {
-        OPENED("Opened"), COMPLETED("Completed"), CANCELLED("Cancelled") ;
-        
+        OPENED("Opened"), COMPLETED("Completed"), CANCELLED("Cancelled");
+
         private String display;
-        
+
         RequestStatus(String display) {
             this.display = display;
         }
-        
+
         public String getDisplay() {
             return display;
         }
@@ -99,5 +98,4 @@ public class PathologyRequest extends BaseObject<Integer> {
     public void setType(RequestType type) {
         this.type = type;
     }
-
 }

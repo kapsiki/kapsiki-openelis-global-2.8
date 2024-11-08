@@ -2,9 +2,7 @@ package org.openelisglobal.notification.service;
 
 import java.util.List;
 import java.util.Optional;
-
 import javax.annotation.PostConstruct;
-
 import org.apache.commons.validator.GenericValidator;
 import org.openelisglobal.common.log.LogEvent;
 import org.openelisglobal.common.util.ConfigurationProperties;
@@ -74,14 +72,14 @@ public class TestNotificationServiceImpl implements TestNotificationService {
     private NotificationPayloadTemplate createSystemDefaultNotificationPayloadTemplate(NotificationPayloadType type) {
         NotificationPayloadTemplate template = new NotificationPayloadTemplate();
         template.setMessageTemplate(
-                "[testName] testing results have been finalized. If you are not awaiting test results please call XXXXXXXXXXX and delete this notice."
-                        + "\n\n" + "[patientFirstName] [patientLastNameInitial]: [testResult]");
+                "[testName] testing results have been finalized. If you are not awaiting test results"
+                        + " please call XXXXXXXXXXX and delete this notice.\n\n"
+                        + "[patientFirstName] [patientLastNameInitial]: [testResult]");
         template.setSubjectTemplate("[testName] Testing Results");
         template.setSysUserId("1");
         template.setType(type);
         notificationPayloadTemplateService.save(template);
         return template;
-
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -114,7 +112,6 @@ public class TestNotificationServiceImpl implements TestNotificationService {
             createAndSendResultsNotificationsToConfiguredSources(nature, result, notificationConfig);
         default:
         }
-
     }
 
     private void createAndSendResultsNotificationsToConfiguredSources(NotificationNature nature, Result result,
@@ -136,7 +133,8 @@ public class TestNotificationServiceImpl implements TestNotificationService {
                         ? dictionary.getDictEntry()
                         : dictionary.getLocalAbbreviation();
             }
-//        resultForDisplay = dictionaryService.getDataForId(result.getValue()).getDictEntry();
+            // resultForDisplay =
+            // dictionaryService.getDataForId(result.getValue()).getDictEntry();
         } else if (TypeOfTestResultServiceImpl.ResultType.isNumeric(result.getResultType())) {
             resultForDisplay = result.getValue();
         } else if (TypeOfTestResultServiceImpl.ResultType.isTextOnlyVariant(result.getResultType())) {
@@ -158,9 +156,7 @@ public class TestNotificationServiceImpl implements TestNotificationService {
                 createAndSendNotificationToPerson(nature, methodType, personType, option, resultForDisplay,
                         resultsViewInfo);
             }
-
         }
-
     }
 
     private void createAndSendNotificationToPerson(NotificationNature nature, NotificationMethod methodType,
@@ -182,7 +178,6 @@ public class TestNotificationServiceImpl implements TestNotificationService {
         } else if (NotificationMethod.SMS.equals(methodType) && canSendSMS(receiverPerson)) {
             createAndSendResultsNotificationSMS(testPerson, receiverPerson, option, resultForDisplay, resultsViewInfo);
         }
-
     }
 
     private void createAndSendResultsNotificationSMS(Person testPerson, Person receiverPerson,
@@ -205,13 +200,12 @@ public class TestNotificationServiceImpl implements TestNotificationService {
                     testPerson.getFirstName(), testPerson.getLastName().substring(0, 1), template));
 
             sendNotification(smsNotification);
-//                    getSenderForNotification(smsNotification).send(smsNotification);
+            // getSenderForNotification(smsNotification).send(smsNotification);
         } catch (RuntimeException e) {
             LogEvent.logError(this.getClass().getSimpleName(), "createAndSendResultsNotificationSMS",
                     "could not send sms notification");
             LogEvent.logError(e);
         }
-
     }
 
     private void createAndSendResultsNotificationEmail(Person testPerson, Person receiverPerson,
@@ -304,5 +298,4 @@ public class TestNotificationServiceImpl implements TestNotificationService {
         }
         return canSend;
     }
-
 }

@@ -1,15 +1,14 @@
 package org.openelisglobal.program.valueholder.pathology;
 
-import java.util.Date;
-
-import org.openelisglobal.program.valueholder.pathology.PathologySample.PathologyStatus;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+import org.openelisglobal.program.valueholder.pathology.PathologySample.PathologyStatus;
 
 public class PathologyDisplayItem {
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date requestDate;
+
     private PathologyStatus status;
     private String lastName;
     private String firstName;
@@ -18,6 +17,7 @@ public class PathologyDisplayItem {
     private String labNumber;
 
     private Integer pathologySampleId;
+
     public Date getRequestDate() {
         return requestDate;
     }

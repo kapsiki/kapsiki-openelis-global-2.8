@@ -2,9 +2,7 @@ package org.openelisglobal.config;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
-
 import org.openelisglobal.common.log.LogEvent;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -59,7 +57,8 @@ public class DatabaseConfig {
         @Override
         @Retryable(maxAttempts = 10, backoff = @Backoff(multiplier = 2.3, maxDelay = 30000))
         public Connection getConnection() throws SQLException {
-            LogEvent.logDebug(this.getClass().getSimpleName(), "getConnection()", "attempting connection to the database...");
+            LogEvent.logDebug(this.getClass().getSimpleName(), "getConnection()",
+                    "attempting connection to the database...");
             return delegate.getConnection();
         }
 
@@ -68,6 +67,5 @@ public class DatabaseConfig {
         public Connection getConnection(String username, String password) throws SQLException {
             return delegate.getConnection(username, password);
         }
-
     }
 }
