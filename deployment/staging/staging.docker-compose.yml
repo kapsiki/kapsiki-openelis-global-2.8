@@ -38,7 +38,7 @@ services:
             
     oe.openelis.org:  
         container_name: openelisglobal-webapp 
-        image: itechuw/openelis-global-2:2.8    
+        image: kapsiki/kapsiki-openelis-backend    
         depends_on:
             - database
             - certs
@@ -65,7 +65,7 @@ services:
             
     fhir.openelis.org:  # Renamed to avoid periods in service name
         container_name: external-fhir-api
-        image: hapiproject/hapi:v6.6.0-tomcat
+        image: itechuw/openelis-global-2-fhir:develop
         depends_on:
             - database
             - certs
@@ -91,7 +91,7 @@ services:
             - hapi_application.yaml 
 
     frontend.openelis.org:  # Renamed to avoid periods in service name
-        image: itechuw/openelis-global-2-frontend-dev:2.8
+        image: kapsiki/kapsiki-openelis-frontend
         container_name: openelisglobal-front-end
         networks:
             - default
